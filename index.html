@@ -1,37 +1,80 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Les Randos de Nono</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <body>
 
 <header class="hero">
-  <h1>Mes Randonnées</h1>
-  <p>Explore mes aventures en montagne et nature</p>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1>Les Randos de Nono</h1>
+    <p>Explorer • Marcher • Partager</p>
+    <a href="#last" class="btn">Découvrir</a>
+  </div>
 </header>
 
-<section class="grid">
+<section id="last" class="section">
+  <h2>Dernière randonnée</h2>
 
-  <a class="card" href="canyon-du-diable.html">
-    <div class="img canyon"></div>
-    <h2>Canyon du Diable</h2>
-    <p>12 km • 450 m D+ • 4h30</p>
-  </a>
+  <div class="card-featured">
+    <img src="assets/images/last.jpg" alt="Dernière randonnée">
 
-  <a class="card" href="#">
-    <div class="img montagne"></div>
-    <h2>Prochaine rando</h2>
-    <p>Bientôt disponible</p>
-  </a>
+    <div class="card-content">
+      <h3>Canyon du Diable</h3>
 
+      <ul>
+        <li>12 km</li>
+        <li>450 m D+</li>
+        <li>4h30</li>
+        <li>Difficulté : Modérée</li>
+      </ul>
+
+      <div class="actions">
+        <a class="btn" href="rando.html">Voir la rando</a>
+        <a class="btn-outline" href="assets/gpx/last.gpx" download>Télécharger GPX</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="map">
+    <iframe src="https://umap.openstreetmap.fr/fr/map/example" loading="lazy"></iframe>
+  </div>
+</section>
+
+<section class="section">
+  <h2>Dernières randonnées</h2>
+
+  <div class="grid">
+    <div class="card">Rando 1</div>
+    <div class="card">Rando 2</div>
+    <div class="card">Rando 3</div>
+    <div class="card">Rando 4</div>
+    <div class="card">Rando 5</div>
+  </div>
+
+  <a href="randos.html" class="btn-center">Voir toutes les randonnées</a>
+</section>
+
+<section class="section sac">
+  <h2>Mon sac</h2>
+
+  <div class="carousel">
+    <img src="assets/images/sac1.jpg" class="active">
+    <img src="assets/images/sac2.jpg">
+    <img src="assets/images/sac3.jpg">
+  </div>
+
+  <a href="sac.html" class="btn">Découvrir mon équipement</a>
 </section>
 
 <footer>
-  <p>© 2026 - Site de randonnée</p>
+  <p>© 2026 Les Randos de Nono — Tous droits réservés</p>
+  <a href="mentions-legales.html">Mentions légales</a>
 </footer>
 
 </body>
