@@ -2,31 +2,87 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canyon du Diable</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header class="hero">
-  <h1>Canyon du Diable</h1>
-  <p>Entre falaises, sentiers escarpés et vues imprenables, cette randonnée au Canyon du Diable offre une aventure riche en découvertes. </p>
+<!-- HERO -->
+<header class="hero-rando">
+  <div class="overlay">
+    <h1>Canyon du Diable</h1>
+    <p>Randonnée sauvage entre roches et panoramas</p>
+  </div>
 </header>
 
-<section class="grid">
+<!-- INFOS PRINCIPALES -->
+<section class="info-bar">
 
-  <div class="card">
-    <h2>Infos</h2>
-    <p>Distance : 12 km</p>
-    <p>Dénivelé : 450 m</p>
-    <p>Durée : 4h30</p>
+  <div class="info-box">
+    <span>📍</span>
+    <p>12 km</p>
   </div>
 
-  <div class="card">
-    <h2>Carte GPX</h2>
-    <p>Intègre ici uMap ou Google My Maps</p>
+  <div class="info-box">
+    <span>⛰️</span>
+    <p>450 m D+</p>
   </div>
 
+  <div class="info-box">
+    <span>⏱️</span>
+    <p>4h30</p>
+  </div>
+
+  <div class="info-box">
+    <span>⚡</span>
+    <p>Modéré</p>
+  </div>
+
+</section>
+
+<!-- DESCRIPTION -->
+<section class="section">
+  <h2>Description</h2>
+  <p>
+    Le Canyon du Diable offre une randonnée spectaculaire entre formations rocheuses,
+    passages naturels et points de vue impressionnants sur un paysage sauvage.
+  </p>
+</section>
+
+<!-- CARTE -->
+<section class="section">
+  <h2>Carte de la randonnée</h2>
+
+  <div class="map-box">
+    <p>📌 Intègre ici ton GPX via uMap ou Google My Maps</p>
+    <!-- Exemple :
+    <iframe src="TON_LIEN_IFRAME" width="100%" height="400"></iframe>
+    -->
+  </div>
+</section>
+
+<!-- PHOTOS -->
+<section class="section">
+  <h2>Photos</h2>
+
+  <div class="gallery">
+
+    <div class="photo" style="background-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470');"></div>
+
+    <div class="photo" style="background-image:url('https://images.unsplash.com/photo-1469474968028-56623f02e42e');"></div>
+
+    <div class="photo" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee');"></div>
+
+  </div>
+</section>
+
+<!-- GPX -->
+<section class="section center">
+  <a class="btn" href="canyon-du-diable.gpx" download>
+    Télécharger le GPX
+  </a>
 </section>
 
 </body>
