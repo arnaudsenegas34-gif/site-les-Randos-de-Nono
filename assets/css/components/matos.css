@@ -46,11 +46,10 @@
    et applique des tailles CSS variables.
 ══════════════════════════════════════════════ */
 .matos-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.2rem;
-  align-items: flex-start;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+  align-items: start;
 }
 
 /* ── Carte matériel — fond transparent ── */
@@ -64,7 +63,6 @@
               filter 0.32s ease;
   opacity: 0;
   transform: translateY(14px);
-  width: var(--card-w, 200px);
 }
 
 .matos-card.is-visible {
@@ -337,13 +335,13 @@
 ══════════════════════════════════════════════ */
 @media (max-width: 900px) {
   .matos-grid {
-    display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.8rem;
   }
 
   .matos-card {
-    width: auto !important;
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
   }
 
   .matos-panel {

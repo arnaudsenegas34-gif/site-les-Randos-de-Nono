@@ -24,9 +24,6 @@
        La taille d'affichage est calculée à partir des
        dimensions réelles (cm) et de l'importance.
     ────────────────────────────────────────── */
-    var MIN_W = 80;
-    var MAX_W = 300;
-
     function getRealSize(card) {
       var w = parseFloat(card.dataset.largeur) || 20;
       var h = parseFloat(card.dataset.hauteur) || 15;
@@ -47,8 +44,16 @@
 
       cards.forEach(function (card) {
         var pct = getRealSize(card) / maxSize;
-        var cardW = MIN_W + pct * (MAX_W - MIN_W);
-        card.style.setProperty('--card-w', Math.round(cardW) + 'px');
+        var colSpan, rowSpan;
+        if (pct > 0.7) {
+          colSpan = 3; rowSpan = 3;
+        } else if (pct > 0.4) {
+          colSpan = 2; rowSpan = 2;
+        } else {
+          colSpan = 1; rowSpan = 1;
+        }
+        card.style.gridColumn = 'span ' + colSpan;
+        card.style.gridRow = 'span ' + rowSpan;
         grid.appendChild(card);
       });
     }
