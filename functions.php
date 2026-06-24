@@ -37,8 +37,16 @@ function rando_nono_assets() {
     // ── CSS matos isolé ──
     wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), $theme_version );
 
+    // ── Leaflet (carte interactive) ──
+    wp_enqueue_style( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', array(), '1.9.4' );
+    wp_enqueue_script( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), '1.9.4', true );
+    wp_enqueue_script( 'leaflet-gpx', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
+
+    // ── Chart.js (profil altimétrique) ──
+    wp_enqueue_script( 'chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', array(), '4.4.0', true );
+
     // ── Scripts — ordre strict ──
-    wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array(), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), $theme_version, true );
     wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
     wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), $theme_version, true );
     wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', array( 'rando-nono-modal', 'rando-nono-randos' ), $theme_version, true );
@@ -258,6 +266,7 @@ add_action( 'init', 'rando_nono_register_matos_cpt' );
 
 function rando_nono_matos_meta_box() {
     add_meta_box( 'rando_nono_matos_lien', 'Lien produit (optionnel)', 'rando_nono_matos_lien_callback', 'matos', 'normal', 'high' );
+    add_meta_box( 'rando_nono_matos_dimensions', 'Dimensions & poids', 'rando_nono_matos_dimensions_callback', 'matos', 'normal', 'default' );
     add_meta_box( 'rando_nono_matos_essentiel', 'Indispensable', 'rando_nono_matos_essentiel_callback', 'matos', 'side', 'high' );
 }
 add_action( 'add_meta_boxes', 'rando_nono_matos_meta_box' );
@@ -270,6 +279,22 @@ function rando_nono_matos_lien_callback( $post ) {
     echo '<input type="text" style="width:100%" id="matos_lien" name="matos_lien" value="' . esc_attr( $lien ) . '" /></p>';
     echo '<p style="margin-top:1rem"><label for="matos_pourquoi"><strong>Pourquoi je l\'utilise</strong> (l\'avantage concret que tu en tires)</label><br>';
     echo '<textarea style="width:100%;height:80px" id="matos_pourquoi" name="matos_pourquoi">' . esc_textarea( $pourquoi ) . '</textarea></p>';
+}
+
+function rando_nono_matos_dimensions_callback( $post ) {
+    $largeur = get_post_meta( $post->ID, 'matos_largeur_cm', true );
+    $hauteur = get_post_meta( $post->ID, 'matos_hauteur_cm', true );
+    $poids   = get_post_meta( $post->ID, 'matos_poids_g', true );
+    echo '<p style="color:#6B6B5E;font-size:12px;margin-bottom:8px">Ces dimensions servent à trier et dimensionner les objets sur la page (les plus grands en premier). Le poids est affiché dans la fiche détail.</p>';
+    echo '<table class="form-table"><tr>';
+    echo '<th><label for="matos_largeur_cm">Largeur (cm)</label></th>';
+    echo '<td><input type="number" step="0.1" min="0" style="width:100px" id="matos_largeur_cm" name="matos_largeur_cm" value="' . esc_attr( $largeur ) . '" placeholder="30" /></td>';
+    echo '<th><label for="matos_hauteur_cm">Hauteur (cm)</label></th>';
+    echo '<td><input type="number" step="0.1" min="0" style="width:100px" id="matos_hauteur_cm" name="matos_hauteur_cm" value="' . esc_attr( $hauteur ) . '" placeholder="20" /></td>';
+    echo '</tr><tr>';
+    echo '<th><label for="matos_poids_g">Poids (g)</label></th>';
+    echo '<td><input type="number" step="1" min="0" style="width:100px" id="matos_poids_g" name="matos_poids_g" value="' . esc_attr( $poids ) . '" placeholder="350" /></td>';
+    echo '</tr></table>';
 }
 
 function rando_nono_matos_essentiel_callback( $post ) {
@@ -286,6 +311,11 @@ function rando_nono_matos_save( $post_id ) {
     }
     if ( isset( $_POST['matos_pourquoi'] ) ) {
         update_post_meta( $post_id, 'matos_pourquoi', sanitize_textarea_field( $_POST['matos_pourquoi'] ) );
+    }
+    foreach ( array( 'matos_largeur_cm', 'matos_hauteur_cm', 'matos_poids_g' ) as $dim_field ) {
+        if ( isset( $_POST[ $dim_field ] ) ) {
+            update_post_meta( $post_id, $dim_field, sanitize_text_field( $_POST[ $dim_field ] ) );
+        }
     }
     update_post_meta( $post_id, 'matos_essentiel', isset( $_POST['matos_essentiel'] ) ? '1' : '' );
 }

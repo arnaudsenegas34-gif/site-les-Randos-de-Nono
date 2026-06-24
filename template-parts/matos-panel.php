@@ -16,6 +16,7 @@
     <div class="matos-panel-body">
       <div class="matos-panel-cat" id="matos-panel-cat"></div>
       <h3 class="matos-panel-name" id="matos-panel-name"></h3>
+      <div class="matos-panel-poids" id="matos-panel-poids"></div>
       <div class="matos-panel-divider"></div>
       <p class="matos-panel-desc" id="matos-panel-desc"></p>
 
