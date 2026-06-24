@@ -30,7 +30,7 @@
       return Math.max(w, h);
     }
 
-    var MAX_SPAN = 6;
+    var MAX_SPAN = 4;
 
     function sortAndSizeCards() {
       cards.sort(function (a, b) {
