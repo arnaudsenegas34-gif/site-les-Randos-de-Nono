@@ -30,6 +30,8 @@
       return Math.max(w, h);
     }
 
+    var MAX_SPAN = 6;
+
     function sortAndSizeCards() {
       cards.sort(function (a, b) {
         return getRealSize(b) - getRealSize(a);
@@ -44,16 +46,9 @@
 
       cards.forEach(function (card) {
         var pct = getRealSize(card) / maxSize;
-        var colSpan, rowSpan;
-        if (pct > 0.7) {
-          colSpan = 3; rowSpan = 3;
-        } else if (pct > 0.4) {
-          colSpan = 2; rowSpan = 2;
-        } else {
-          colSpan = 1; rowSpan = 1;
-        }
-        card.style.gridColumn = 'span ' + colSpan;
-        card.style.gridRow = 'span ' + rowSpan;
+        var span = Math.max(1, Math.round(pct * MAX_SPAN));
+        card.style.gridColumn = 'span ' + span;
+        card.style.gridRow = 'span ' + span;
         grid.appendChild(card);
       });
     }
