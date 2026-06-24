@@ -73,6 +73,35 @@
       panel.scrollTop = 0;
       panelOverlay.classList.add('is-open');
       if (btnClose) btnClose.focus({ preventScroll: true });
+
+      // DEBUG — à retirer après diagnostic
+      setTimeout(function () {
+        var rect = panelOverlay.getBoundingClientRect();
+        var panelRect = panel.getBoundingClientRect();
+        console.log('[MATOS PANEL DEBUG]', {
+          scrollY: window.scrollY,
+          viewportHeight: window.innerHeight,
+          viewportWidth: window.innerWidth,
+          overlayRect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+          panelRect: { top: panelRect.top, left: panelRect.left, width: panelRect.width, height: panelRect.height },
+          overlayComputedPosition: getComputedStyle(panelOverlay).position,
+          bodyHasAnimation: getComputedStyle(document.body).animation,
+          bodyHasTransform: getComputedStyle(document.body).transform,
+          bodyHasFilter: getComputedStyle(document.body).filter,
+          bodyHasWillChange: getComputedStyle(document.body).willChange
+        });
+        var el = panelOverlay.parentElement;
+        while (el && el !== document.documentElement) {
+          var s = getComputedStyle(el);
+          if (s.transform !== 'none' || s.filter !== 'none' || s.willChange === 'transform' ||
+              s.contain === 'paint' || s.contain === 'layout' || s.contain === 'strict') {
+            console.warn('[MATOS PANEL] Ancêtre cassant position:fixed :', el, {
+              transform: s.transform, filter: s.filter, willChange: s.willChange, contain: s.contain
+            });
+          }
+          el = el.parentElement;
+        }
+      }, 50);
     }
 
     function closePanel() {

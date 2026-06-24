@@ -29,12 +29,6 @@ body {
   font-family: 'Merriweather', Georgia, serif;
   font-size: 16px;
   line-height: 1.7;
-  animation: page-fade-in 0.25s ease forwards;
-}
-
-@keyframes page-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
 }
 
 body.page-exit {

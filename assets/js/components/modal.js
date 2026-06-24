@@ -130,6 +130,37 @@
       overlay.classList.add('is-open');
       overlay.setAttribute('aria-hidden', 'false');
       if (btnClose) btnClose.focus({ preventScroll: true });
+
+      // DEBUG — à retirer après diagnostic
+      setTimeout(function () {
+        var rect = overlay.getBoundingClientRect();
+        var modalEl = overlay.querySelector('.rando-modal');
+        var modalRect = modalEl ? modalEl.getBoundingClientRect() : null;
+        console.log('[RANDO MODAL DEBUG]', {
+          scrollY: window.scrollY,
+          viewportHeight: window.innerHeight,
+          viewportWidth: window.innerWidth,
+          overlayRect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+          modalRect: modalRect ? { top: modalRect.top, left: modalRect.left, width: modalRect.width, height: modalRect.height } : null,
+          overlayComputedPosition: getComputedStyle(overlay).position,
+          bodyHasAnimation: getComputedStyle(document.body).animation,
+          bodyHasTransform: getComputedStyle(document.body).transform,
+          bodyHasFilter: getComputedStyle(document.body).filter,
+          bodyHasWillChange: getComputedStyle(document.body).willChange
+        });
+        // Détecte les ancêtres qui cassent position:fixed
+        var el = overlay.parentElement;
+        while (el && el !== document.documentElement) {
+          var s = getComputedStyle(el);
+          if (s.transform !== 'none' || s.filter !== 'none' || s.willChange === 'transform' ||
+              s.contain === 'paint' || s.contain === 'layout' || s.contain === 'strict') {
+            console.warn('[RANDO MODAL] Ancêtre cassant position:fixed :', el, {
+              transform: s.transform, filter: s.filter, willChange: s.willChange, contain: s.contain
+            });
+          }
+          el = el.parentElement;
+        }
+      }, 50);
     }
 
     function close() {
