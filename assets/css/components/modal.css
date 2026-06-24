@@ -1,0 +1,150 @@
+/**
+ * modal.css — Les Randos de Nono v3.1
+ * Centrage garanti via CSS pur, scroll-lock minimal, cross-device.
+ *
+ * PRINCIPE TECHNIQUE :
+ * - L'overlay est TOUJOURS display:flex (pas de display:none qui cause les bugs)
+ * - La visibilité est gérée par visibility + opacity + pointer-events
+ * - Le centrage est 100% CSS : align-items:center + justify-content:center
+ * - Aucun scroll en JS pour repositionner la page
+ * - body.modal-open utilise uniquement overflow:hidden (pas position:fixed)
+ *   pour éviter le saut de contenu iOS
+ */
+
+/* ══════════════════════════════════════════════
+   SCROLL LOCK — overflow uniquement, pas de position:fixed
+   (position:fixed causerait un saut de page sur mobile)
+══════════════════════════════════════════════ */
+body.modal-open {
+  overflow: hidden;
+  /* padding-right compensé en JS si une scrollbar disparaît */
+}
+
+/* ══════════════════════════════════════════════
+   OVERLAY — toujours display:flex, jamais display:none
+══════════════════════════════════════════════ */
+.rando-modal-overlay {
+  position: fixed;
+  inset: 0;                    /* top:0 left:0 right:0 bottom:0 */
+  z-index: 9999;
+
+  /* Centrage CSS pur — le plus robuste cross-device */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+
+  background-color: rgba(26, 46, 31, 0.88);
+
+  /* Visibilité contrôlée via CSS, pas display */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+
+/* ══════════════════════════════════════════════
+   ÉTAT OUVERT
+══════════════════════════════════════════════ */
+.rando-modal-overlay.is-open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.2s ease, visibility 0s linear 0s;
+}
+
+/* ══════════════════════════════════════════════
+   MODAL CONTAINER
+══════════════════════════════════════════════ */
+.rando-modal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  width: 100%;
+  max-width: 1080px;
+  height: 580px;
+  max-height: calc(100vh - 2rem);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
+  position: relative;
+  flex-shrink: 0;
+
+  /* Animation d'entrée */
+  transform: translateY(12px) scale(0.98);
+  opacity: 0;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 0.2s ease;
+}
+
+.rando-modal-overlay.is-open .rando-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════
+   PANNEAUX GAUCHE & DROITE
+══════════════════════════════════════════════ */
+.modal-left {
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.modal-right {
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════════════════════
+   TABLET < 900px
+══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .rando-modal-overlay {
+    align-items: flex-start;
+    padding: 0.5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rando-modal {
+    grid-template-columns: 1fr;
+    height: auto;
+    max-height: none;
+    flex-shrink: 0;
+  }
+
+  .modal-left {
+    height: 220px;
+    flex-shrink: 0;
+  }
+
+  .modal-right {
+    overflow-y: auto;
+    max-height: 65vh;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE < 600px — plein écran
+══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .rando-modal-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .rando-modal {
+    border-radius: 0;
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
+  .modal-right {
+    max-height: none;
+    overflow-y: auto;
+  }
+}
