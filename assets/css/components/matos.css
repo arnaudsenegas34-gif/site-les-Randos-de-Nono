@@ -81,21 +81,11 @@
   z-index: 10;
 }
 
-/* Badge "Indispensable" */
-.matos-badge-essentiel {
-  position: absolute;
-  top: 0.4rem;
-  left: 0.4rem;
-  z-index: 3;
-  background: var(--orange);
-  color: #fff;
-  font-size: 0.52rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0.22rem 0.5rem;
-  border-radius: 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+/* Indispensable — bordure orange */
+.matos-card.is-essentiel {
+  border: 2px solid var(--orange);
+  border-radius: 10px;
+  padding: 4px;
 }
 
 /* ── Image — fond transparent, drop-shadow ── */
@@ -159,31 +149,6 @@
 
 .matos-card:hover .matos-img-overlay span {
   transform: scale(1);
-}
-
-/* ── Corps de la carte — minimaliste ── */
-.matos-body {
-  padding: 0.5rem 0.2rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.matos-cat {
-  font-size: 0.55rem;
-  color: var(--orange);
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  font-weight: 700;
-  margin-bottom: 0.15rem;
-}
-
-.matos-name {
-  font-family: 'Abril Fatface', serif;
-  color: var(--vert);
-  font-size: 0.85rem;
-  line-height: 1.2;
 }
 
 /* ── Carte cachée par le filtre ── */
@@ -298,6 +263,14 @@
   font-size: 1.6rem;
   line-height: 1.15;
   margin-bottom: 0.5rem;
+}
+
+.matos-panel-poids {
+  font-family: 'Merriweather', serif;
+  font-size: 0.75rem;
+  color: var(--gris);
+  font-weight: 300;
+  margin-bottom: 0.3rem;
 }
 
 .matos-panel-divider {

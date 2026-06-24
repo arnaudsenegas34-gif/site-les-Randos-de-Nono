@@ -87,6 +87,7 @@
 
       _setText('matos-panel-cat',  d.catLabel || d.cat || '');
       _setText('matos-panel-name', d.name || '');
+      _setText('matos-panel-poids', d.poids ? d.poids + ' g' : '');
       _setText('matos-panel-desc', d.desc || '');
 
       var pourquoiEl = panel.querySelector('.matos-panel-pourquoi');
