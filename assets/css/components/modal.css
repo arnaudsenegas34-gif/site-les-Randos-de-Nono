@@ -129,22 +129,32 @@ body.modal-open {
 }
 
 /* ══════════════════════════════════════════════
-   MOBILE < 600px — plein écran
+   MOBILE < 600px — plein écran, scroll interne
 ══════════════════════════════════════════════ */
 @media (max-width: 600px) {
   .rando-modal-overlay {
     padding: 0;
-    align-items: flex-start;
+    align-items: stretch;
+    overflow: hidden;
   }
 
   .rando-modal {
     border-radius: 0;
-    min-height: 100vh;
-    min-height: 100svh;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    max-height: none;
+    grid-template-rows: 200px 1fr;
+  }
+
+  .modal-left {
+    height: 200px;
   }
 
   .modal-right {
-    max-height: none;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+    max-height: none;
   }
 }
