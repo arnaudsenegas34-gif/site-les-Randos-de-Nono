@@ -61,12 +61,21 @@
             <div class="info-card"><div class="ic-label">Durée</div><div class="ic-value"    id="rando-modal-duree"></div></div>
             <div class="info-card"><div class="ic-label">Date</div><div class="ic-value"     id="rando-modal-date"></div></div>
           </div>
-          <div class="map-container" id="rando-modal-map"></div>
-          <p style="margin-bottom:1rem">
+          <div class="map-container leaflet-wrap" id="rando-modal-map" style="height:220px; border-radius:6px; overflow:hidden; margin-bottom:0.8rem;"></div>
+          <div class="modal-map-actions" style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
             <a id="rando-modal-maps-link" href="#" target="_blank" rel="noopener" class="btn btn-sm">
               <?php echo rando_nono_icon( 'map' ); ?> Ouvrir dans Maps
             </a>
-          </p>
+            <a id="rando-modal-nav-link" href="#" target="_blank" rel="noopener" class="btn btn-sm" style="background:var(--orange); display:none;">
+              &#x1F9ED; Aller au départ
+            </a>
+          </div>
+          <div class="altitude-chart-wrap" id="rando-altitude-wrap" style="display:none; margin-bottom:1.2rem;">
+            <div class="altitude-chart-title">Profil altimétrique</div>
+            <div style="position:relative; height:120px;">
+              <canvas id="rando-altitude-chart"></canvas>
+            </div>
+          </div>
           <p class="recit-text" id="rando-modal-recit"></p>
           <!-- Partage social -->
           <div class="share-bar">

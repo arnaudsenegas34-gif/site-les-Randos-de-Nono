@@ -19,6 +19,8 @@
 
     var currentSlide = 0;
     var totalSlides  = 0;
+    var _leafletMap  = null;
+    var _altChart    = null;
     function lockScroll() {
       var sbw = window.innerWidth - document.documentElement.clientWidth;
       if (sbw > 0) {
@@ -74,14 +76,23 @@
       var mapsLink = document.getElementById('rando-modal-maps-link');
       if (mapsLink) mapsLink.href = d.maps || '#';
 
-      var mapContainer = document.getElementById('rando-modal-map');
-      if (mapContainer) {
+      var navLink = document.getElementById('rando-modal-nav-link');
+      if (navLink) {
         if (d.lat && d.lon) {
-          var lat = parseFloat(d.lat), lon = parseFloat(d.lon);
-          mapContainer.innerHTML = '<iframe loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=' + (lon-0.05) + ',' + (lat-0.04) + ',' + (lon+0.05) + ',' + (lat+0.04) + '&layer=mapnik&marker=' + lat + ',' + lon + '"></iframe>';
+          navLink.href = 'https://www.google.com/maps/dir/?api=1&destination=' + d.lat + ',' + d.lon + '&travelmode=driving';
+          navLink.style.display = '';
         } else {
-          mapContainer.innerHTML = '';
+          navLink.style.display = 'none';
         }
+      }
+
+      if (d.lat && d.lon) {
+        _buildMap(parseFloat(d.lat), parseFloat(d.lon), d.gpx || null);
+      } else {
+        var mapEl = document.getElementById('rando-modal-map');
+        if (mapEl) mapEl.innerHTML = '';
+        var altWrap = document.getElementById('rando-altitude-wrap');
+        if (altWrap) altWrap.style.display = 'none';
       }
 
       _fillList('rando-modal-sac',     d.sac,     'Aucun détail renseigné');
@@ -136,8 +147,123 @@
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
       unlockScroll();
-      var mapContainer = document.getElementById('rando-modal-map');
-      if (mapContainer) mapContainer.innerHTML = '';
+      _destroyMap();
+      var altWrap = document.getElementById('rando-altitude-wrap');
+      if (altWrap) altWrap.style.display = 'none';
+    }
+
+    function _destroyMap() {
+      if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
+      if (_altChart)   { _altChart.destroy();  _altChart  = null; }
+    }
+
+    function _buildMap(lat, lon, gpxUrl) {
+      var mapEl = document.getElementById('rando-modal-map');
+      if (!mapEl) return;
+      _destroyMap();
+      mapEl.innerHTML = '';
+
+      if (typeof L === 'undefined') {
+        mapEl.innerHTML = '<p style="padding:1rem;opacity:.6">Carte indisponible.</p>';
+        return;
+      }
+
+      _leafletMap = L.map(mapEl, { zoomControl: true, scrollWheelZoom: false }).setView([lat, lon], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 18
+      }).addTo(_leafletMap);
+
+      var startIcon = L.divIcon({
+        className: '',
+        html: '<div style="background:#2E5E3B;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+        iconSize: [14, 14], iconAnchor: [7, 7]
+      });
+
+      if (gpxUrl && typeof L.GPX !== 'undefined') {
+        new L.GPX(gpxUrl, {
+          async: true,
+          marker_options: { startIconUrl: null, endIconUrl: null, shadowUrl: null, wptIconUrls: { '': null } },
+          polyline_options: { color: '#D97706', weight: 3, opacity: 0.85 }
+        })
+        .on('loaded', function (e) {
+          _leafletMap.fitBounds(e.target.getBounds(), { padding: [20, 20] });
+          var layers = e.target.getLayers();
+          if (layers.length) {
+            var pts = layers[0].getLatLngs ? layers[0].getLatLngs() : null;
+            if (pts && pts.length) {
+              var start = Array.isArray(pts[0]) ? pts[0][0] : pts[0];
+              L.marker([start.lat, start.lng], { icon: startIcon }).bindTooltip('Départ', { permanent: false }).addTo(_leafletMap);
+            }
+          }
+          _buildAltChart(e.target);
+        })
+        .on('error', function () {
+          L.marker([lat, lon], { icon: startIcon }).addTo(_leafletMap);
+        })
+        .addTo(_leafletMap);
+      } else {
+        L.marker([lat, lon], { icon: startIcon }).addTo(_leafletMap);
+      }
+
+      setTimeout(function () { if (_leafletMap) _leafletMap.invalidateSize(); }, 300);
+    }
+
+    function _buildAltChart(gpxLayer) {
+      var wrap   = document.getElementById('rando-altitude-wrap');
+      var canvas = document.getElementById('rando-altitude-chart');
+      if (!wrap || !canvas || typeof Chart === 'undefined') return;
+
+      var points = [];
+      gpxLayer.getLayers().forEach(function (layer) {
+        if (layer.getLatLngs) {
+          var lls = layer.getLatLngs();
+          var flat = Array.isArray(lls[0]) ? lls[0] : lls;
+          flat.forEach(function (ll) {
+            if (ll.alt !== undefined) points.push({ alt: ll.alt, lat: ll.lat, lng: ll.lng });
+          });
+        }
+      });
+
+      if (points.length < 2) { wrap.style.display = 'none'; return; }
+
+      var labels = [], alts = [], cumDist = 0;
+      for (var i = 0; i < points.length; i++) {
+        if (i > 0) {
+          var prev = points[i - 1], cur = points[i];
+          var dLat = (cur.lat - prev.lat) * Math.PI / 180;
+          var dLon = (cur.lng - prev.lng) * Math.PI / 180;
+          var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+                  Math.cos(prev.lat*Math.PI/180)*Math.cos(cur.lat*Math.PI/180)*
+                  Math.sin(dLon/2)*Math.sin(dLon/2);
+          cumDist += 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+        if (i % Math.max(1, Math.floor(points.length / 80)) === 0) {
+          labels.push(cumDist.toFixed(1) + ' km');
+          alts.push(Math.round(points[i].alt));
+        }
+      }
+
+      wrap.style.display = 'block';
+      if (_altChart) { _altChart.destroy(); _altChart = null; }
+
+      _altChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: alts, borderColor: '#D97706', backgroundColor: 'rgba(217,119,6,0.12)',
+            fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ctx.parsed.y + ' m'; } } } },
+          scales: {
+            x: { ticks: { maxTicksLimit: 6, font: { size: 10 }, color: '#888' }, grid: { display: false } },
+            y: { ticks: { font: { size: 10 }, color: '#888', callback: function(v) { return v + ' m'; } }, grid: { color: 'rgba(0,0,0,0.06)' } }
+          }
+        }
+      });
     }
 
     function _buildSlideshow(photos) {
