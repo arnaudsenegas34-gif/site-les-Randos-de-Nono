@@ -1,15 +1,7 @@
 /**
  * modal-rando.css — Les Randos de Nono
- * Overlay, conteneur modal, et tout le contenu intérieur :
- * slideshow, onglets, infos, carte, météo, partage social.
+ * Overlay, conteneur modal, slideshow, onglets, infos, carte, météo, partage.
  */
-
-/* ══════════════════════════════════════════════
-   SCROLL LOCK
-══════════════════════════════════════════════ */
-body.modal-open {
-  overflow: hidden;
-}
 
 /* ══════════════════════════════════════════════
    OVERLAY
@@ -497,7 +489,7 @@ body.modal-open {
 ══════════════════════════════════════════════ */
 @media (max-width: 900px) {
   .rando-modal-overlay {
-    align-items: flex-start;
+    align-items: center;
     padding: 0.5rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -507,7 +499,7 @@ body.modal-open {
     grid-template-columns: 1fr;
     grid-template-rows: 220px 1fr;
     height: auto;
-    max-height: none;
+    max-height: calc(100vh - 1rem);
     flex-shrink: 0;
   }
 
@@ -518,7 +510,7 @@ body.modal-open {
 
   .modal-right {
     overflow-y: auto;
-    max-height: 65vh;
+    max-height: calc(100vh - 220px - 2rem);
   }
 
   .meteo-days {

@@ -229,7 +229,7 @@ endif;
                 <?php if ( $m_essentiel ) : ?>
                   <span class="matos-badge-essentiel">Indispensable</span>
                 <?php endif; ?>
-                <div class="matos-img-overlay"><span>Voir le détail</span></div>
+                <div class="matos-img-overlay"><span>+</span></div>
               </div>
               <div class="matos-body">
                 <?php if ( $m_cat_name ) : ?>
