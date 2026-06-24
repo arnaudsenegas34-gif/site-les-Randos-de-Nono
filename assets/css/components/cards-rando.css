@@ -1,0 +1,153 @@
+/**
+ * cards-rando.css — Les Randos de Nono
+ * Grille de cartes randonnée, styles de carte, animations d'apparition.
+ */
+
+/* ══════════════════════════════════════════════
+   GRILLE
+══════════════════════════════════════════════ */
+.randos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1.5rem;
+}
+
+.randos-grid > div:first-child .rando-card {
+  grid-column: span 2;
+}
+
+.randos-grid > div:first-child .card-photo,
+.randos-grid > div:first-child .card-photo-placeholder {
+  height: 280px;
+}
+
+.randos-grid > div:first-child .card-title {
+  font-size: 1.6rem;
+}
+
+.see-more-wrap {
+  text-align: center;
+  margin-top: 2.75rem;
+}
+
+.rando-hidden {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════
+   CARTE
+══════════════════════════════════════════════ */
+.rando-card {
+  background: var(--beige);
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1), box-shadow 0.25s;
+  box-shadow: 0 1px 3px rgba(26,46,31,0.07);
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.rando-card.is-visible {
+  animation: card-fade-in 0.6s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+@keyframes card-fade-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rando-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -10px rgba(46,94,59,0.22);
+}
+
+/* ══════════════════════════════════════════════
+   PHOTO & BADGES
+══════════════════════════════════════════════ */
+.card-photo-wrap {
+  position: relative;
+}
+
+.card-photo {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  display: block;
+}
+
+.card-photo-placeholder {
+  width: 100%;
+  height: 210px;
+  background: linear-gradient(135deg, var(--vert), #3d7a4e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8rem;
+  color: rgba(232,223,200,0.3);
+}
+
+.card-badges {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.8rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* ══════════════════════════════════════════════
+   CORPS DE LA CARTE
+══════════════════════════════════════════════ */
+.card-body {
+  padding: 1.5rem 1.4rem 1.4rem;
+}
+
+.card-meta {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+.meta-item {
+  font-size: 0.7rem;
+  color: var(--gris);
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+.card-title {
+  font-family: 'Abril Fatface', serif;
+  font-size: 1.3rem;
+  color: var(--vert);
+  margin-bottom: 0.55rem;
+}
+
+.card-desc {
+  font-size: 0.85rem;
+  color: var(--gris);
+  font-weight: 300;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .randos-grid {
+    grid-template-columns: 1fr;
+  }
+}

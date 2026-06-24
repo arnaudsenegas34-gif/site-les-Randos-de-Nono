@@ -28,23 +28,35 @@ function rando_nono_assets() {
     // ── Polices ──
     wp_enqueue_style( 'rando-nono-fonts', $theme_uri . '/assets/css/fonts.css', array(), $theme_version );
 
-    // ── Style principal ──
-    wp_enqueue_style( 'rando-nono-style', get_stylesheet_uri(), array( 'rando-nono-fonts' ), $theme_version );
+    // ── Base : variables, reset, typographie ──
+    wp_enqueue_style( 'rando-nono-base', $theme_uri . '/assets/css/base.css', array( 'rando-nono-fonts' ), $theme_version );
 
-    // ── CSS modal isolé ──
-    wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal.css', array( 'rando-nono-style' ), $theme_version );
+    // ── Layout : header, nav, hero, sections, footer ──
+    wp_enqueue_style( 'rando-nono-layout', $theme_uri . '/assets/css/layout.css', array( 'rando-nono-base' ), $theme_version );
 
-    // ── CSS matos isolé ──
-    wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), $theme_version );
+    // ── Composants ──
+    wp_enqueue_style( 'rando-nono-buttons', $theme_uri . '/assets/css/components/buttons.css', array( 'rando-nono-base' ), $theme_version );
+    wp_enqueue_style( 'rando-nono-cards', $theme_uri . '/assets/css/components/cards-rando.css', array( 'rando-nono-base' ), $theme_version );
+    wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal-rando.css', array( 'rando-nono-base' ), $theme_version );
+    wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-base' ), $theme_version );
+
+    // ── Pages ──
+    wp_enqueue_style( 'rando-nono-home', $theme_uri . '/assets/css/pages/home.css', array( 'rando-nono-base' ), $theme_version );
+    wp_enqueue_style( 'rando-nono-archive', $theme_uri . '/assets/css/pages/archive.css', array( 'rando-nono-base' ), $theme_version );
+    wp_enqueue_style( 'rando-nono-404', $theme_uri . '/assets/css/pages/404.css', array( 'rando-nono-base' ), $theme_version );
+    wp_enqueue_style( 'rando-nono-page', $theme_uri . '/assets/css/pages/page.css', array( 'rando-nono-base' ), $theme_version );
+
+    // ── Style WordPress (requis, vide — sert de feuille parente) ──
+    wp_enqueue_style( 'rando-nono-style', get_stylesheet_uri(), array( 'rando-nono-base' ), $theme_version );
 
     // ── Scripts — ordre strict ──
-    wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array(), $theme_version, true );
-    wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
-    wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), $theme_version, true );
-    wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', array( 'rando-nono-modal', 'rando-nono-randos' ), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-modal-js', $theme_uri . '/assets/js/components/modal.js', array(), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-matos-js', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-randos-js', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal-js' ), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-main-js', $theme_uri . '/assets/js/main.js', array( 'rando-nono-modal-js', 'rando-nono-randos-js' ), $theme_version, true );
 
     // Données PHP → JS (URLs dynamiques)
-    wp_localize_script( 'rando-nono-modal', 'randoNono', array(
+    wp_localize_script( 'rando-nono-modal-js', 'randoNono', array(
         'placeholderUrl' => $theme_uri . '/assets/img/placeholder-rando.jpg',
         'themeUri'       => $theme_uri,
     ) );

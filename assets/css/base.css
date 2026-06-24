@@ -1,0 +1,78 @@
+/**
+ * base.css — Les Randos de Nono
+ * Variables globales, reset, typographie, éléments de base.
+ */
+
+:root {
+  --vert:   #2E5E3B;
+  --beige:  #E8DFC8;
+  --orange: #D97706;
+  --blanc:  #FAF8F3;
+  --gris:   #6B6B5E;
+  --sombre: #1A2E1F;
+  --ligne:  rgba(46, 94, 59, 0.12);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--blanc);
+  color: var(--sombre);
+  font-family: 'Merriweather', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.7;
+  animation: page-fade-in 0.25s ease forwards;
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+body.page-exit {
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+}
+
+h1, h2, h3, .display {
+  font-family: 'Abril Fatface', serif;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+.icon-svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  stroke-width: 2px;
+}
+
+.icon-svg-lg {
+  width: 18px;
+  height: 18px;
+}

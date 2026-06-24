@@ -1,0 +1,41 @@
+/**
+ * page.css — Les Randos de Nono
+ * Pages simples (mentions légales, etc.).
+ */
+
+.simple-page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 4rem 2rem 6rem;
+}
+
+.simple-page h1 {
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  color: var(--vert);
+  margin-bottom: 0.5rem;
+}
+
+.simple-page h2 {
+  font-size: 1.2rem;
+  color: var(--vert);
+  margin-bottom: 0.7rem;
+  margin-top: 2.25rem;
+}
+
+.simple-page p {
+  color: var(--gris);
+  font-weight: 300;
+  margin-bottom: 0.7rem;
+  font-size: 0.93rem;
+}
+
+.simple-page a {
+  color: var(--orange);
+}
+
+.simple-page .card {
+  background: var(--beige);
+  border-radius: 5px;
+  padding: 1.4rem;
+  margin-top: 1rem;
+}
