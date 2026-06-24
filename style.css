@@ -305,8 +305,14 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .sac-list li { font-size: 0.78rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.4rem; }
 .sac-list li::before { content: '▸'; color: var(--orange); font-size: 0.62rem; }
 
-.map-container { border-radius: 4px; overflow: hidden; height: 190px; margin-bottom: 0.7rem; border: 1px solid var(--ligne); }
+.map-container { border-radius: 6px; overflow: hidden; height: 220px; margin-bottom: 0.8rem; border: 1px solid var(--ligne); }
 .map-container iframe { width: 100%; height: 100%; border: none; }
+
+.altitude-chart-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gris); margin-bottom: 0.5rem; }
+.altitude-chart-wrap { background: var(--beige); border-radius: 6px; padding: 0.8rem; }
+.rando-modal .leaflet-wrap { z-index: 0; }
+.rando-modal .leaflet-pane { z-index: 1 !important; }
+.rando-modal .leaflet-top, .rando-modal .leaflet-bottom { z-index: 2 !important; }
 
 .meteo-now { background: var(--sombre); border-radius: 4px; padding: 1.15rem; display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1rem; color: var(--beige); }
 .meteo-now .big-icon { font-size: 2.6rem; }

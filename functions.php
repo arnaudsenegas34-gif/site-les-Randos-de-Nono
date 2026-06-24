@@ -37,8 +37,16 @@ function rando_nono_assets() {
     // ── CSS matos isolé ──
     wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), $theme_version );
 
+    // ── Leaflet (carte interactive) ──
+    wp_enqueue_style( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', array(), '1.9.4' );
+    wp_enqueue_script( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), '1.9.4', true );
+    wp_enqueue_script( 'leaflet-gpx', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
+
+    // ── Chart.js (profil altimétrique) ──
+    wp_enqueue_script( 'chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', array(), '4.4.0', true );
+
     // ── Scripts — ordre strict ──
-    wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array(), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), $theme_version, true );
     wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
     wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), $theme_version, true );
     wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', array( 'rando-nono-modal', 'rando-nono-randos' ), $theme_version, true );
