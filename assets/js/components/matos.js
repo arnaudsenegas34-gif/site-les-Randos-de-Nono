@@ -24,36 +24,31 @@
        La taille d'affichage est calculée à partir des
        dimensions réelles (cm) et de l'importance.
     ────────────────────────────────────────── */
-    var IMPORTANCE_SCALE = [0.55, 0.72, 1, 1.3, 1.6];
-    var MIN_W = 100;
-    var MAX_W = 280;
-    var BASE_W = 180;
+    var MIN_W = 80;
+    var MAX_W = 300;
 
-    function getCardScore(card) {
+    function getRealSize(card) {
       var w = parseFloat(card.dataset.largeur) || 20;
       var h = parseFloat(card.dataset.hauteur) || 15;
-      var imp = parseInt(card.dataset.importance || '3', 10);
-      var scale = IMPORTANCE_SCALE[Math.min(Math.max(imp, 1), 5) - 1] || 1;
-      return Math.max(w, h) * scale;
+      return Math.max(w, h);
     }
 
     function sortAndSizeCards() {
       cards.sort(function (a, b) {
-        return getCardScore(b) - getCardScore(a);
+        return getRealSize(b) - getRealSize(a);
       });
 
-      var maxScore = 0;
+      var maxSize = 0;
       cards.forEach(function (c) {
-        var s = getCardScore(c);
-        if (s > maxScore) maxScore = s;
+        var s = getRealSize(c);
+        if (s > maxSize) maxSize = s;
       });
-      if (maxScore === 0) maxScore = 1;
+      if (maxSize === 0) maxSize = 1;
 
-      cards.forEach(function (card, i) {
-        var ratio = getCardScore(card) / maxScore;
-        var cardW = MIN_W + ratio * (MAX_W - MIN_W);
+      cards.forEach(function (card) {
+        var pct = getRealSize(card) / maxSize;
+        var cardW = MIN_W + pct * (MAX_W - MIN_W);
         card.style.setProperty('--card-w', Math.round(cardW) + 'px');
-        card.style.setProperty('--sparkle-delay', (i * 0.4) + 's');
         grid.appendChild(card);
       });
     }
