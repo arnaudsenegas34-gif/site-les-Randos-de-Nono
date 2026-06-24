@@ -20,24 +20,8 @@
     const cards      = document.querySelectorAll('.matos-card');
     const filterBtns = document.querySelectorAll('.matos-filter-btn');
 
-    let _savedScrollY = 0;
-
     /* ──────────────────────────────────────────
-       SCROLL LOCK (même méthode que modal.js)
-    ────────────────────────────────────────── */
-    function lockScroll() {
-      const sbw = window.innerWidth - document.documentElement.clientWidth;
-      if (sbw > 0) document.body.style.paddingRight = sbw + 'px';
-      document.body.classList.add('modal-open');
-    }
-
-    function unlockScroll() {
-      document.body.classList.remove('modal-open');
-      document.body.style.paddingRight = '';
-    }
-
-    /* ──────────────────────────────────────────
-       OUVERTURE DU PANEL
+       OUVERTURE DU PANEL (popover près de la carte)
     ────────────────────────────────────────── */
     function openPanel(card) {
       const d = card.dataset;
@@ -84,10 +68,49 @@
         }
       }
 
-      // Ouvrir
-      lockScroll();
+      // Positionner le popover près de la carte cliquée
+      _positionPanel(card);
+
       panelOverlay.classList.add('is-open');
       if (btnClose) btnClose.focus();
+    }
+
+    function _positionPanel(card) {
+      const rect = card.getBoundingClientRect();
+      const panelW = panel.offsetWidth || 360;
+      const panelH = panel.offsetHeight || 400;
+      const margin = 12;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // Sur mobile, pas de positionnement custom (le CSS gère en bottom-sheet)
+      if (vw <= 700) {
+        panel.style.top = '';
+        panel.style.left = '';
+        panel.style.right = '';
+        panel.style.bottom = '';
+        return;
+      }
+
+      // Essayer à droite de la carte, sinon à gauche
+      let left, top;
+      if (rect.right + margin + panelW <= vw) {
+        left = rect.right + margin;
+      } else if (rect.left - margin - panelW >= 0) {
+        left = rect.left - margin - panelW;
+      } else {
+        left = Math.max(margin, (vw - panelW) / 2);
+      }
+
+      // Centrer verticalement par rapport à la carte, clamper dans le viewport
+      top = rect.top + (rect.height / 2) - (panelH / 2);
+      top = Math.max(margin, Math.min(top, vh - panelH - margin));
+
+      panel.style.position = 'fixed';
+      panel.style.top = top + 'px';
+      panel.style.left = left + 'px';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
     }
 
     /* ──────────────────────────────────────────
@@ -95,7 +118,6 @@
     ────────────────────────────────────────── */
     function closePanel() {
       panelOverlay.classList.remove('is-open');
-      unlockScroll();
     }
 
     /* ──────────────────────────────────────────

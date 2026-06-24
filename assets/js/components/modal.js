@@ -159,6 +159,7 @@
 
       // 2. Ouvrir — ordre: lock PUIS afficher (évite le flash)
       lockScroll();
+      overlay.scrollTop = 0;
       overlay.classList.add('is-open');
       overlay.setAttribute('aria-hidden', 'false');
       if (btnClose) setTimeout(() => btnClose.focus(), 50);
