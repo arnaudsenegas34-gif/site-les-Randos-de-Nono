@@ -205,9 +205,13 @@ endif;
             $m_cats      = get_the_terms( $m_id, 'categorie_matos' );
             $m_cat_name  = $m_cats && ! is_wp_error( $m_cats ) ? $m_cats[0]->name : '';
             $m_cat_slug  = $m_cats && ! is_wp_error( $m_cats ) ? $m_cats[0]->slug : '';
-            $m_thumb     = get_the_post_thumbnail_url( $m_id, 'medium' );
-            $m_thumb_lg  = get_the_post_thumbnail_url( $m_id, 'large' );
-            $m_desc      = wp_strip_all_tags( get_the_content() );
+            $m_thumb      = get_the_post_thumbnail_url( $m_id, 'medium' );
+            $m_thumb_lg   = get_the_post_thumbnail_url( $m_id, 'large' );
+            $m_desc       = wp_strip_all_tags( get_the_content() );
+            $m_largeur    = get_post_meta( $m_id, 'matos_largeur_cm', true );
+            $m_hauteur    = get_post_meta( $m_id, 'matos_hauteur_cm', true );
+            $m_importance = get_post_meta( $m_id, 'matos_importance', true );
+            if ( ! $m_importance ) $m_importance = '3';
             ?>
             <div class="matos-card"
                  data-cat="<?php echo esc_attr( $m_cat_slug ); ?>"
@@ -217,26 +221,28 @@ endif;
                  data-pourquoi="<?php echo esc_attr( $m_pourquoi ); ?>"
                  data-lien="<?php echo esc_attr( $m_lien ); ?>"
                  data-thumb="<?php echo esc_attr( $m_thumb_lg ?: $m_thumb ); ?>"
+                 data-largeur="<?php echo esc_attr( $m_largeur ); ?>"
+                 data-hauteur="<?php echo esc_attr( $m_hauteur ); ?>"
+                 data-importance="<?php echo esc_attr( $m_importance ); ?>"
                  role="button"
                  tabindex="0"
                  aria-label="Voir le détail de <?php the_title_attribute(); ?>">
               <div class="matos-img">
                 <?php if ( $m_thumb ) : ?>
-                  <img src="<?php echo esc_url( $m_thumb ); ?>" alt="<?php the_title_attribute(); ?>">
+                  <img src="<?php echo esc_url( $m_thumb ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy">
                 <?php else : ?>
                   <?php echo rando_nono_icon( 'backpack', 'icon-svg-lg' ); ?>
                 <?php endif; ?>
                 <?php if ( $m_essentiel ) : ?>
                   <span class="matos-badge-essentiel">Indispensable</span>
                 <?php endif; ?>
-                <div class="matos-img-overlay"><span>Voir le détail</span></div>
+                <div class="matos-img-overlay"><span>+</span></div>
               </div>
               <div class="matos-body">
                 <?php if ( $m_cat_name ) : ?>
                   <div class="matos-cat"><?php echo esc_html( $m_cat_name ); ?></div>
                 <?php endif; ?>
                 <div class="matos-name"><?php the_title(); ?></div>
-                <p class="matos-desc"><?php echo esc_html( wp_trim_words( $m_desc, 14 ) ); ?></p>
               </div>
             </div>
             <?php

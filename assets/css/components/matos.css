@@ -41,27 +41,30 @@
 }
 
 /* ══════════════════════════════════════════════
-   GRILLE — uniforme, pas de span-2
+   GRILLE — triée par taille, fond transparent
+   Le JS trie les cartes du plus grand au plus petit
+   et applique des tailles CSS variables.
 ══════════════════════════════════════════════ */
 .matos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.2rem;
-  align-items: start;
+  align-items: flex-start;
+  justify-content: center;
 }
 
-/* ── Carte matériel ── */
+/* ── Carte matériel — fond transparent ── */
 .matos-card {
-  background: #fff;
+  background: transparent;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 2px 8px rgba(26, 46, 31, 0.08);
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.28s ease;
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 0.32s ease;
   opacity: 0;
   transform: translateY(14px);
+  width: var(--card-w, 200px);
 }
 
 .matos-card.is-visible {
@@ -73,67 +76,54 @@
 }
 
 .matos-card:hover {
-  transform: translateY(-4px) scale(1.015);
-  box-shadow: 0 16px 36px rgba(46, 94, 59, 0.18);
+  transform: translateY(-6px) scale(1.04);
+  filter: drop-shadow(0 12px 24px rgba(46, 94, 59, 0.22));
+  z-index: 10;
 }
 
 /* Badge "Indispensable" */
 .matos-badge-essentiel {
   position: absolute;
-  top: 0.65rem;
-  left: 0.65rem;
+  top: 0.4rem;
+  left: 0.4rem;
   z-index: 3;
   background: var(--orange);
   color: #fff;
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 0.26rem 0.55rem;
+  padding: 0.22rem 0.5rem;
   border-radius: 20px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* ── Image — proportions naturelles, photo complète ── */
+/* ── Image — fond transparent, drop-shadow ── */
 .matos-img {
   position: relative;
   width: 100%;
-  background: linear-gradient(135deg, var(--vert), #3d7a4e);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(232, 223, 200, 0.3);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .matos-img img {
   width: 100%;
   height: auto;
   display: block;
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: drop-shadow(0 4px 10px rgba(26, 46, 31, 0.15));
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+              filter 0.3s ease;
 }
 
-/* ── Hover : zoom léger ── */
 .matos-card:hover .matos-img img {
   transform: scale(1.06);
+  filter: drop-shadow(0 8px 20px rgba(26, 46, 31, 0.22));
 }
 
-/* ── Hover : overlay sombre ── */
-.matos-img::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(26, 46, 31, 0);
-  transition: background 0.3s ease;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.matos-card:hover .matos-img::after {
-  background: rgba(26, 46, 31, 0.25);
-}
-
-/* ── Hover : effet scintillement (shimmer) ── */
+/* ── Effet scintillement (shimmer) au hover ── */
 .matos-img::before {
   content: '';
   position: absolute;
@@ -144,9 +134,9 @@
   background: linear-gradient(
     105deg,
     transparent 20%,
-    rgba(255, 255, 255, 0.25) 45%,
-    rgba(255, 255, 255, 0.4) 50%,
-    rgba(255, 255, 255, 0.25) 55%,
+    rgba(255, 255, 255, 0.3) 45%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.3) 55%,
     transparent 80%
   );
   z-index: 2;
@@ -163,7 +153,7 @@
   to   { left: 120%; }
 }
 
-/* ── Hover : icône "+" au centre ── */
+/* ── Icône "+" au centre — visible au hover ── */
 .matos-img-overlay {
   position: absolute;
   inset: 0;
@@ -181,18 +171,19 @@
 }
 
 .matos-img-overlay span {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   color: var(--vert);
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 300;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  transform: scale(0.7);
+  transform: scale(0.6);
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -200,39 +191,62 @@
   transform: scale(1);
 }
 
-/* ── Corps de la carte ── */
+/* ── Scintillement permanent discret (sparkle) ── */
+@keyframes matos-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.matos-card::after {
+  content: '+';
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(217, 119, 6, 0.85);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  box-shadow: 0 0 8px rgba(217, 119, 6, 0.4);
+  animation: matos-sparkle 2.5s ease-in-out infinite;
+  animation-delay: var(--sparkle-delay, 0s);
+  pointer-events: none;
+}
+
+.matos-card:hover::after {
+  opacity: 0;
+  animation: none;
+}
+
+/* ── Corps de la carte — minimaliste ── */
 .matos-body {
-  padding: 0.85rem 1rem 1rem;
+  padding: 0.5rem 0.2rem 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .matos-cat {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   color: var(--orange);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   font-weight: 700;
-  margin-bottom: 0.28rem;
+  margin-bottom: 0.15rem;
 }
 
 .matos-name {
   font-family: 'Abril Fatface', serif;
   color: var(--vert);
-  font-size: 0.98rem;
+  font-size: 0.85rem;
   line-height: 1.2;
-  margin-bottom: 0.35rem;
-}
-
-.matos-desc {
-  font-size: 0.76rem;
-  color: var(--gris);
-  font-weight: 300;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 /* ── Carte cachée par le filtre ── */
@@ -413,8 +427,13 @@
 ══════════════════════════════════════════════ */
 @media (max-width: 900px) {
   .matos-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.8rem;
+  }
+
+  .matos-card {
+    width: auto !important;
   }
 
   .matos-panel {
@@ -440,5 +459,11 @@
   .matos-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.6rem;
+  }
+
+  .matos-card::after {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
   }
 }

@@ -1,6 +1,6 @@
 /**
  * matos.js — Les Randos de Nono
- * Modal détail matériel, filtres dynamiques, animations.
+ * Modal détail matériel, filtres dynamiques, tri par taille, animations.
  */
 
 (function () {
@@ -8,15 +8,61 @@
 
   document.addEventListener('DOMContentLoaded', function () {
 
-    const panelOverlay = document.getElementById('matos-panel-overlay');
-    const panel        = document.getElementById('matos-panel');
+    var panelOverlay = document.getElementById('matos-panel-overlay');
+    var panel        = document.getElementById('matos-panel');
 
     if (!panelOverlay || !panel) return;
 
-    const btnClose   = document.getElementById('matos-panel-close');
-    const cards      = document.querySelectorAll('.matos-card');
-    const filterBtns = document.querySelectorAll('.matos-filter-btn');
+    var btnClose   = document.getElementById('matos-panel-close');
+    var grid       = document.getElementById('matos-grid');
+    var cards      = Array.from(document.querySelectorAll('.matos-card'));
+    var filterBtns = document.querySelectorAll('.matos-filter-btn');
 
+    /* ──────────────────────────────────────────
+       TRI PAR TAILLE + dimensionnement
+       Plus grand en haut à gauche, plus petit en bas à droite.
+       La taille d'affichage est calculée à partir des
+       dimensions réelles (cm) et de l'importance.
+    ────────────────────────────────────────── */
+    var IMPORTANCE_SCALE = [0.55, 0.72, 1, 1.3, 1.6];
+    var MIN_W = 100;
+    var MAX_W = 280;
+    var BASE_W = 180;
+
+    function getCardScore(card) {
+      var w = parseFloat(card.dataset.largeur) || 20;
+      var h = parseFloat(card.dataset.hauteur) || 15;
+      var imp = parseInt(card.dataset.importance || '3', 10);
+      var scale = IMPORTANCE_SCALE[Math.min(Math.max(imp, 1), 5) - 1] || 1;
+      return Math.max(w, h) * scale;
+    }
+
+    function sortAndSizeCards() {
+      cards.sort(function (a, b) {
+        return getCardScore(b) - getCardScore(a);
+      });
+
+      var maxScore = 0;
+      cards.forEach(function (c) {
+        var s = getCardScore(c);
+        if (s > maxScore) maxScore = s;
+      });
+      if (maxScore === 0) maxScore = 1;
+
+      cards.forEach(function (card, i) {
+        var ratio = getCardScore(card) / maxScore;
+        var cardW = MIN_W + ratio * (MAX_W - MIN_W);
+        card.style.setProperty('--card-w', Math.round(cardW) + 'px');
+        card.style.setProperty('--sparkle-delay', (i * 0.4) + 's');
+        grid.appendChild(card);
+      });
+    }
+
+    sortAndSizeCards();
+
+    /* ──────────────────────────────────────────
+       PANEL DÉTAIL — inchangé
+    ────────────────────────────────────────── */
     function lockScroll() {
       var sbw = window.innerWidth - document.documentElement.clientWidth;
       if (sbw > 0) document.body.style.paddingRight = sbw + 'px';
@@ -29,10 +75,10 @@
     }
 
     function openPanel(card) {
-      const d = card.dataset;
+      var d = card.dataset;
 
-      const imgEl = panel.querySelector('#matos-panel-img img');
-      const imgWrap = panel.querySelector('#matos-panel-img');
+      var imgEl = panel.querySelector('#matos-panel-img img');
+      var imgWrap = panel.querySelector('#matos-panel-img');
       if (imgEl && imgWrap) {
         if (d.thumb) {
           imgEl.src = d.thumb;
@@ -48,8 +94,8 @@
       _setText('matos-panel-name', d.name || '');
       _setText('matos-panel-desc', d.desc || '');
 
-      const pourquoiEl = panel.querySelector('.matos-panel-pourquoi');
-      const pourquoiText = panel.querySelector('.matos-panel-pourquoi p');
+      var pourquoiEl = panel.querySelector('.matos-panel-pourquoi');
+      var pourquoiText = panel.querySelector('.matos-panel-pourquoi p');
       if (pourquoiEl && pourquoiText) {
         if (d.pourquoi) {
           pourquoiEl.style.display = '';
@@ -59,7 +105,7 @@
         }
       }
 
-      const linkEl = panel.querySelector('.matos-panel-link');
+      var linkEl = panel.querySelector('.matos-panel-link');
       if (linkEl) {
         if (d.lien) {
           linkEl.href = d.lien;
@@ -80,6 +126,9 @@
       unlockScroll();
     }
 
+    /* ──────────────────────────────────────────
+       ÉVÉNEMENTS — CARTES
+    ────────────────────────────────────────── */
     cards.forEach(function (card) {
       card.addEventListener('click', function () { openPanel(card); });
       card.addEventListener('keydown', function (e) {
@@ -87,6 +136,9 @@
       });
     });
 
+    /* ──────────────────────────────────────────
+       ÉVÉNEMENTS — FERMETURE
+    ────────────────────────────────────────── */
     if (btnClose) btnClose.addEventListener('click', closePanel);
 
     panelOverlay.addEventListener('click', function (e) {
@@ -97,6 +149,9 @@
       if (e.key === 'Escape' && panelOverlay.classList.contains('is-open')) closePanel();
     });
 
+    /* ──────────────────────────────────────────
+       FILTRES DYNAMIQUES
+    ────────────────────────────────────────── */
     filterBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         filterBtns.forEach(function (b) { b.classList.remove('active'); });
@@ -119,6 +174,9 @@
       });
     });
 
+    /* ──────────────────────────────────────────
+       ANIMATION D'APPARITION AU SCROLL
+    ────────────────────────────────────────── */
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (!prefersReducedMotion) {

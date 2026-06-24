@@ -258,6 +258,7 @@ add_action( 'init', 'rando_nono_register_matos_cpt' );
 
 function rando_nono_matos_meta_box() {
     add_meta_box( 'rando_nono_matos_lien', 'Lien produit (optionnel)', 'rando_nono_matos_lien_callback', 'matos', 'normal', 'high' );
+    add_meta_box( 'rando_nono_matos_dimensions', 'Dimensions & importance', 'rando_nono_matos_dimensions_callback', 'matos', 'normal', 'default' );
     add_meta_box( 'rando_nono_matos_essentiel', 'Indispensable', 'rando_nono_matos_essentiel_callback', 'matos', 'side', 'high' );
 }
 add_action( 'add_meta_boxes', 'rando_nono_matos_meta_box' );
@@ -270,6 +271,27 @@ function rando_nono_matos_lien_callback( $post ) {
     echo '<input type="text" style="width:100%" id="matos_lien" name="matos_lien" value="' . esc_attr( $lien ) . '" /></p>';
     echo '<p style="margin-top:1rem"><label for="matos_pourquoi"><strong>Pourquoi je l\'utilise</strong> (l\'avantage concret que tu en tires)</label><br>';
     echo '<textarea style="width:100%;height:80px" id="matos_pourquoi" name="matos_pourquoi">' . esc_textarea( $pourquoi ) . '</textarea></p>';
+}
+
+function rando_nono_matos_dimensions_callback( $post ) {
+    $largeur = get_post_meta( $post->ID, 'matos_largeur_cm', true );
+    $hauteur = get_post_meta( $post->ID, 'matos_hauteur_cm', true );
+    $importance = get_post_meta( $post->ID, 'matos_importance', true );
+    if ( ! $importance ) $importance = '3';
+    echo '<p style="color:#6B6B5E;font-size:12px;margin-bottom:8px">Ces dimensions servent à trier et dimensionner les objets sur la page (les plus grands en premier). Laisse vide pour une taille par défaut.</p>';
+    echo '<table class="form-table"><tr>';
+    echo '<th><label for="matos_largeur_cm">Largeur (cm)</label></th>';
+    echo '<td><input type="number" step="0.1" min="0" style="width:100px" id="matos_largeur_cm" name="matos_largeur_cm" value="' . esc_attr( $largeur ) . '" placeholder="30" /></td>';
+    echo '<th><label for="matos_hauteur_cm">Hauteur (cm)</label></th>';
+    echo '<td><input type="number" step="0.1" min="0" style="width:100px" id="matos_hauteur_cm" name="matos_hauteur_cm" value="' . esc_attr( $hauteur ) . '" placeholder="20" /></td>';
+    echo '</tr><tr>';
+    echo '<th><label for="matos_importance">Importance visuelle (1-5)</label></th>';
+    echo '<td><select id="matos_importance" name="matos_importance">';
+    for ( $i = 1; $i <= 5; $i++ ) {
+        echo '<option value="' . $i . '"' . selected( $importance, $i, false ) . '>' . $i . '</option>';
+    }
+    echo '</select><span style="color:#6B6B5E;font-size:12px;margin-left:8px">1 = petit accessoire, 5 = pièce maîtresse</span></td>';
+    echo '</tr></table>';
 }
 
 function rando_nono_matos_essentiel_callback( $post ) {
@@ -286,6 +308,11 @@ function rando_nono_matos_save( $post_id ) {
     }
     if ( isset( $_POST['matos_pourquoi'] ) ) {
         update_post_meta( $post_id, 'matos_pourquoi', sanitize_textarea_field( $_POST['matos_pourquoi'] ) );
+    }
+    foreach ( array( 'matos_largeur_cm', 'matos_hauteur_cm', 'matos_importance' ) as $dim_field ) {
+        if ( isset( $_POST[ $dim_field ] ) ) {
+            update_post_meta( $post_id, $dim_field, sanitize_text_field( $_POST[ $dim_field ] ) );
+        }
     }
     update_post_meta( $post_id, 'matos_essentiel', isset( $_POST['matos_essentiel'] ) ? '1' : '' );
 }
