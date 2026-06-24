@@ -1,6 +1,6 @@
 /**
  * matos.js — Les Randos de Nono
- * Panneau latéral détail matériel, filtres dynamiques, animations.
+ * Modal détail matériel, filtres dynamiques, animations.
  */
 
 (function () {
@@ -8,9 +8,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
 
-    /* ──────────────────────────────────────────
-       RÉFÉRENCES DOM
-    ────────────────────────────────────────── */
     const panelOverlay = document.getElementById('matos-panel-overlay');
     const panel        = document.getElementById('matos-panel');
 
@@ -20,29 +17,20 @@
     const cards      = document.querySelectorAll('.matos-card');
     const filterBtns = document.querySelectorAll('.matos-filter-btn');
 
-    let _savedScrollY = 0;
-
-    /* ──────────────────────────────────────────
-       SCROLL LOCK (même méthode que modal.js)
-    ────────────────────────────────────────── */
     function lockScroll() {
-      const sbw = window.innerWidth - document.documentElement.clientWidth;
+      var sbw = window.innerWidth - document.documentElement.clientWidth;
       if (sbw > 0) document.body.style.paddingRight = sbw + 'px';
-      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
     }
 
     function unlockScroll() {
-      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
       document.body.style.paddingRight = '';
     }
 
-    /* ──────────────────────────────────────────
-       OUVERTURE DU PANEL
-    ────────────────────────────────────────── */
     function openPanel(card) {
       const d = card.dataset;
 
-      // Image
       const imgEl = panel.querySelector('#matos-panel-img img');
       const imgWrap = panel.querySelector('#matos-panel-img');
       if (imgEl && imgWrap) {
@@ -56,12 +44,10 @@
         }
       }
 
-      // Textes
-      _setText('matos-panel-cat',  d.cat  || '');
+      _setText('matos-panel-cat',  d.catLabel || d.cat || '');
       _setText('matos-panel-name', d.name || '');
       _setText('matos-panel-desc', d.desc || '');
 
-      // Pourquoi
       const pourquoiEl = panel.querySelector('.matos-panel-pourquoi');
       const pourquoiText = panel.querySelector('.matos-panel-pourquoi p');
       if (pourquoiEl && pourquoiText) {
@@ -73,7 +59,6 @@
         }
       }
 
-      // Lien produit
       const linkEl = panel.querySelector('.matos-panel-link');
       if (linkEl) {
         if (d.lien) {
@@ -84,59 +69,49 @@
         }
       }
 
-      // Ouvrir
       lockScroll();
+      panel.scrollTop = 0;
       panelOverlay.classList.add('is-open');
-      if (btnClose) btnClose.focus();
+      if (btnClose) btnClose.focus({ preventScroll: true });
     }
 
-    /* ──────────────────────────────────────────
-       FERMETURE
-    ────────────────────────────────────────── */
     function closePanel() {
       panelOverlay.classList.remove('is-open');
       unlockScroll();
     }
 
-    /* ──────────────────────────────────────────
-       ÉVÉNEMENTS — CARTES
-    ────────────────────────────────────────── */
-    cards.forEach(card => {
-      card.addEventListener('click', () => openPanel(card));
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () { openPanel(card); });
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPanel(card); }
+      });
     });
 
-    /* ──────────────────────────────────────────
-       ÉVÉNEMENTS — FERMETURE
-    ────────────────────────────────────────── */
     if (btnClose) btnClose.addEventListener('click', closePanel);
 
-    panelOverlay.addEventListener('click', (e) => {
+    panelOverlay.addEventListener('click', function (e) {
       if (e.target === panelOverlay) closePanel();
     });
 
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && panelOverlay.classList.contains('is-open')) closePanel();
     });
 
-    /* ──────────────────────────────────────────
-       FILTRES DYNAMIQUES
-    ────────────────────────────────────────── */
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
+    filterBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        filterBtns.forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
 
-        const filter = btn.dataset.filter;
-        let delay = 0;
+        var filter = btn.dataset.filter;
+        var delay = 0;
 
-        cards.forEach(card => {
-          const matches = filter === '*' || card.dataset.cat === filter;
+        cards.forEach(function (card) {
+          var matches = filter === '*' || card.dataset.cat === filter;
           if (matches) {
             card.classList.remove('matos-hidden');
-            // Réanimer les cartes qui réapparaissent
             card.classList.remove('is-visible');
-            setTimeout(() => card.classList.add('is-visible'), delay);
-            delay += 30; // décalage en cascade
+            setTimeout(function () { card.classList.add('is-visible'); }, delay);
+            delay += 30;
           } else {
             card.classList.add('matos-hidden');
           }
@@ -144,14 +119,11 @@
       });
     });
 
-    /* ──────────────────────────────────────────
-       ANIMATION D'APPARITION AU SCROLL
-    ────────────────────────────────────────── */
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (!prefersReducedMotion) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
             observer.unobserve(entry.target);
@@ -159,16 +131,13 @@
         });
       }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
 
-      cards.forEach(card => observer.observe(card));
+      cards.forEach(function (card) { observer.observe(card); });
     } else {
-      cards.forEach(card => card.classList.add('is-visible'));
+      cards.forEach(function (card) { card.classList.add('is-visible'); });
     }
 
-    /* ──────────────────────────────────────────
-       UTILITAIRE
-    ────────────────────────────────────────── */
     function _setText(id, value) {
-      const el = document.getElementById(id);
+      var el = document.getElementById(id);
       if (el) el.textContent = value;
     }
 
