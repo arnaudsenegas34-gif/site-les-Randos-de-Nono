@@ -19,31 +19,21 @@
 
     var currentSlide = 0;
     var totalSlides  = 0;
-    var _savedScrollY = 0;
-
     function lockScroll() {
-      _savedScrollY = window.scrollY;
       var sbw = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.position = 'fixed';
-      document.body.style.top = -_savedScrollY + 'px';
-      document.body.style.left = '0';
-      document.body.style.right = '0';
       if (sbw > 0) {
         document.body.style.paddingRight = sbw + 'px';
         var header = document.querySelector('.site-header');
         if (header) header.style.paddingRight = sbw + 'px';
       }
+      document.body.style.overflow = 'hidden';
     }
 
     function unlockScroll() {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
+      document.body.style.overflow = '';
       document.body.style.paddingRight = '';
       var header = document.querySelector('.site-header');
       if (header) header.style.paddingRight = '';
-      window.scrollTo(0, _savedScrollY);
     }
 
     function open(source) {
@@ -139,7 +129,7 @@
       overlay.scrollTop = 0;
       overlay.classList.add('is-open');
       overlay.setAttribute('aria-hidden', 'false');
-      if (btnClose) setTimeout(function () { btnClose.focus(); }, 280);
+      if (btnClose) btnClose.focus({ preventScroll: true });
     }
 
     function close() {

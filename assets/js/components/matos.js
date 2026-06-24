@@ -17,25 +17,15 @@
     const cards      = document.querySelectorAll('.matos-card');
     const filterBtns = document.querySelectorAll('.matos-filter-btn');
 
-    let _savedScrollY = 0;
-
     function lockScroll() {
-      _savedScrollY = window.scrollY;
-      const sbw = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.position = 'fixed';
-      document.body.style.top = -_savedScrollY + 'px';
-      document.body.style.left = '0';
-      document.body.style.right = '0';
+      var sbw = window.innerWidth - document.documentElement.clientWidth;
       if (sbw > 0) document.body.style.paddingRight = sbw + 'px';
+      document.body.style.overflow = 'hidden';
     }
 
     function unlockScroll() {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
+      document.body.style.overflow = '';
       document.body.style.paddingRight = '';
-      window.scrollTo(0, _savedScrollY);
     }
 
     function openPanel(card) {
@@ -82,7 +72,7 @@
       lockScroll();
       panel.scrollTop = 0;
       panelOverlay.classList.add('is-open');
-      if (btnClose) setTimeout(function () { btnClose.focus(); }, 280);
+      if (btnClose) btnClose.focus({ preventScroll: true });
     }
 
     function closePanel() {
