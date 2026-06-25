@@ -96,6 +96,7 @@ if ( ! $featured_query->have_posts() ) {
           <div class="derniere-actions">
             <button class="btn js-open-modal-featured"
               data-id="<?php echo esc_attr( $fid ); ?>"
+              data-url="<?php echo esc_url( get_permalink( $fid ) ); ?>"
               data-slug="<?php echo esc_attr( get_post_field( 'post_name', $fid ) ); ?>"
               data-titre="<?php echo esc_attr( $f_titre ); ?>"
               data-lieu="<?php echo esc_attr( $f_lieu ); ?>"

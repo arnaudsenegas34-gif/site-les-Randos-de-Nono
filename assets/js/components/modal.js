@@ -119,10 +119,9 @@
         }
       }
 
-      var permalink = d.permalink || (window.location.origin + '/randonnee/' + (source.dataset.slug || d.id || '') + '/');
       var pageLink = document.getElementById('rando-modal-page-link');
       if (pageLink) {
-        pageLink.href = d.url || (window.location.origin + '/randonnee/' + (d.slug || d.id || '') + '/');
+        pageLink.href = d.url || '#';
       }
 
 
