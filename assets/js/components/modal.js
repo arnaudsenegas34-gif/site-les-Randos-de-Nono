@@ -48,6 +48,15 @@
       _setText('rando-modal-denivele', d.denivele || '—');
       _setText('rando-modal-duree',    d.duree    || '—');
       _setText('rando-modal-date',     d.date     || '—');
+      var saisonCard = document.getElementById('rando-modal-saison-card');
+      if (saisonCard) {
+        if (d.saison) {
+          _setText('rando-modal-saison', d.saison);
+          saisonCard.style.display = '';
+        } else {
+          saisonCard.style.display = 'none';
+        }
+      }
       _setText('rando-modal-recit',    d.recit    || '');
 
       var badge = document.getElementById('rando-modal-diff-badge');

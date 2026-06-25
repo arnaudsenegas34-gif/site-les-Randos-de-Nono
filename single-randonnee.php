@@ -11,8 +11,9 @@ $distance     = get_post_meta( $id, 'rando_distance', true );
 $denivele     = get_post_meta( $id, 'rando_denivele', true );
 $denivele_neg = get_post_meta( $id, 'rando_denivele_neg', true );
 $duree        = get_post_meta( $id, 'rando_duree', true );
-$date_sortie  = get_post_meta( $id, 'rando_date', true );
-$maps_url     = get_post_meta( $id, 'rando_maps_url', true );
+$date_sortie       = get_post_meta( $id, 'rando_date', true );
+$meilleure_saison  = get_post_meta( $id, 'rando_meilleure_saison', true );
+$maps_url          = get_post_meta( $id, 'rando_maps_url', true );
 $gpx_url      = get_post_meta( $id, 'rando_gpx_url', true );
 $photos_raw   = get_post_meta( $id, 'rando_photos', true );
 $sac_raw      = get_post_meta( $id, 'rando_sac', true );
@@ -95,6 +96,13 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
         <div class="sr-meta-icon"><?php echo rando_nono_icon( 'calendar' ); ?></div>
         <div class="sr-meta-label">Date</div>
         <div class="sr-meta-value"><?php echo esc_html( $date_sortie ); ?></div>
+      </div>
+      <?php endif; ?>
+      <?php if ( $meilleure_saison ) : ?>
+      <div class="sr-meta-card sr-meta-card-saison">
+        <div class="sr-meta-icon"><?php echo rando_nono_icon( 'thermometer' ); ?></div>
+        <div class="sr-meta-label">Meilleure saison</div>
+        <div class="sr-meta-value"><?php echo esc_html( $meilleure_saison ); ?></div>
       </div>
       <?php endif; ?>
     </div>
