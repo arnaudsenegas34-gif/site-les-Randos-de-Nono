@@ -12,44 +12,92 @@ get_header();
 
     <h2>Éditeur du site</h2>
     <p>
-      Le site <strong>Les Randos de Nono</strong> est un site personnel, non commercial,
-      édité par une personne physique dans le cadre de son activité de loisir.<br>
-      Contact : <a href="mailto:<?php echo antispambot( get_option( 'admin_email' ) ); ?>"><?php echo antispambot( get_option( 'admin_email' ) ); ?></a>
+      <strong>Nom du site :</strong> Les Randos de Nono<br>
+      <strong>Responsable de la publication :</strong> Arnaud SENEGAS<br>
+      <strong>Adresse e-mail :</strong> <a href="mailto:arnaud.senegas34@gmail.com">arnaud.senegas34@gmail.com</a>
     </p>
+    <p>Le site est édité à titre personnel et non professionnel.</p>
+
+    <hr>
 
     <h2>Hébergement</h2>
-    <p>
-      Ce site est hébergé par :<br>
-      <?php echo esc_html( get_option( 'rando_nono_hebergeur', 'À compléter dans Réglages > Mentions légales' ) ); ?>
-    </p>
+    <p>Le site est hébergé par InfinityFree.</p>
+    <p>Pour plus d'informations sur l'hébergeur, consultez leur site officiel : <a href="https://www.infinityfree.com" target="_blank" rel="noopener">https://www.infinityfree.com</a></p>
+
+    <hr>
 
     <h2>Propriété intellectuelle</h2>
     <p>
-      L'ensemble des contenus (textes, photographies, traces GPX, illustrations)
-      publiés sur ce site est la propriété de l'éditeur, sauf mention contraire.
-      Toute reproduction, même partielle, est interdite sans autorisation préalable.
+      L'ensemble des contenus présents sur le site Les Randos de Nono, notamment les textes, photographies,
+      traces GPS/GPX, cartes, logos et éléments graphiques, est protégé par les dispositions du Code de la propriété intellectuelle.
+    </p>
+    <p>
+      Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site,
+      quel que soit le moyen ou le procédé utilisé, est interdite sans autorisation préalable de l'auteur.
     </p>
 
-    <h2>Données personnelles</h2>
-    <p>
-      Ce site ne collecte aucune donnée personnelle. Aucun cookie de traçage
-      n'est déposé. Seuls les cookies techniques indispensables au fonctionnement
-      de WordPress peuvent être utilisés.
-    </p>
+    <hr>
 
     <h2>Responsabilité</h2>
+    <p>Les informations, itinéraires, traces GPX, cartes et conseils publiés sur ce site sont fournis à titre informatif.</p>
     <p>
-      Les informations fournies (tracés, durées, dénivelés) le sont à titre
-      indicatif. L'éditeur décline toute responsabilité en cas d'accident
-      survenu lors de la pratique d'une randonnée décrite sur ce site.
-      Chaque randonneur reste responsable de sa propre sécurité.
+      La randonnée est une activité comportant des risques. Chaque utilisateur est seul responsable de sa sécurité,
+      de son équipement, de sa condition physique, de son orientation et du respect de la réglementation en vigueur.
+    </p>
+    <p>Les sentiers, conditions météorologiques, accès et réglementations peuvent évoluer après la publication des informations.</p>
+    <p>
+      Le responsable du site ne saurait être tenu responsable des accidents, blessures, pertes, dommages matériels
+      ou immatériels résultant de l'utilisation des informations diffusées sur ce site.
     </p>
 
-    <h2>Crédits</h2>
+    <hr>
+
+    <h2>Données personnelles</h2>
+    <p>Ce site ne dispose pas de formulaire de contact et ne collecte pas volontairement de données personnelles auprès des visiteurs.</p>
+    <p>Si vous contactez le responsable du site par courrier électronique, les informations transmises seront utilisées uniquement pour répondre à votre demande.</p>
     <p>
-      Cartographie : <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &amp; Leaflet.<br>
-      Données météo : OpenWeatherMap (si applicable).
+      Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès,
+      de rectification et de suppression des données vous concernant.
     </p>
+    <p>Pour toute demande relative à vos données personnelles :</p>
+    <p><a href="mailto:arnaud.senegas34@gmail.com">arnaud.senegas34@gmail.com</a></p>
+
+    <hr>
+
+    <h2>Cookies</h2>
+    <p>Le site peut utiliser des cookies techniques nécessaires à son bon fonctionnement.</p>
+    <p>Des services tiers intégrés au site peuvent également déposer des cookies, notamment :</p>
+    <ul>
+      <li>les services de cartographie OpenStreetMap ;</li>
+      <li>les services d'affichage des données météorologiques ;</li>
+      <li>les boutons ou liens de partage vers les réseaux sociaux.</li>
+    </ul>
+    <p>L'utilisateur peut configurer son navigateur afin de refuser tout ou partie des cookies.</p>
+
+    <hr>
+
+    <h2>Services tiers</h2>
+    <p>Le site utilise des services externes pour certaines fonctionnalités :</p>
+    <ul>
+      <li>OpenStreetMap pour l'affichage des cartes interactives ;</li>
+      <li>des fournisseurs de données météorologiques pour l'affichage des conditions météo ;</li>
+      <li>des plateformes de réseaux sociaux via des liens de partage.</li>
+    </ul>
+    <p>Ces services disposent de leurs propres politiques de confidentialité et conditions d'utilisation.</p>
+
+    <hr>
+
+    <h2>Liens externes</h2>
+    <p>
+      Le site peut contenir des liens vers des sites externes. Le responsable du site ne peut être tenu responsable
+      du contenu, des modifications ou du fonctionnement de ces sites tiers.
+    </p>
+
+    <hr>
+
+    <h2>Droit applicable</h2>
+    <p>Le présent site est soumis au droit français.</p>
+    <p>Tout litige relatif à son utilisation relève de la compétence des juridictions françaises.</p>
   </article>
 </main>
 
