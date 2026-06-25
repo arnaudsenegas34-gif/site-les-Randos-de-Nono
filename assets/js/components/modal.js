@@ -333,30 +333,64 @@
       51:'🌦',53:'🌧',55:'🌧',61:'🌧',63:'🌧',65:'🌧',
       71:'❄️',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',96:'⛈',99:'⛈'
     };
+    var WX_DESC = {
+      0:'Ciel dégagé',1:'Peu nuageux',2:'Partiellement nuageux',3:'Couvert',
+      45:'Brouillard',48:'Brouillard givrant',
+      51:'Bruine légère',53:'Bruine',55:'Bruine forte',
+      61:'Pluie légère',63:'Pluie',65:'Pluie forte',
+      71:'Neige légère',73:'Neige',75:'Neige forte',
+      80:'Averses légères',81:'Averses',82:'Averses fortes',
+      95:'Orage',96:'Orage & grêle',99:'Orage & grêle fort'
+    };
     var JOURS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 
     function _fetchMeteo(lat, lon, lieu, container) {
-      fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weathercode&daily=weathercode,temperature_2m_max&timezone=Europe/Paris&forecast_days=7')
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weathercode&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe/Paris&forecast_days=7')
         .then(function (r) { return r.json(); })
         .then(function (data) {
           var icon = WX[data.current.weathercode] || '🌤';
           var temp = Math.round(data.current.temperature_2m);
+          var desc = WX_DESC[data.current.weathercode] || '';
+
+          var slotHours = [8, 12, 15, 20];
+          var slotLabels = ['Matin', 'Midi', 'Après-midi', 'Soir'];
+          var currentHour = new Date().getHours();
+          var activeSlot = currentHour < 10 ? 0 : currentHour < 13 ? 1 : currentHour < 18 ? 2 : 3;
+
+          var slotsHtml = slotLabels.map(function (label, i) {
+            var idx = slotHours[i];
+            var slotTemp = Math.round(data.hourly.temperature_2m[idx]);
+            var slotIcon = WX[data.hourly.weathercode[idx]] || '🌤';
+            return '<div class="meteo-slot' + (i === activeSlot ? ' active' : '') + '">' +
+              '<div class="slot-label">' + label + '</div>' +
+              '<div class="slot-icon">' + slotIcon + '</div>' +
+              '<div class="slot-temp">' + slotTemp + '°</div>' +
+            '</div>';
+          }).join('');
+
           var days = data.daily.time.map(function (t, i) {
             var d = new Date(t);
             return '<div class="meteo-day' + (i === 0 ? ' today' : '') + '">' +
-              '<div>' + JOURS[d.getDay()] + '</div>' +
+              '<div class="day-name">' + JOURS[d.getDay()] + '</div>' +
               '<div class="icon">' + (WX[data.daily.weathercode[i]] || '🌤') + '</div>' +
-              '<div class="temp">' + Math.round(data.daily.temperature_2m_max[i]) + '°</div>' +
+              '<div class="temp-range">' +
+                '<span class="temp-max">' + Math.round(data.daily.temperature_2m_max[i]) + '°</span>' +
+                '<span class="temp-min">' + Math.round(data.daily.temperature_2m_min[i]) + '°</span>' +
+              '</div>' +
             '</div>';
           }).join('');
+
           container.innerHTML =
             '<div class="meteo-now">' +
               '<div class="big-icon">' + icon + '</div>' +
               '<div>' +
                 '<div class="now-lieu">Maintenant à ' + _esc(lieu) + '</div>' +
                 '<div class="now-temp">' + temp + '°C</div>' +
+                (desc ? '<div class="now-desc">' + _esc(desc) + '</div>' : '') +
               '</div>' +
             '</div>' +
+            '<div class="meteo-today-title">Aujourd\'hui</div>' +
+            '<div class="meteo-slots">' + slotsHtml + '</div>' +
             '<div class="meteo-week-title">Prévisions 7 jours</div>' +
             '<div class="meteo-days">' + days + '</div>';
         })

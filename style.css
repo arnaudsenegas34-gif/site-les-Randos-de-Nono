@@ -320,13 +320,27 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .meteo-now .now-desc { font-size: 0.78rem; color: rgba(232,223,200,0.7); font-weight: 300; }
 .meteo-now .now-lieu { font-size: 0.62rem; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.2rem; }
 
+.meteo-today-title { font-size: 0.62rem; color: var(--gris); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+.meteo-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 1.25rem; }
+.meteo-slot { background: var(--beige); border-radius: 5px; padding: 0.65rem 0.3rem; text-align: center; }
+.meteo-slot.active { background: var(--vert); color: #fff; }
+.slot-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); margin-bottom: 0.25rem; }
+.meteo-slot.active .slot-label { color: rgba(232,223,200,0.7); }
+.slot-icon { font-size: 1.3rem; margin-bottom: 0.15rem; }
+.slot-temp { font-weight: 700; font-size: 0.85rem; color: var(--sombre); }
+.meteo-slot.active .slot-temp { color: #fff; }
+
 .meteo-week-title { font-size: 0.62rem; color: var(--gris); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
 .meteo-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.3rem; }
 .meteo-day { background: var(--beige); border-radius: 3px; padding: 0.45rem 0.15rem; text-align: center; font-size: 0.62rem; color: var(--gris); }
 .meteo-day .icon { font-size: 1.1rem; }
-.meteo-day .temp { font-weight: 700; color: var(--sombre); font-size: 0.7rem; }
+.meteo-day .day-name { font-weight: 700; }
+.meteo-day .temp-range { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
+.meteo-day .temp-max { font-weight: 700; color: var(--sombre); font-size: 0.7rem; }
+.meteo-day .temp-min { font-weight: 400; color: var(--gris); font-size: 0.6rem; }
 .meteo-day.today { background: var(--orange); color: #fff; }
-.meteo-day.today .temp { color: #fff; }
+.meteo-day.today .temp-max { color: #fff; }
+.meteo-day.today .temp-min { color: rgba(255,255,255,0.7); }
 .meteo-loading { font-size: 0.8rem; color: var(--gris); font-style: italic; padding: 1rem 0; }
 
 /* ══════════════════════ DERNIÈRE RANDONNÉE ══════════════════════ */
@@ -518,6 +532,9 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
   .nav-buttons { display: none; }
   .menu-toggle { display: block; }
   .site-footer { flex-direction: column; text-align: center; padding: 1.75rem; }
+  .meteo-slots { grid-template-columns: repeat(4, 1fr); gap: 0.3rem; }
+  .slot-label { font-size: 0.52rem; }
+  .slot-temp { font-size: 0.75rem; }
   .meteo-days { grid-template-columns: repeat(4, 1fr); }
   .derniere-card { grid-template-columns: 1fr; }
   .derniere-img-wrap { min-height: 240px; }
