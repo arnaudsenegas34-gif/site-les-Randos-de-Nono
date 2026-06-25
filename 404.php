@@ -37,7 +37,7 @@ rando_nono_breadcrumb();
           $lieu  = get_post_meta( get_the_ID(), 'rando_lieu', true );
           $dist  = get_post_meta( get_the_ID(), 'rando_distance', true );
           ?>
-          <div class="error-404-card">
+          <a href="<?php echo esc_url( get_permalink() ); ?>" class="error-404-card">
             <?php if ( $thumb ) : ?>
               <div class="error-404-thumb" style="background-image:url('<?php echo esc_url( $thumb ); ?>')"></div>
             <?php else : ?>
@@ -49,7 +49,7 @@ rando_nono_breadcrumb();
                 <div class="error-404-card-meta"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $lieu ); ?><?php if ( $dist ) echo ' · ' . esc_html( $dist ); ?></div>
               <?php endif; ?>
             </div>
-          </div>
+          </a>
         <?php endwhile; wp_reset_postdata(); ?>
       </div>
     </div>

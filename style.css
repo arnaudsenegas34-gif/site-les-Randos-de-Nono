@@ -464,7 +464,8 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .error-404-suggestions { text-align: left; }
 .error-404-suggest-title { font-size: 0.8rem; color: var(--gris); font-weight: 300; text-align: center; margin-bottom: 1.25rem; letter-spacing: 0.04em; }
 .error-404-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.error-404-card { background: var(--beige); border-radius: 5px; overflow: hidden; }
+.error-404-card { background: var(--beige); border-radius: 5px; overflow: hidden; display: block; text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; }
+.error-404-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(26,46,31,0.12); }
 .error-404-thumb { height: 100px; background-size: cover; background-position: center; }
 .error-404-thumb-placeholder { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--vert), #3d7a4e); color: rgba(232,223,200,0.4); }
 .error-404-card-body { padding: 0.75rem 0.85rem; }
