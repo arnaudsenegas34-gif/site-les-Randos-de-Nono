@@ -115,24 +115,6 @@
         pageLink.href = window.location.origin + '/randonnee/' + (source.dataset.slug || d.id || '') + '/';
       }
 
-      var pageUrl   = encodeURIComponent(window.location.origin + '/randonnee/' + (source.dataset.slug || d.id || '') + '/');
-      var pageTitle = encodeURIComponent(d.titre || 'Randonnée — Les Randos de Nono');
-      _setHref('share-whatsapp', 'https://wa.me/?text=' + pageTitle + '%20' + pageUrl);
-      _setHref('share-facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + pageUrl);
-      var btnCopy = document.getElementById('share-copy');
-      if (btnCopy) {
-        btnCopy.onclick = function () {
-          navigator.clipboard.writeText(decodeURIComponent(pageUrl)).then(function () {
-            btnCopy.classList.add('copied');
-            var lbl = document.getElementById('share-copy-label');
-            if (lbl) lbl.textContent = 'Lien copié !';
-            setTimeout(function () {
-              btnCopy.classList.remove('copied');
-              if (lbl) lbl.textContent = 'Copier le lien';
-            }, 2000);
-          });
-        };
-      }
 
       overlay.querySelectorAll('.modal-tab').forEach(function (t) { t.classList.remove('active'); });
       overlay.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
@@ -387,10 +369,6 @@
     function _setText(id, v) {
       var el = document.getElementById(id);
       if (el) el.textContent = v;
-    }
-    function _setHref(id, href) {
-      var el = document.getElementById(id);
-      if (el) el.href = href;
     }
     function _fillList(id, jsonStr, emptyMsg) {
       var el = document.getElementById(id);
