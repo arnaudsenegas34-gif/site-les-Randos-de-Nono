@@ -60,6 +60,7 @@
             <div class="info-card"><div class="ic-label">Dénivelé</div><div class="ic-value" id="rando-modal-denivele"></div></div>
             <div class="info-card"><div class="ic-label">Durée</div><div class="ic-value"    id="rando-modal-duree"></div></div>
             <div class="info-card"><div class="ic-label">Date</div><div class="ic-value"     id="rando-modal-date"></div></div>
+            <div class="info-card" id="rando-modal-saison-card" style="display:none"><div class="ic-label">Meilleure saison</div><div class="ic-value" id="rando-modal-saison"></div></div>
           </div>
           <div class="map-container leaflet-wrap" id="rando-modal-map" style="height:220px; border-radius:6px; overflow:hidden; margin-bottom:0.8rem;"></div>
           <div class="modal-map-actions" style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">

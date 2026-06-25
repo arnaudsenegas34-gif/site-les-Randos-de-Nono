@@ -185,6 +185,7 @@ function rando_nono_details_callback( $post ) {
         'rando_denivele_neg' => 'Dénivelé négatif (ex: -380 m)',
         'rando_duree'        => 'Durée (ex: 4h30)',
         'rando_date'         => 'Date de la sortie',
+        'rando_meilleure_saison' => 'Meilleure saison (ex: Printemps / Automne)',
         'rando_maps_url'     => 'Lien Google Maps',
         'rando_gpx_url'      => 'URL du fichier GPX (upload média)',
     );
@@ -226,7 +227,7 @@ function rando_nono_featured_callback( $post ) {
 function rando_nono_save_meta( $post_id ) {
     if ( isset( $_POST['rando_nono_nonce'] ) && wp_verify_nonce( $_POST['rando_nono_nonce'], 'rando_nono_save_meta' ) ) {
         if ( ! ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) && current_user_can( 'edit_post', $post_id ) ) {
-            $fields = array( 'rando_lieu', 'rando_lat', 'rando_lon', 'rando_distance', 'rando_denivele', 'rando_denivele_neg', 'rando_duree', 'rando_date', 'rando_maps_url', 'rando_gpx_url', 'rando_photos', 'rando_sac', 'rando_conseils' );
+            $fields = array( 'rando_lieu', 'rando_lat', 'rando_lon', 'rando_distance', 'rando_denivele', 'rando_denivele_neg', 'rando_duree', 'rando_date', 'rando_meilleure_saison', 'rando_maps_url', 'rando_gpx_url', 'rando_photos', 'rando_sac', 'rando_conseils' );
             foreach ( $fields as $field ) {
                 if ( isset( $_POST[ $field ] ) ) {
                     update_post_meta( $post_id, $field, sanitize_textarea_field( $_POST[ $field ] ) );
