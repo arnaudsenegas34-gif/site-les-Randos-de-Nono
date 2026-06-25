@@ -329,6 +329,26 @@ function rando_nono_matos_save( $post_id ) {
 add_action( 'save_post_matos', 'rando_nono_matos_save' );
 
 /* ──────────────────────────────────────────
+   5bis. CRÉATION AUTOMATIQUE DE LA PAGE "MENTIONS LÉGALES"
+   ────────────────────────────────────────── */
+function rando_nono_create_mentions_legales_page() {
+    if ( get_page_by_path( 'mentions-legales' ) ) return;
+    wp_insert_post( array(
+        'post_title'   => 'Mentions légales',
+        'post_name'    => 'mentions-legales',
+        'post_status'  => 'publish',
+        'post_type'    => 'page',
+        'post_content' => '',
+    ) );
+}
+add_action( 'after_switch_theme', 'rando_nono_create_mentions_legales_page' );
+add_action( 'init', function() {
+    if ( get_transient( 'rando_nono_ml_checked' ) ) return;
+    rando_nono_create_mentions_legales_page();
+    set_transient( 'rando_nono_ml_checked', 1, DAY_IN_SECONDS );
+} );
+
+/* ──────────────────────────────────────────
    6. NETTOYAGE — sécurité & performance de base
    ────────────────────────────────────────── */
 remove_action( 'wp_head', 'wp_generator' );
