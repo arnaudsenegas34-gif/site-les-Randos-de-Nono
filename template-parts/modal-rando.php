@@ -60,6 +60,7 @@
             <div class="info-card"><div class="ic-label">Dénivelé</div><div class="ic-value" id="rando-modal-denivele"></div></div>
             <div class="info-card"><div class="ic-label">Durée</div><div class="ic-value"    id="rando-modal-duree"></div></div>
             <div class="info-card"><div class="ic-label">Date</div><div class="ic-value"     id="rando-modal-date"></div></div>
+            <div class="info-card" id="rando-modal-saison-card" style="display:none"><div class="ic-label">Meilleure saison</div><div class="ic-value" id="rando-modal-saison"></div></div>
           </div>
           <div class="map-container leaflet-wrap" id="rando-modal-map" style="height:220px; border-radius:6px; overflow:hidden; margin-bottom:0.8rem;"></div>
           <div class="modal-map-actions" style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
@@ -81,23 +82,6 @@
           <a id="rando-modal-page-link" href="#" class="btn btn-outline" style="width:100%;justify-content:center;border-color:var(--vert);color:var(--vert);margin-bottom:0.75rem">
             📄 Voir la fiche complète
           </a>
-
-          <!-- Partage social -->
-          <div class="share-bar">
-            <span class="share-label">Partager</span>
-            <a id="share-whatsapp" href="#" target="_blank" rel="noopener" class="share-btn share-whatsapp">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
-              WhatsApp
-            </a>
-            <a id="share-facebook" href="#" target="_blank" rel="noopener" class="share-btn share-facebook">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-              Facebook
-            </a>
-            <button id="share-copy" class="share-btn share-copy">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              <span id="share-copy-label">Copier le lien</span>
-            </button>
-          </div>
         </div>
 
         <!-- Onglet Sac -->
