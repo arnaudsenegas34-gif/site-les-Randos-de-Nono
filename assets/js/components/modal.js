@@ -110,12 +110,13 @@
         }
       }
 
+      var permalink = d.permalink || (window.location.origin + '/randonnee/' + (source.dataset.slug || d.id || '') + '/');
       var pageLink = document.getElementById('rando-modal-page-link');
       if (pageLink) {
-        pageLink.href = window.location.origin + '/randonnee/' + (source.dataset.slug || d.id || '') + '/';
+        pageLink.href = permalink;
       }
 
-      var pageUrl   = encodeURIComponent(window.location.origin + '/randonnee/' + (source.dataset.slug || d.id || '') + '/');
+      var pageUrl   = encodeURIComponent(permalink);
       var pageTitle = encodeURIComponent(d.titre || 'Randonnée — Les Randos de Nono');
       _setHref('share-whatsapp', 'https://wa.me/?text=' + pageTitle + '%20' + pageUrl);
       _setHref('share-facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + pageUrl);

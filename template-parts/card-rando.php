@@ -38,6 +38,7 @@ $thumb = get_the_post_thumbnail_url( $id, 'medium' );
 <div class="rando-card"
      data-id="<?php echo esc_attr( $id ); ?>"
      data-slug="<?php echo esc_attr( get_post_field( 'post_name', $id ) ); ?>"
+     data-permalink="<?php echo esc_url( get_permalink( $id ) ); ?>"
      data-titre="<?php echo esc_attr( get_the_title() ); ?>"
      data-lieu="<?php echo esc_attr( $lieu ); ?>"
      data-lat="<?php echo esc_attr( $lat ); ?>"
