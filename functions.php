@@ -56,6 +56,12 @@ function rando_nono_assets() {
         'placeholderUrl' => $theme_uri . '/assets/img/placeholder-rando.jpg',
         'themeUri'       => $theme_uri,
     ) );
+
+    // ── Single randonnée (CSS + JS chargés uniquement sur la fiche) ──
+    if ( is_singular( 'randonnee' ) ) {
+        wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), filemtime( get_template_directory() . '/assets/css/single-randonnee.css' ) );
+        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx' ), filemtime( get_template_directory() . '/assets/js/pages/single-randonnee.js' ), true );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'rando_nono_assets' );
 
