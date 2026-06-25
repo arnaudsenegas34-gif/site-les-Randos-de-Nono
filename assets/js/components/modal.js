@@ -121,7 +121,7 @@
 
       var pageLink = document.getElementById('rando-modal-page-link');
       if (pageLink) {
-        pageLink.href = window.location.origin + '/randonnee/' + (source.dataset.slug || d.id || '') + '/';
+        pageLink.href = d.url || (window.location.origin + '/randonnee/' + (d.slug || d.id || '') + '/');
       }
 
 
