@@ -7,6 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 require_once get_template_directory() . '/inc/icons.php';
 
+// Seeder de données de test (admin uniquement — à retirer en production)
+if ( is_admin() ) {
+    require_once get_template_directory() . '/inc/data-seeder.php';
+}
+
 /* ──────────────────────────────────────────
    1. SETUP DU THÈME
    ────────────────────────────────────────── */
