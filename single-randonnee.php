@@ -154,7 +154,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       <h2 class="sr-section-title">Photos</h2>
       <div class="sr-photos-grid">
         <?php foreach ( $photos_urls as $i => $photo_url ) : ?>
-          <img class="sr-photo" src="<?php echo esc_url( $photo_url ); ?>" alt="<?php echo esc_attr( get_the_title() . ' - photo ' . ( $i + 1 ) ); ?>" data-index="<?php echo intval( $i ); ?>">
+          <img class="sr-photo" src="<?php echo esc_url( $photo_url ); ?>" alt="<?php echo esc_attr( get_the_title() . ' - photo ' . ( $i + 1 ) ); ?>" loading="lazy" data-index="<?php echo intval( $i ); ?>">
         <?php endforeach; ?>
       </div>
     </div>
@@ -194,6 +194,32 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     </div>
     <?php endif; ?>
 
+    <!-- NAVIGATION PRÉCÉDENT / SUIVANT -->
+    <?php
+    $prev_rando = get_previous_post();
+    $next_rando = get_next_post();
+    if ( $prev_rando || $next_rando ) :
+    ?>
+    <nav class="sr-nav-posts" aria-label="Navigation entre randonnées">
+      <?php if ( $prev_rando ) : ?>
+      <a href="<?php echo esc_url( get_permalink( $prev_rando ) ); ?>" class="sr-nav-post sr-nav-prev">
+        <span class="sr-nav-direction">&larr; Rando pr&eacute;c&eacute;dente</span>
+        <span class="sr-nav-title"><?php echo esc_html( get_the_title( $prev_rando ) ); ?></span>
+      </a>
+      <?php else : ?>
+      <span class="sr-nav-post sr-nav-prev sr-nav-empty"></span>
+      <?php endif; ?>
+      <?php if ( $next_rando ) : ?>
+      <a href="<?php echo esc_url( get_permalink( $next_rando ) ); ?>" class="sr-nav-post sr-nav-next">
+        <span class="sr-nav-direction">Rando suivante &rarr;</span>
+        <span class="sr-nav-title"><?php echo esc_html( get_the_title( $next_rando ) ); ?></span>
+      </a>
+      <?php else : ?>
+      <span class="sr-nav-post sr-nav-next sr-nav-empty"></span>
+      <?php endif; ?>
+    </nav>
+    <?php endif; ?>
+
     <!-- PARTAGE SOCIAL -->
     <div class="sr-share-section">
       <span class="share-label">Partager cette rando</span>
@@ -222,6 +248,53 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
 
   </div>
 </section>
+
+<!-- RANDONNÉES SIMILAIRES -->
+<?php
+$related_args = array(
+    'post_type'      => 'randonnee',
+    'posts_per_page' => 3,
+    'post__not_in'   => array( $id ),
+    'orderby'        => 'rand',
+    'no_found_rows'  => true,
+);
+if ( $diff_terms && ! is_wp_error( $diff_terms ) ) {
+    $related_args['tax_query'] = array(
+        array(
+            'taxonomy' => 'difficulte',
+            'field'    => 'term_id',
+            'terms'    => wp_list_pluck( $diff_terms, 'term_id' ),
+        ),
+    );
+}
+$related_query = new WP_Query( $related_args );
+if ( $related_query->have_posts() ) :
+?>
+<section class="sr-related-section">
+  <div class="sr-container">
+    <h2 class="sr-section-title">Randonn&eacute;es similaires</h2>
+    <div class="sr-related-grid">
+      <?php while ( $related_query->have_posts() ) : $related_query->the_post(); ?>
+      <a href="<?php the_permalink(); ?>" class="sr-related-card">
+        <?php if ( has_post_thumbnail() ) : ?>
+        <div class="sr-related-img-wrap">
+          <img src="<?php echo esc_url( get_the_post_thumbnail_url( null, 'medium' ) ); ?>"
+               alt="<?php the_title_attribute(); ?>" loading="lazy">
+        </div>
+        <?php endif; ?>
+        <div class="sr-related-info">
+          <span class="sr-related-title"><?php the_title(); ?></span>
+          <?php $rlieu = get_post_meta( get_the_ID(), 'rando_lieu', true ); ?>
+          <?php if ( $rlieu ) : ?>
+          <span class="sr-related-lieu"><?php echo esc_html( $rlieu ); ?></span>
+          <?php endif; ?>
+        </div>
+      </a>
+      <?php endwhile; wp_reset_postdata(); ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
 
 <?php endwhile; ?>
 

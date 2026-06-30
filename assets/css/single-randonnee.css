@@ -348,6 +348,86 @@
   padding-top: 1rem;
 }
 
+/* ══════════════════════ NAVIGATION PRÉCÉDENTE / SUIVANTE ══════════════════════ */
+.sr-nav-posts {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ligne);
+}
+.sr-nav-post {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.25rem;
+  background: var(--beige);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.sr-nav-post:hover { background: #e8e4d9; }
+.sr-nav-prev { align-items: flex-start; }
+.sr-nav-next { align-items: flex-end; text-align: right; }
+.sr-nav-empty { background: transparent; pointer-events: none; }
+.sr-nav-direction {
+  font-size: 0.75rem;
+  color: var(--vert);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.sr-nav-title {
+  font-size: 0.95rem;
+  color: var(--sombre);
+  font-weight: 500;
+}
+
+/* ══════════════════════ RANDONNÉES SIMILAIRES ══════════════════════ */
+.sr-related-section {
+  background: var(--beige);
+  padding: 3rem 0;
+  margin-top: 0;
+}
+.sr-related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+.sr-related-card {
+  text-decoration: none;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.sr-related-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.sr-related-img-wrap { height: 160px; overflow: hidden; }
+.sr-related-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sr-related-info {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sr-related-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sombre);
+}
+.sr-related-lieu {
+  font-size: 0.8rem;
+  color: var(--vert);
+}
+
 /* ══════════════════════ RESPONSIVE ══════════════════════ */
 @media (max-width: 900px) {
   .sr-hero { height: 40vh; min-height: 280px; }
@@ -357,6 +437,8 @@
   .sr-meta-grid { grid-template-columns: repeat(2, 1fr); }
   .sr-map { height: 280px; }
   .sr-photos-grid { grid-template-columns: repeat(2, 1fr); }
+  .sr-related-grid { grid-template-columns: repeat(2, 1fr); }
+  .sr-nav-posts { flex-direction: column; }
 }
 
 @media (max-width: 600px) {
@@ -371,4 +453,6 @@
   .sr-share-section { flex-direction: column; align-items: flex-start; }
   .sr-lightbox-prev { left: 0.5rem; }
   .sr-lightbox-next { right: 0.5rem; }
+  .sr-related-grid { grid-template-columns: 1fr; }
+  .sr-related-img-wrap { height: 180px; }
 }

@@ -366,8 +366,19 @@ function rando_nono_seo_meta_tags() {
 
     if ( is_singular( 'randonnee' ) ) {
         global $post;
-        $lieu = get_post_meta( $post->ID, 'rando_lieu', true );
-        $description = wp_trim_words( get_the_content(), 28, '…' );
+        $lieu      = get_post_meta( $post->ID, 'rando_lieu', true );
+        $distance  = get_post_meta( $post->ID, 'rando_distance', true );
+        $denivele  = get_post_meta( $post->ID, 'rando_denivele', true );
+        $duree     = get_post_meta( $post->ID, 'rando_duree', true );
+        $content_desc = wp_trim_words( get_the_content(), 28, '…' );
+        if ( $content_desc ) {
+            $description = $content_desc;
+        } else {
+            $parts = array_filter( array( $distance, $denivele, $duree ) );
+            $description = 'Randonnée' . ( $lieu ? ' à ' . $lieu : '' )
+                . ( $parts ? ' : ' . implode( ', ', $parts ) : '' )
+                . '. Retrouvez la trace GPX, les photos et tous les détails de cette sortie.';
+        }
         $title = get_the_title() . ( $lieu ? ' — ' . $lieu : '' ) . ' | ' . get_bloginfo( 'name' );
         $thumb = get_the_post_thumbnail_url( $post->ID, 'large' );
         if ( $thumb ) $image = $thumb;
@@ -398,6 +409,78 @@ function rando_nono_seo_meta_tags() {
     echo '<link rel="canonical" href="' . esc_url( $url ) . '">' . "\n";
 }
 add_action( 'wp_head', 'rando_nono_seo_meta_tags', 1 );
+
+/* ──────────────────────────────────────────
+   7bis. SCHEMA.ORG JSON-LD — données structurées pour Google
+   ────────────────────────────────────────── */
+function rando_nono_schema_jsonld() {
+    if ( ! is_singular( 'randonnee' ) ) return;
+    global $post;
+
+    $id         = $post->ID;
+    $titre      = get_the_title( $id );
+    $url        = get_permalink( $id );
+    $lieu       = get_post_meta( $id, 'rando_lieu', true );
+    $lat        = get_post_meta( $id, 'rando_lat', true );
+    $lon        = get_post_meta( $id, 'rando_lon', true );
+    $distance   = get_post_meta( $id, 'rando_distance', true );
+    $denivele   = get_post_meta( $id, 'rando_denivele', true );
+    $duree      = get_post_meta( $id, 'rando_duree', true );
+    $image      = get_the_post_thumbnail_url( $id, 'large' );
+    $contenu    = wp_strip_all_tags( get_the_content() );
+    $diff_terms = get_the_terms( $id, 'difficulte' );
+    $difficulte = $diff_terms && ! is_wp_error( $diff_terms ) ? $diff_terms[0]->name : '';
+
+    $desc = $contenu
+        ? mb_substr( $contenu, 0, 200 ) . ( mb_strlen( $contenu ) > 200 ? '…' : '' )
+        : 'Randonnée' . ( $lieu ? ' à ' . $lieu : '' ) . ( $distance ? ' — ' . $distance : '' );
+
+    // BreadcrumbList
+    $breadcrumb = array(
+        '@context'        => 'https://schema.org',
+        '@type'           => 'BreadcrumbList',
+        'itemListElement' => array(
+            array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Accueil',      'item' => home_url( '/' ) ),
+            array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Randonnées',   'item' => get_post_type_archive_link( 'randonnee' ) ),
+            array( '@type' => 'ListItem', 'position' => 3, 'name' => $titre,         'item' => $url ),
+        ),
+    );
+
+    // SportsActivity
+    $activity = array(
+        '@context'    => 'https://schema.org',
+        '@type'       => 'SportsEvent',
+        'name'        => $titre,
+        'url'         => $url,
+        'description' => $desc,
+        'sport'       => 'Randonnée pédestre',
+    );
+    if ( $image ) $activity['image'] = $image;
+    if ( $lieu ) {
+        $activity['location'] = array( '@type' => 'Place', 'name' => $lieu );
+        if ( $lat && $lon ) {
+            $activity['location']['geo'] = array( '@type' => 'GeoCoordinates', 'latitude' => (float) $lat, 'longitude' => (float) $lon );
+        }
+    }
+    $props = array();
+    if ( $difficulte ) $props[] = array( '@type' => 'PropertyValue', 'name' => 'Difficulté',         'value' => $difficulte );
+    if ( $distance )   $props[] = array( '@type' => 'PropertyValue', 'name' => 'Distance',           'value' => $distance );
+    if ( $denivele )   $props[] = array( '@type' => 'PropertyValue', 'name' => 'Dénivelé positif',   'value' => $denivele );
+    if ( $duree )      $props[] = array( '@type' => 'PropertyValue', 'name' => 'Durée',              'value' => $duree );
+    if ( $props ) $activity['additionalProperty'] = $props;
+
+    echo '<script type="application/ld+json">' . wp_json_encode( $breadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+    echo '<script type="application/ld+json">' . wp_json_encode( $activity,   JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'rando_nono_schema_jsonld', 3 );
+
+// S'assurer que le CPT randonnee est inclus dans le sitemap WordPress (>=5.5)
+add_filter( 'wp_sitemaps_post_types', function( $post_types ) {
+    if ( ! isset( $post_types['randonnee'] ) ) {
+        $post_types['randonnee'] = get_post_type_object( 'randonnee' );
+    }
+    return $post_types;
+} );
 
 /**
  * Favicon — généré à partir de l'image hero, recadré en carré.
