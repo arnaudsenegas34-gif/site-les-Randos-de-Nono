@@ -559,3 +559,59 @@ function rando_nono_auto_alt_text( $attr, $attachment, $size ) {
     return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'rando_nono_auto_alt_text', 10, 3 );
+
+/* ──────────────────────────────────────────
+   8. GOOGLE ANALYTICS (GA4) — configurable depuis l'admin, sans coder
+   ────────────────────────────────────────── */
+function rando_nono_ga_menu() {
+    add_options_page(
+        'Google Analytics',
+        'Google Analytics',
+        'manage_options',
+        'rando-nono-ga',
+        'rando_nono_ga_page'
+    );
+}
+add_action( 'admin_menu', 'rando_nono_ga_menu' );
+
+function rando_nono_ga_register_settings() {
+    register_setting( 'rando_nono_ga_group', 'rando_nono_ga_id', array(
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
+}
+add_action( 'admin_init', 'rando_nono_ga_register_settings' );
+
+function rando_nono_ga_page() {
+    ?>
+    <div class="wrap">
+        <h1>Google Analytics</h1>
+        <p>Renseigne ton identifiant de mesure GA4 (format <code>G-XXXXXXXXXX</code>, disponible dans Google Analytics → Admin → Flux de données) pour activer le suivi des visites. Laisse le champ vide pour désactiver le suivi.</p>
+        <form method="post" action="options.php">
+            <?php settings_fields( 'rando_nono_ga_group' ); ?>
+            <table class="form-table">
+                <tr>
+                    <th><label for="rando_nono_ga_id">ID de mesure GA4</label></th>
+                    <td><input type="text" style="width:250px" id="rando_nono_ga_id" name="rando_nono_ga_id" value="<?php echo esc_attr( get_option( 'rando_nono_ga_id' ) ); ?>" placeholder="G-XXXXXXXXXX" /></td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
+}
+
+function rando_nono_ga_tracking() {
+    if ( is_admin() ) return;
+    $ga_id = get_option( 'rando_nono_ga_id' );
+    if ( ! $ga_id || ! preg_match( '/^G-[A-Z0-9]+$/', $ga_id ) ) return;
+    ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $ga_id ); ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '<?php echo esc_js( $ga_id ); ?>');
+    </script>
+    <?php
+}
+add_action( 'wp_head', 'rando_nono_ga_tracking' );
