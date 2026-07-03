@@ -64,8 +64,15 @@ get_header();
 
     <hr>
 
-    <h2>Cookies</h2>
+    <h2 id="cookies">Cookies</h2>
     <p>Le site peut utiliser des cookies techniques nécessaires à son bon fonctionnement.</p>
+    <p>
+      Avec votre accord, le site utilise également <strong>Google Analytics</strong> pour mesurer son audience
+      (pages consultées, provenance des visites, type d'appareil). Ce service ne dépose un cookie de mesure
+      d'audience que si vous cliquez sur « Accepter » dans le bandeau proposé lors de votre première visite.
+      Vous pouvez à tout moment revenir sur votre choix :
+    </p>
+    <p><button type="button" id="cookie-consent-manage" class="btn-nav">Gérer mes préférences cookies</button></p>
     <p>Des services tiers intégrés au site peuvent également déposer des cookies, notamment :</p>
     <ul>
       <li>les services de cartographie OpenStreetMap ;</li>

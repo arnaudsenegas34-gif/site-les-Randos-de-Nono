@@ -586,6 +586,7 @@ function rando_nono_ga_page() {
     <div class="wrap">
         <h1>Google Analytics</h1>
         <p>Renseigne ton identifiant de mesure GA4 (format <code>G-XXXXXXXXXX</code>, disponible dans Google Analytics → Admin → Flux de données) pour activer le suivi des visites. Laisse le champ vide pour désactiver le suivi.</p>
+        <p>Un bandeau de consentement s'affiche automatiquement aux visiteurs dès qu'un ID est renseigné : Google Analytics ne se charge que si le visiteur clique sur « Accepter » (conformité RGPD/CNIL).</p>
         <form method="post" action="options.php">
             <?php settings_fields( 'rando_nono_ga_group' ); ?>
             <table class="form-table">
@@ -600,18 +601,39 @@ function rando_nono_ga_page() {
     <?php
 }
 
-function rando_nono_ga_tracking() {
-    if ( is_admin() ) return;
+function rando_nono_ga_valid_id() {
     $ga_id = get_option( 'rando_nono_ga_id' );
-    if ( ! $ga_id || ! preg_match( '/^G-[A-Z0-9]+$/', $ga_id ) ) return;
+    return ( $ga_id && preg_match( '/^G-[A-Z0-9]+$/', $ga_id ) ) ? $ga_id : '';
+}
+
+// Charge le bandeau de consentement + le script GA4 (ce dernier ne s'active qu'après clic "Accepter")
+function rando_nono_ga_assets() {
+    $ga_id = rando_nono_ga_valid_id();
+    if ( ! $ga_id ) return;
+
+    $theme_uri     = get_template_directory_uri();
+    $theme_version = wp_get_theme()->get( 'Version' );
+
+    wp_enqueue_style( 'rando-nono-cookie-consent', $theme_uri . '/assets/css/components/cookie-consent.css', array( 'rando-nono-style' ), $theme_version );
+    wp_enqueue_script( 'rando-nono-cookie-consent', $theme_uri . '/assets/js/components/cookie-consent.js', array(), $theme_version, true );
+    wp_localize_script( 'rando-nono-cookie-consent', 'randoNonoGA', array( 'id' => $ga_id ) );
+}
+add_action( 'wp_enqueue_scripts', 'rando_nono_ga_assets' );
+
+// Marquage HTML du bandeau — n'apparaît que si un ID GA4 valide est configuré
+function rando_nono_cookie_banner() {
+    if ( ! rando_nono_ga_valid_id() ) return;
     ?>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( $ga_id ); ?>"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '<?php echo esc_js( $ga_id ); ?>');
-    </script>
+    <div class="cookie-consent" id="cookie-consent" role="dialog" aria-live="polite" aria-label="Consentement aux cookies">
+      <p>
+        Ce site utilise Google Analytics pour mesurer sa fréquentation. Ces cookies ne sont déposés qu'avec votre accord.
+        <a href="<?php echo esc_url( home_url( '/mentions-legales/#cookies' ) ); ?>">En savoir plus</a>
+      </p>
+      <div class="cookie-consent-actions">
+        <button type="button" id="cookie-consent-refuse" class="btn-nav">Refuser</button>
+        <button type="button" id="cookie-consent-accept" class="btn-nav btn-nav-solid">Accepter</button>
+      </div>
+    </div>
     <?php
 }
-add_action( 'wp_head', 'rando_nono_ga_tracking' );
+add_action( 'wp_footer', 'rando_nono_cookie_banner' );
