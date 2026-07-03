@@ -36,31 +36,46 @@ function rando_nono_assets() {
     // ── Style principal ──
     wp_enqueue_style( 'rando-nono-style', get_stylesheet_uri(), array( 'rando-nono-fonts' ), $theme_version );
 
-    // ── CSS modal isolé ──
-    wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal.css', array( 'rando-nono-style' ), $theme_version );
-
-    // ── CSS matos isolé ──
-    wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), $theme_version );
+    // La modale (carte + profil altimétrique) n'existe que sur l'accueil et l'archive des randonnées :
+    // inutile de charger Leaflet/Chart.js/modal.js sur les mentions légales, le 404, etc.
+    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' );
+    $needs_leaflet = $needs_modal || is_singular( 'randonnee' );
+    $main_deps     = array();
 
     // ── Leaflet (carte interactive) ──
-    wp_enqueue_style( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', array(), '1.9.4' );
-    wp_enqueue_script( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), '1.9.4', true );
-    wp_enqueue_script( 'leaflet-gpx', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
+    if ( $needs_leaflet ) {
+        wp_enqueue_style( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', array(), '1.9.4' );
+        wp_enqueue_script( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), '1.9.4', true );
+        wp_enqueue_script( 'leaflet-gpx', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
+    }
 
-    // ── Chart.js (profil altimétrique) ──
-    wp_enqueue_script( 'chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', array(), '4.4.0', true );
+    if ( $needs_modal ) {
+        // ── CSS modal isolé ──
+        wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal.css', array( 'rando-nono-style' ), $theme_version );
 
-    // ── Scripts — ordre strict ──
-    wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), $theme_version, true );
-    wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
-    wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), $theme_version, true );
-    wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', array( 'rando-nono-modal', 'rando-nono-randos' ), $theme_version, true );
+        // ── Chart.js (profil altimétrique) ──
+        wp_enqueue_script( 'chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', array(), '4.4.0', true );
 
-    // Données PHP → JS (URLs dynamiques)
-    wp_localize_script( 'rando-nono-modal', 'randoNono', array(
-        'placeholderUrl' => $theme_uri . '/assets/img/placeholder-rando.jpg',
-        'themeUri'       => $theme_uri,
-    ) );
+        wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), $theme_version, true );
+        wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), $theme_version, true );
+
+        // Données PHP → JS (URLs dynamiques)
+        wp_localize_script( 'rando-nono-modal', 'randoNono', array(
+            'placeholderUrl' => $theme_uri . '/assets/img/placeholder-rando.jpg',
+            'themeUri'       => $theme_uri,
+        ) );
+
+        $main_deps[] = 'rando-nono-modal';
+        $main_deps[] = 'rando-nono-randos';
+    }
+
+    // Le panneau "Matos de Nono" n'existe que sur l'accueil.
+    if ( is_front_page() ) {
+        wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), $theme_version );
+        wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
+    }
+
+    wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', $main_deps, $theme_version, true );
 
     // ── Single randonnée (CSS + JS chargés uniquement sur la fiche) ──
     if ( is_singular( 'randonnee' ) ) {
@@ -359,6 +374,25 @@ add_action( 'init', function() {
 remove_action( 'wp_head', 'wp_generator' );
 add_filter( 'xmlrpc_enabled', '__return_false' );
 
+// Retire la balise canonique par défaut de WordPress : le thème en génère déjà
+// une (voir rando_nono_seo_meta_tags) — deux balises canoniques dupliquaient
+// systématiquement le <head> de chaque page.
+remove_action( 'wp_head', 'rel_canonical' );
+
+/* ──────────────────────────────────────────
+   6bis. PERMALIENS LISIBLES
+   Force une structure d'URL lisible (/randonnee/nom-de-la-sortie/) au lieu
+   des URLs par défaut de type ?p=123, y compris pour un site fraîchement
+   installé qui n'aurait pas encore de permaliens personnalisés.
+   ────────────────────────────────────────── */
+function rando_nono_force_pretty_permalinks() {
+    if ( '' === get_option( 'permalink_structure' ) ) {
+        update_option( 'permalink_structure', '/%postname%/' );
+        flush_rewrite_rules();
+    }
+}
+add_action( 'after_switch_theme', 'rando_nono_force_pretty_permalinks' );
+
 /* ──────────────────────────────────────────
    7. SEO DE BASE — meta description + Open Graph
    (pas de plugin nécessaire pour ce niveau de besoin)
@@ -395,6 +429,7 @@ function rando_nono_seo_meta_tags() {
         $title = 'Toutes les randonnées | ' . get_bloginfo( 'name' );
     } elseif ( is_front_page() ) {
         $description = 'Carnet de randonnée : récits, traces GPX à télécharger, météo en temps réel, équipement et statistiques de mes sorties dans l\'Hérault et ailleurs.';
+        $title = get_bloginfo( 'name' ) . ' — Carnet de randonnée, traces GPX & Hérault';
     } elseif ( is_page() ) {
         $description = wp_trim_words( get_the_content(), 28, '…' );
         $title = get_the_title() . ' | ' . get_bloginfo( 'name' );
@@ -542,7 +577,14 @@ function rando_nono_document_title_parts( $title ) {
     if ( is_singular( 'randonnee' ) ) {
         global $post;
         $lieu = get_post_meta( $post->ID, 'rando_lieu', true );
-        $title['title'] = get_the_title() . ( $lieu ? ' — ' . $lieu : '' );
+        $title['title'] = get_the_title() . ( $lieu ? ' — ' . $lieu : '' ) . ' : trace GPX et récit de randonnée';
+    } elseif ( is_front_page() ) {
+        $title['title']   = 'Les Randos de Nono';
+        $title['tagline'] = 'récits de randonnée, traces GPX à télécharger et carnet de sorties dans l\'Hérault';
+    } elseif ( is_post_type_archive( 'randonnee' ) ) {
+        $title['title'] = 'Toutes les randonnées avec trace GPX à télécharger';
+    } elseif ( is_singular( 'matos' ) ) {
+        $title['title'] = get_the_title() . ' — matériel de randonnée testé sur le terrain';
     }
     return $title;
 }
@@ -606,27 +648,87 @@ function rando_nono_ga_valid_id() {
     return ( $ga_id && preg_match( '/^G-[A-Z0-9]+$/', $ga_id ) ) ? $ga_id : '';
 }
 
-// Charge le bandeau de consentement + le script GA4 (ce dernier ne s'active qu'après clic "Accepter")
+/* ──────────────────────────────────────────
+   8bis. PIXEL FACEBOOK — configurable depuis l'admin, sans coder
+   ────────────────────────────────────────── */
+function rando_nono_fb_menu() {
+    add_options_page(
+        'Pixel Facebook',
+        'Pixel Facebook',
+        'manage_options',
+        'rando-nono-fb',
+        'rando_nono_fb_page'
+    );
+}
+add_action( 'admin_menu', 'rando_nono_fb_menu' );
+
+function rando_nono_fb_register_settings() {
+    register_setting( 'rando_nono_fb_group', 'rando_nono_fb_pixel_id', array(
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
+}
+add_action( 'admin_init', 'rando_nono_fb_register_settings' );
+
+function rando_nono_fb_page() {
+    ?>
+    <div class="wrap">
+        <h1>Pixel Facebook</h1>
+        <p>Renseigne ton identifiant de pixel Facebook (visible dans Meta Events Manager → Pixels, une suite de chiffres) pour activer le suivi publicitaire Facebook/Instagram. Laisse le champ vide pour désactiver.</p>
+        <p>Le pixel utilise le même bandeau de consentement que Google Analytics : il ne se charge que si le visiteur clique sur « Accepter » (conformité RGPD/CNIL).</p>
+        <form method="post" action="options.php">
+            <?php settings_fields( 'rando_nono_fb_group' ); ?>
+            <table class="form-table">
+                <tr>
+                    <th><label for="rando_nono_fb_pixel_id">ID du pixel Facebook</label></th>
+                    <td><input type="text" style="width:250px" id="rando_nono_fb_pixel_id" name="rando_nono_fb_pixel_id" value="<?php echo esc_attr( get_option( 'rando_nono_fb_pixel_id' ) ); ?>" placeholder="123456789012345" /></td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
+}
+
+function rando_nono_fb_valid_id() {
+    $fb_id = get_option( 'rando_nono_fb_pixel_id' );
+    return ( $fb_id && preg_match( '/^\d{6,20}$/', $fb_id ) ) ? $fb_id : '';
+}
+
+// Charge le bandeau de consentement + les scripts GA4/Pixel Facebook (ils ne s'activent qu'après clic "Accepter")
 function rando_nono_ga_assets() {
     $ga_id = rando_nono_ga_valid_id();
-    if ( ! $ga_id ) return;
+    $fb_id = rando_nono_fb_valid_id();
+    if ( ! $ga_id && ! $fb_id ) return;
 
     $theme_uri     = get_template_directory_uri();
     $theme_version = wp_get_theme()->get( 'Version' );
 
     wp_enqueue_style( 'rando-nono-cookie-consent', $theme_uri . '/assets/css/components/cookie-consent.css', array( 'rando-nono-style' ), $theme_version );
     wp_enqueue_script( 'rando-nono-cookie-consent', $theme_uri . '/assets/js/components/cookie-consent.js', array(), $theme_version, true );
-    wp_localize_script( 'rando-nono-cookie-consent', 'randoNonoGA', array( 'id' => $ga_id ) );
+    wp_localize_script( 'rando-nono-cookie-consent', 'randoNonoGA', array(
+        'id'        => $ga_id,
+        'fbPixelId' => $fb_id,
+    ) );
 }
 add_action( 'wp_enqueue_scripts', 'rando_nono_ga_assets' );
 
-// Marquage HTML du bandeau — n'apparaît que si un ID GA4 valide est configuré
+// Marquage HTML du bandeau — n'apparaît que si GA4 et/ou le pixel Facebook sont configurés
 function rando_nono_cookie_banner() {
-    if ( ! rando_nono_ga_valid_id() ) return;
+    $ga_id = rando_nono_ga_valid_id();
+    $fb_id = rando_nono_fb_valid_id();
+    if ( ! $ga_id && ! $fb_id ) return;
+
+    if ( $ga_id && $fb_id ) {
+        $texte = 'Ce site utilise Google Analytics et le pixel Facebook pour mesurer sa fréquentation et ses statistiques publicitaires.';
+    } elseif ( $fb_id ) {
+        $texte = 'Ce site utilise le pixel Facebook pour mesurer ses statistiques publicitaires.';
+    } else {
+        $texte = 'Ce site utilise Google Analytics pour mesurer sa fréquentation.';
+    }
     ?>
     <div class="cookie-consent" id="cookie-consent" role="dialog" aria-live="polite" aria-label="Consentement aux cookies">
       <p>
-        Ce site utilise Google Analytics pour mesurer sa fréquentation. Ces cookies ne sont déposés qu'avec votre accord.
+        <?php echo esc_html( $texte ); ?> Ces cookies ne sont déposés qu'avec votre accord.
         <a href="<?php echo esc_url( home_url( '/mentions-legales/#cookies' ) ); ?>">En savoir plus</a>
       </p>
       <div class="cookie-consent-actions">

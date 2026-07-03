@@ -1,11 +1,12 @@
 /**
- * Bandeau de consentement cookies — n'active Google Analytics
- * qu'après acceptation explicite de l'utilisateur (RGPD).
+ * Bandeau de consentement cookies — n'active Google Analytics et le pixel
+ * Facebook qu'après acceptation explicite de l'utilisateur (RGPD).
  */
 (function () {
   var STORAGE_KEY = 'rando_nono_ga_consent';
   var COOKIE_MAX_AGE = 60 * 60 * 24 * 180; // 6 mois
   var gaLoaded = false;
+  var fbLoaded = false;
 
   // Cookie + localStorage en parallèle : certains navigateurs (Safari ITP,
   // extensions anti-tracking) purgent les cookies posés en JS mais laissent
@@ -49,6 +50,22 @@
     gtag( 'config', window.randoNonoGA.id );
   }
 
+  function loadFB() {
+    if ( fbLoaded || ! window.randoNonoGA || ! window.randoNonoGA.fbPixelId ) return;
+    fbLoaded = true;
+
+    /* eslint-disable */
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    /* eslint-enable */
+
+    window.fbq( 'init', window.randoNonoGA.fbPixelId );
+    window.fbq( 'track', 'PageView' );
+  }
+
   function showBanner() {
     var banner = document.getElementById( 'cookie-consent' );
     if ( banner ) banner.classList.add( 'is-visible' );
@@ -60,11 +77,12 @@
   }
 
   document.addEventListener( 'DOMContentLoaded', function () {
-    if ( ! window.randoNonoGA || ! window.randoNonoGA.id ) return;
+    if ( ! window.randoNonoGA || ( ! window.randoNonoGA.id && ! window.randoNonoGA.fbPixelId ) ) return;
 
     var consent = getStoredConsent();
     if ( consent === '1' ) {
       loadGA();
+      loadFB();
     } else if ( consent !== '0' ) {
       showBanner();
     }
@@ -77,6 +95,7 @@
       acceptBtn.addEventListener( 'click', function () {
         storeConsent( '1' );
         loadGA();
+        loadFB();
         hideBanner();
       } );
     }

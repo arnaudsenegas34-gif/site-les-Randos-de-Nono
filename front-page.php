@@ -132,6 +132,7 @@ endif;
   <h2 class="section-title">Randonnées</h2>
   <div class="divider"></div>
   <p class="section-sub">Chaque sortie est documentée : tracé GPX, photos, météo du lieu et détail de l'itinéraire.</p>
+  <p>Ce carnet de randonnée rassemble mes itinéraires de randonnée pédestre dans l'Hérault, les Cévennes, le Languedoc et au-delà. Pour chaque randonnée, tu trouveras la distance, le dénivelé, la difficulté, la trace GPX à télécharger et un récit détaillé de la sortie, pour t'aider à préparer la tienne.</p>
 
   <div class="randos-grid">
     <?php
@@ -343,6 +344,7 @@ $show_projet = $projet_actif && $projet_titre;
     <div class="divider"></div>
     <p>Je m'appelle Arnaud. Je vis à Aniane, dans l'Hérault, entre garrigue et Cévennes — un terrain de jeu idéal pour la randonnée toute l'année.</p>
     <p>Ce site est né d'une habitude simple : garder une trace de mes sorties. Il rassemble mes itinéraires avec leurs traces GPX, pour les retrouver facilement et pour que d'autres puissent s'en inspirer.</p>
+    <p>Chaque fiche randonnée précise la distance, le dénivelé positif et négatif, la durée estimée et la meilleure saison pour partir, avec un lien Google Maps vers le point de départ. Tu y trouveras aussi mes conseils pratiques (eau, équipement, horaires de départ) et le contenu exact de mon sac pour cette sortie.</p>
     <?php if ( $show_projet && $projet_description ) : ?>
       <p><?php echo esc_html( $projet_description ); ?></p>
     <?php endif; ?>
