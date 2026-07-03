@@ -478,6 +478,8 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .site-footer .logo span { color: var(--orange); }
 .site-footer p, .site-footer a { font-size: 0.73rem; color: rgba(232,223,200,0.45); font-weight: 300; }
 .site-footer a:hover { color: rgba(232,223,200,0.75); }
+.site-footer .social-instagram { display: inline-flex; color: rgba(232,223,200,0.45); transition: color .2s; }
+.site-footer .social-instagram:hover { color: var(--orange); }
 
 /* ══════════════════════ ARCHIVE RANDONNÉES (filtres + pagination) ══════════════════════ */
 .archive-filters {
