@@ -78,8 +78,12 @@ function rando_nono_assets() {
     wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', $main_deps, $theme_version, true );
 
     // ── Single randonnée (CSS + JS chargés uniquement sur la fiche) ──
-    if ( is_singular( 'randonnee' ) ) {
+    // Les articles (post) réutilisent le même CSS pour la navigation précédent/suivant,
+    // mais n'ont pas besoin de la carte Leaflet.
+    if ( is_singular( 'randonnee' ) || is_singular( 'post' ) ) {
         wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), filemtime( get_template_directory() . '/assets/css/single-randonnee.css' ) );
+    }
+    if ( is_singular( 'randonnee' ) ) {
         wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx' ), filemtime( get_template_directory() . '/assets/js/pages/single-randonnee.js' ), true );
     }
 }

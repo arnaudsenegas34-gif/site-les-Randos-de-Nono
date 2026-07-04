@@ -224,6 +224,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
             <div class="sr-related-info">
               <span class="sr-related-title"><?php echo esc_html( get_the_title( $article ) ); ?></span>
               <span class="sr-related-lieu"><?php echo esc_html( get_the_date( 'j F Y', $article ) ); ?></span>
+              <p class="sr-articles-excerpt"><?php echo esc_html( wp_trim_words( wp_strip_all_tags( $article->post_content ), 20, '…' ) ); ?></p>
             </div>
           </a>
         <?php endforeach; ?>

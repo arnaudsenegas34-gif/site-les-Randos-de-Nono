@@ -427,6 +427,13 @@
   font-size: 0.8rem;
   color: var(--vert);
 }
+.sr-articles-excerpt {
+  font-size: 0.82rem;
+  color: var(--gris);
+  font-weight: 300;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+}
 
 /* ══════════════════════ RESPONSIVE ══════════════════════ */
 @media (max-width: 900px) {
