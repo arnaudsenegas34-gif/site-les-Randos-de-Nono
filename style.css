@@ -392,9 +392,10 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .apropos-visual { background: var(--beige); border-radius: 6px; padding: 1.75rem; display: flex; flex-direction: column; gap: 1.1rem; }
 .apropos-stat { display: flex; align-items: center; gap: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid rgba(46,94,59,0.12); }
 .apropos-stat:last-child { border-bottom: none; padding-bottom: 0; }
-.apropos-stat .num { font-family: 'Abril Fatface', serif; font-size: 1.75rem; color: var(--orange); min-width: 3.5rem; line-height: 1; }
-.apropos-stat .info .label { font-size: 0.76rem; color: var(--sombre); font-weight: 700; }
-.apropos-stat .info .sub { font-size: 0.7rem; color: var(--gris); font-weight: 300; }
+.apropos-stat .num { font-family: 'Abril Fatface', serif; font-size: 1.75rem; color: var(--orange); min-width: 3.5rem; line-height: 1; flex-shrink: 0; overflow-wrap: break-word; }
+.apropos-stat .info { min-width: 0; }
+.apropos-stat .info .label { font-size: 0.76rem; color: var(--sombre); font-weight: 700; overflow-wrap: break-word; }
+.apropos-stat .info .sub { font-size: 0.7rem; color: var(--gris); font-weight: 300; overflow-wrap: break-word; }
 
 /* ══════════════════════ PAGE SIMPLE (mentions légales) ══════════════════════ */
 .simple-page { max-width: 700px; margin: 0 auto; padding: 4rem 2rem 6rem; }

@@ -97,6 +97,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
 }
 .sr-meta-icon {
   color: var(--orange);
@@ -108,11 +109,13 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 700;
+  overflow-wrap: break-word;
 }
 .sr-meta-value {
   font-family: 'Abril Fatface', serif;
   color: var(--vert);
   font-size: 1.2rem;
+  overflow-wrap: break-word;
 }
 
 /* ══════════════════════ CONTENU ══════════════════════ */
