@@ -348,7 +348,7 @@ $show_projet = $projet_actif && $projet_titre;
     <?php if ( $show_projet && $projet_description ) : ?>
       <p><?php echo esc_html( $projet_description ); ?></p>
     <?php endif; ?>
-    <p style="font-size:0.85rem;opacity:0.7;margin-top:1.25rem">Une question, une suggestion ? <a href="mailto:arnaud.senegas34@gmail.com" style="color:var(--orange)">arnaud.senegas34@gmail.com</a></p>
+    <p style="font-size:0.85rem;opacity:0.7;margin-top:1.25rem">Une question, une suggestion ? <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>" style="color:var(--orange)">Contacte-moi</a></p>
   </div>
   <div class="apropos-visual">
     <div class="apropos-stat">
