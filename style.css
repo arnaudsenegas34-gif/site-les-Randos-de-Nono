@@ -507,6 +507,20 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .filter-reset { font-size: 0.78rem; color: var(--gris); text-decoration: underline; align-self: center; }
 .filter-reset:hover { color: var(--orange); }
 
+.archive-map-wrap { margin-bottom: 2rem; }
+.archive-map {
+  height: 420px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(46,94,59,0.2);
+}
+.archive-map-popup { display: flex; flex-direction: column; width: 190px; font-family: 'Merriweather', serif; }
+.archive-map-popup img { width: 100%; height: 100px; object-fit: cover; border-radius: 3px 3px 0 0; }
+.archive-map-popup .amp-body { padding: 0.6rem 0.15rem 0.15rem; }
+.archive-map-popup .amp-titre { font-family: 'Abril Fatface', serif; font-size: 0.95rem; color: var(--vert); margin-bottom: 0.2rem; line-height: 1.2; }
+.archive-map-popup .amp-meta { font-size: 0.7rem; color: var(--gris); margin-bottom: 0.45rem; }
+.archive-map-popup .amp-link { font-size: 0.75rem; color: var(--orange); font-weight: 700; text-decoration: underline; }
+
 .archive-count { font-size: 0.85rem; color: var(--gris); font-weight: 300; margin-bottom: 1.5rem; }
 
 .archive-pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 3rem; flex-wrap: wrap; }
@@ -545,6 +559,7 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
   .derniere-img-wrap { min-height: 240px; }
   .derniere-content { padding: 2rem 1.5rem; }
   .stats-grid, .stats-grid-5 { grid-template-columns: repeat(2, 1fr); }
+  .archive-map { height: 300px; }
 }
 
 /* Menu mobile déroulant */

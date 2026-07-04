@@ -38,6 +38,35 @@ $archive_query = new WP_Query( $args );
 
 // Toutes les difficultés disponibles pour le filtre
 $all_difficultes = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' => true ) );
+
+// Marqueurs de la carte : mêmes filtres que la liste, mais sans pagination —
+// la carte doit toujours montrer TOUTES les randonnées correspondantes.
+$map_args = $args;
+unset( $map_args['paged'] );
+$map_args['posts_per_page'] = -1;
+$map_query = new WP_Query( $map_args );
+
+$map_markers = array();
+if ( $map_query->have_posts() ) {
+    while ( $map_query->have_posts() ) {
+        $map_query->the_post();
+        $mid = get_the_ID();
+        $mlat = get_post_meta( $mid, 'rando_lat', true );
+        $mlon = get_post_meta( $mid, 'rando_lon', true );
+        if ( $mlat === '' || $mlon === '' ) continue;
+
+        $map_markers[] = array(
+            'lat'      => (float) $mlat,
+            'lon'      => (float) $mlon,
+            'titre'    => get_the_title(),
+            'lieu'     => get_post_meta( $mid, 'rando_lieu', true ),
+            'distance' => get_post_meta( $mid, 'rando_distance', true ),
+            'url'      => get_permalink( $mid ),
+            'thumb'    => get_the_post_thumbnail_url( $mid, 'medium' ),
+        );
+    }
+    wp_reset_postdata();
+}
 ?>
 
 <section class="site-section" style="padding-top:3rem">
@@ -72,6 +101,13 @@ $all_difficultes = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' =>
       <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="filter-reset">Réinitialiser</a>
     <?php endif; ?>
   </form>
+
+  <!-- ════════ CARTE D'ENSEMBLE ════════ -->
+  <?php if ( ! empty( $map_markers ) ) : ?>
+    <div class="archive-map-wrap">
+      <div class="archive-map" id="archive-map" data-markers='<?php echo esc_attr( wp_json_encode( $map_markers ) ); ?>'></div>
+    </div>
+  <?php endif; ?>
 
   <!-- ════════ RÉSULTATS ════════ -->
   <?php if ( $archive_query->have_posts() ) : ?>

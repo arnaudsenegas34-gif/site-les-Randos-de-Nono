@@ -86,6 +86,11 @@ function rando_nono_assets() {
     if ( is_singular( 'randonnee' ) ) {
         wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx' ), filemtime( get_template_directory() . '/assets/js/pages/single-randonnee.js' ), true );
     }
+
+    // ── Carte d'ensemble (page "Toutes les randonnées") ──
+    if ( is_post_type_archive( 'randonnee' ) ) {
+        wp_enqueue_script( 'rando-nono-archive-map', $theme_uri . '/assets/js/pages/archive-map.js', array( 'leaflet' ), filemtime( get_template_directory() . '/assets/js/pages/archive-map.js' ), true );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'rando_nono_assets' );
 
