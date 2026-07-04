@@ -153,7 +153,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       <div class="sr-map-actions">
         <?php if ( $maps_url ) : ?>
           <a href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener" class="btn btn-sm">
-            <?php echo rando_nono_icon( 'map' ); ?> Ouvrir dans Maps
+            <?php echo rando_nono_icon( 'map' ); ?> Activité Suunto
           </a>
         <?php endif; ?>
         <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo esc_attr( $lat ); ?>,<?php echo esc_attr( $lon ); ?>&travelmode=driving" target="_blank" rel="noopener" class="btn btn-sm sr-btn-gpx">

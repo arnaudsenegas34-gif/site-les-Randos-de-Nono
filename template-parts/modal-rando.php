@@ -65,7 +65,7 @@
           <div class="map-container leaflet-wrap" id="rando-modal-map" style="height:220px; border-radius:6px; overflow:hidden; margin-bottom:0.8rem;"></div>
           <div class="modal-map-actions" style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
             <a id="rando-modal-maps-link" href="#" target="_blank" rel="noopener" class="btn btn-sm">
-              <?php echo rando_nono_icon( 'map' ); ?> Ouvrir dans Maps
+              <?php echo rando_nono_icon( 'map' ); ?> Activité Suunto
             </a>
             <a id="rando-modal-nav-link" href="#" target="_blank" rel="noopener" class="btn btn-sm" style="background:var(--orange); display:none;">
               &#x1F9ED; Aller au départ
