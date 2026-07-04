@@ -27,6 +27,7 @@
       <a href="<?php echo esc_url( home_url( '/' ) ); ?>#matos" class="btn-nav">Matos de Nono</a>
       <a href="<?php echo esc_url( home_url( '/' ) ); ?>#statistiques" class="btn-nav">Statistiques</a>
       <a href="<?php echo esc_url( home_url( '/' ) ); ?>#apropos" class="btn-nav">À propos</a>
+      <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>" class="btn-nav">Contact</a>
     </nav>
   <?php endif; ?>
 
@@ -38,4 +39,5 @@
   <a href="<?php echo esc_url( home_url( '/' ) ); ?>#matos">Matos de Nono</a>
   <a href="<?php echo esc_url( home_url( '/' ) ); ?>#statistiques">Statistiques</a>
   <a href="<?php echo esc_url( home_url( '/' ) ); ?>#apropos">À propos</a>
+  <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">Contact</a>
 </div>

@@ -14,7 +14,7 @@ get_header();
     <p>
       <strong>Nom du site :</strong> Les Randos de Nono<br>
       <strong>Responsable de la publication :</strong> Arnaud SENEGAS<br>
-      <strong>Adresse e-mail :</strong> <a href="mailto:arnaud.senegas34@gmail.com">arnaud.senegas34@gmail.com</a>
+      <strong>Contact :</strong> via le <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>
     </p>
     <p>Le site est édité à titre personnel et non professionnel.</p>
 
@@ -53,14 +53,12 @@ get_header();
     <hr>
 
     <h2>Données personnelles</h2>
-    <p>Ce site ne dispose pas de formulaire de contact et ne collecte pas volontairement de données personnelles auprès des visiteurs.</p>
-    <p>Si vous contactez le responsable du site par courrier électronique, les informations transmises seront utilisées uniquement pour répondre à votre demande.</p>
+    <p>Ce site propose un <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>. Les informations que vous y transmettez (nom, e-mail, message) sont utilisées uniquement pour répondre à votre demande et ne sont ni conservées au-delà du nécessaire, ni transmises à des tiers.</p>
     <p>
       Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès,
       de rectification et de suppression des données vous concernant.
     </p>
-    <p>Pour toute demande relative à vos données personnelles :</p>
-    <p><a href="mailto:arnaud.senegas34@gmail.com">arnaud.senegas34@gmail.com</a></p>
+    <p>Pour toute demande relative à vos données personnelles, utilisez le <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>.</p>
 
     <hr>
 

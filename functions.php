@@ -412,6 +412,63 @@ add_action( 'init', function() {
 } );
 
 /* ──────────────────────────────────────────
+   5ter. CRÉATION AUTOMATIQUE DE LA PAGE "CONTACT" + TRAITEMENT DU FORMULAIRE
+   ────────────────────────────────────────── */
+function rando_nono_create_contact_page() {
+    if ( get_page_by_path( 'contact' ) ) return;
+    wp_insert_post( array(
+        'post_title'   => 'Contact',
+        'post_name'    => 'contact',
+        'post_status'  => 'publish',
+        'post_type'    => 'page',
+        'post_content' => '',
+    ) );
+}
+add_action( 'after_switch_theme', 'rando_nono_create_contact_page' );
+add_action( 'init', function() {
+    if ( get_transient( 'rando_nono_contact_checked' ) ) return;
+    rando_nono_create_contact_page();
+    set_transient( 'rando_nono_contact_checked', 1, DAY_IN_SECONDS );
+} );
+
+function rando_nono_handle_contact_form() {
+    if ( ! is_page( 'contact' ) || ! isset( $_POST['rando_nono_contact_submit'] ) ) return;
+
+    $redirect = get_permalink();
+
+    if ( ! isset( $_POST['rando_nono_contact_nonce'] ) || ! wp_verify_nonce( $_POST['rando_nono_contact_nonce'], 'rando_nono_contact_form' ) ) {
+        wp_safe_redirect( add_query_arg( 'contact', 'error', $redirect ) );
+        exit;
+    }
+
+    // Piège à robots : ce champ caché doit rester vide.
+    if ( ! empty( $_POST['site_web'] ) ) {
+        wp_safe_redirect( add_query_arg( 'contact', 'ok', $redirect ) );
+        exit;
+    }
+
+    $nom     = isset( $_POST['contact_nom'] ) ? sanitize_text_field( wp_unslash( $_POST['contact_nom'] ) ) : '';
+    $email   = isset( $_POST['contact_email'] ) ? sanitize_email( wp_unslash( $_POST['contact_email'] ) ) : '';
+    $message = isset( $_POST['contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contact_message'] ) ) : '';
+
+    if ( '' === $nom || ! is_email( $email ) || '' === $message ) {
+        wp_safe_redirect( add_query_arg( 'contact', 'error', $redirect ) );
+        exit;
+    }
+
+    $to      = 'arnaud.senegas34@gmail.com';
+    $subject = 'Nouveau message depuis Les Randos de Nono';
+    $body    = "Nom : {$nom}\nEmail : {$email}\n\nMessage :\n{$message}";
+    $headers = array( 'Reply-To: ' . $nom . ' <' . $email . '>' );
+
+    $sent = wp_mail( $to, $subject, $body, $headers );
+
+    wp_safe_redirect( add_query_arg( 'contact', $sent ? 'ok' : 'error', $redirect ) );
+    exit;
+}
+add_action( 'template_redirect', 'rando_nono_handle_contact_form' );
+
+/* ──────────────────────────────────────────
    6. NETTOYAGE — sécurité & performance de base
    ────────────────────────────────────────── */
 remove_action( 'wp_head', 'wp_generator' );
