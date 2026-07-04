@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 
+<main id="main-content">
+
 <!-- ════════ HERO ════════ -->
 <section class="hero" id="hero">
   <div class="hero-bg-layer" id="hero-bg-layer" style="background-image:url('<?php echo esc_url( get_template_directory_uri() . '/assets/img/hero-bg.jpg' ); ?>')"></div>
@@ -372,6 +374,7 @@ $show_projet = $projet_actif && $projet_titre;
   </div>
 </section>
 
+</main>
 
 <?php get_template_part( 'template-parts/modal', 'rando' ); ?>
 

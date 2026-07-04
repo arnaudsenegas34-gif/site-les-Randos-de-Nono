@@ -5,6 +5,9 @@
  */
 get_header();
 rando_nono_breadcrumb();
+?>
+<main id="main-content">
+<?php
 
 $selected_diff = isset( $_GET['difficulte'] ) ? sanitize_text_field( $_GET['difficulte'] ) : '';
 $selected_dist = isset( $_GET['distance'] ) ? sanitize_text_field( $_GET['distance'] ) : '';
@@ -139,6 +142,8 @@ if ( $map_query->have_posts() ) {
 
   <?php wp_reset_postdata(); ?>
 </section>
+
+</main>
 
 <?php get_template_part( 'template-parts/modal', 'rando' ); ?>
 

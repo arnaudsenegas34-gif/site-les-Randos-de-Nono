@@ -3,6 +3,8 @@ get_header();
 rando_nono_breadcrumb();
 ?>
 
+<main id="main-content">
+
 <section class="site-section" style="min-height:60vh;display:flex;align-items:center">
   <div class="error-404-inner">
 
@@ -57,5 +59,7 @@ rando_nono_breadcrumb();
 
   </div>
 </section>
+
+</main>
 
 <?php get_footer(); ?>

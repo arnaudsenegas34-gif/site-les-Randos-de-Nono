@@ -71,11 +71,13 @@
       const isOpen = mobileDrawer.classList.toggle('open');
       menuToggle.textContent = isOpen ? '✕' : '☰';
       menuToggle.setAttribute('aria-label', isOpen ? 'Fermer le menu' : 'Ouvrir le menu');
+      menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
     mobileDrawer.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
         mobileDrawer.classList.remove('open');
         menuToggle.textContent = '☰';
+        menuToggle.setAttribute('aria-expanded', 'false');
       });
     });
   }

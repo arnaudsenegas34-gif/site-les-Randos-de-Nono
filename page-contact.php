@@ -8,7 +8,7 @@ get_header();
 $statut = isset( $_GET['contact'] ) ? sanitize_key( $_GET['contact'] ) : '';
 ?>
 
-<main class="simple-page">
+<main class="simple-page" id="main-content">
   <article>
     <h1>Contact</h1>
     <p>Une question sur une rando, une trace GPX à signaler, une suggestion ? Écris-moi via ce formulaire, je réponds dès que possible.</p>

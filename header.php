@@ -8,6 +8,8 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
+<a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
 <header class="site-header">
   <a class="site-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">Les Randos de <span>Nono</span></a>
 
@@ -31,7 +33,7 @@
     </nav>
   <?php endif; ?>
 
-  <button class="menu-toggle" id="menu-toggle" aria-label="Ouvrir le menu">☰</button>
+  <button class="menu-toggle" id="menu-toggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="nav-mobile-drawer">☰</button>
 </header>
 
 <div class="nav-mobile-drawer" id="nav-mobile-drawer">

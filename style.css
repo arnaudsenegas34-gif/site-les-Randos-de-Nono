@@ -14,13 +14,29 @@ Text Domain: rando-nono
   --beige:  #E8DFC8;
   --orange: #D97706;
   --blanc:  #FAF8F3;
-  --gris:   #6B6B5E;
+  --gris:   #5E5E52;
   --sombre: #1A2E1F;
   --ligne:  rgba(46,94,59,0.12);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
+
+/* Lien d'évitement — invisible tant qu'il n'a pas le focus clavier */
+.skip-link {
+  position: absolute;
+  top: -3rem;
+  left: 0.5rem;
+  z-index: 9999;
+  background: var(--vert);
+  color: #fff;
+  padding: 0.7rem 1.2rem;
+  border-radius: 0 0 5px 5px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0; }
 
 /* Sortie de page — déclenché par JS avant navigation */
 body.page-exit {

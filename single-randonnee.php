@@ -52,6 +52,8 @@ $diff_classes = array( 'facile' => 'diff-facile', 'moyen' => 'diff-moyen', 'diff
 $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficulte ] : 'diff-moyen';
 ?>
 
+<main id="main-content">
+
 <?php rando_nono_breadcrumb(); ?>
 
 <!-- HERO -->
@@ -335,6 +337,8 @@ if ( $related_query->have_posts() ) :
 <?php endif; ?>
 
 <?php endwhile; ?>
+
+</main>
 
 <!-- LIGHTBOX -->
 <div class="sr-lightbox" id="sr-lightbox" aria-hidden="true">

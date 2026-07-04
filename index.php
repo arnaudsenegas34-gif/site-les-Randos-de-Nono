@@ -2,7 +2,7 @@
 get_header();
 ?>
 
-<main class="simple-page">
+<main class="simple-page" id="main-content">
   <?php if ( have_posts() ) : ?>
     <?php while ( have_posts() ) : the_post(); ?>
       <article style="margin-bottom:3rem">

@@ -6,7 +6,7 @@
 get_header();
 ?>
 
-<main class="simple-page">
+<main class="simple-page" id="main-content">
   <article>
     <h1>Mentions légales</h1>
 
