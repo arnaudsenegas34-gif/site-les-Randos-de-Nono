@@ -433,6 +433,14 @@ function rando_nono_seo_meta_tags() {
     } elseif ( is_page() ) {
         $description = wp_trim_words( get_the_content(), 28, '…' );
         $title = get_the_title() . ' | ' . get_bloginfo( 'name' );
+    } elseif ( is_singular( 'post' ) ) {
+        $description = has_excerpt() ? get_the_excerpt() : wp_trim_words( get_the_content(), 28, '…' );
+        $title = get_the_title() . ' | ' . get_bloginfo( 'name' );
+        $thumb = get_the_post_thumbnail_url( get_the_ID(), 'large' );
+        if ( $thumb ) $image = $thumb;
+    } elseif ( is_home() || is_category() || is_tag() ) {
+        $description = 'Actus, récits et conseils de randonnée par Nono.';
+        $title = ( is_home() ? 'Actus & récits' : single_cat_title( '', false ) . ' — Actus' ) . ' | ' . get_bloginfo( 'name' );
     }
 
     if ( ! $description ) {
@@ -442,7 +450,7 @@ function rando_nono_seo_meta_tags() {
     echo "\n" . '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
     echo '<meta property="og:title" content="' . esc_attr( $title ) . '">' . "\n";
     echo '<meta property="og:description" content="' . esc_attr( $description ) . '">' . "\n";
-    echo '<meta property="og:type" content="' . ( is_singular( 'randonnee' ) ? 'article' : 'website' ) . '">' . "\n";
+    echo '<meta property="og:type" content="' . ( is_singular( 'randonnee' ) || is_singular( 'post' ) ? 'article' : 'website' ) . '">' . "\n";
     echo '<meta property="og:url" content="' . esc_url( $url ) . '">' . "\n";
     echo '<meta property="og:image" content="' . esc_url( $image ) . '">' . "\n";
     echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
@@ -514,10 +522,12 @@ function rando_nono_schema_jsonld() {
 }
 add_action( 'wp_head', 'rando_nono_schema_jsonld', 3 );
 
-// S'assurer que le CPT randonnee est inclus dans le sitemap WordPress (>=5.5)
+// S'assurer que les CPT randonnee et matos sont inclus dans le sitemap WordPress (>=5.5)
 add_filter( 'wp_sitemaps_post_types', function( $post_types ) {
-    if ( ! isset( $post_types['randonnee'] ) ) {
-        $post_types['randonnee'] = get_post_type_object( 'randonnee' );
+    foreach ( array( 'randonnee', 'matos' ) as $cpt ) {
+        if ( ! isset( $post_types[ $cpt ] ) ) {
+            $post_types[ $cpt ] = get_post_type_object( $cpt );
+        }
     }
     return $post_types;
 } );
@@ -601,6 +611,67 @@ function rando_nono_auto_alt_text( $attr, $attachment, $size ) {
     return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'rando_nono_auto_alt_text', 10, 3 );
+
+/* ──────────────────────────────────────────
+   7ter. VÉRIFICATION SEARCH CONSOLE / BING WEBMASTER — configurable depuis l'admin
+   ────────────────────────────────────────── */
+function rando_nono_seo_verif_menu() {
+    add_options_page(
+        'Vérification SEO',
+        'Vérification SEO',
+        'manage_options',
+        'rando-nono-seo-verif',
+        'rando_nono_seo_verif_page'
+    );
+}
+add_action( 'admin_menu', 'rando_nono_seo_verif_menu' );
+
+function rando_nono_seo_verif_register_settings() {
+    register_setting( 'rando_nono_seo_verif_group', 'rando_nono_google_verif', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+    register_setting( 'rando_nono_seo_verif_group', 'rando_nono_bing_verif', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+}
+add_action( 'admin_init', 'rando_nono_seo_verif_register_settings' );
+
+function rando_nono_seo_verif_page() {
+    ?>
+    <div class="wrap">
+        <h1>Vérification SEO</h1>
+        <p>Renseigne ici les codes de vérification fournis par <strong>Google Search Console</strong> et <strong>Bing Webmaster Tools</strong> pour prouver que tu es propriétaire du site (méthode « balise HTML »), sans avoir à modifier de fichier.</p>
+        <form method="post" action="options.php">
+            <?php settings_fields( 'rando_nono_seo_verif_group' ); ?>
+            <table class="form-table">
+                <tr>
+                    <th><label for="rando_nono_google_verif">Google Search Console</label></th>
+                    <td>
+                        <input type="text" style="width:400px" id="rando_nono_google_verif" name="rando_nono_google_verif" value="<?php echo esc_attr( get_option( 'rando_nono_google_verif' ) ); ?>" placeholder="Contenu de la balise meta (ex: AbCdEf123...)" />
+                        <p class="description">Dans Search Console : Paramètres → Propriété → Vérifier la propriété → méthode « Balise HTML » → copie uniquement la valeur de l'attribut <code>content</code>.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="rando_nono_bing_verif">Bing Webmaster Tools</label></th>
+                    <td>
+                        <input type="text" style="width:400px" id="rando_nono_bing_verif" name="rando_nono_bing_verif" value="<?php echo esc_attr( get_option( 'rando_nono_bing_verif' ) ); ?>" placeholder="Contenu de la balise meta" />
+                        <p class="description">Dans Bing Webmaster Tools : Paramètres → Vérification de propriété → méthode « Balise meta » → copie uniquement la valeur de l'attribut <code>content</code>.</p>
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
+}
+
+function rando_nono_seo_verif_meta_tags() {
+    $google = get_option( 'rando_nono_google_verif' );
+    $bing   = get_option( 'rando_nono_bing_verif' );
+    if ( $google ) {
+        echo '<meta name="google-site-verification" content="' . esc_attr( $google ) . '">' . "\n";
+    }
+    if ( $bing ) {
+        echo '<meta name="msvalidate.01" content="' . esc_attr( $bing ) . '">' . "\n";
+    }
+}
+add_action( 'wp_head', 'rando_nono_seo_verif_meta_tags', 1 );
 
 /* ──────────────────────────────────────────
    8. GOOGLE ANALYTICS (GA4) — configurable depuis l'admin, sans coder

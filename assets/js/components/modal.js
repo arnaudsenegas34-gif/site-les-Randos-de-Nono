@@ -107,7 +107,7 @@
       _fillList('rando-modal-sac',     d.sac,     'Aucun détail renseigné');
       _fillList('rando-modal-conseils', d.conseils, 'Aucun conseil renseigné');
 
-      _buildSlideshow(_parseJson(d.photos));
+      _buildSlideshow(_parseJson(d.photos), d.titre || '');
 
       var meteoEl = document.getElementById('rando-modal-meteo');
       if (meteoEl) {
@@ -262,7 +262,7 @@
       });
     }
 
-    function _buildSlideshow(photos) {
+    function _buildSlideshow(photos, titre) {
       if (!slideshow) return;
       slideshow.innerHTML = '';
       if (slideDots) slideDots.innerHTML = '';
@@ -283,7 +283,7 @@
         var slide = document.createElement('div');
         slide.className = 'slide' + (i === 0 ? ' active' : '');
         var img = new Image();
-        img.src = url; img.alt = '';
+        img.src = url; img.alt = titre ? titre + ' — photo ' + (i + 1) : 'Photo ' + (i + 1);
         slide.appendChild(img);
         slideshow.appendChild(slide);
 

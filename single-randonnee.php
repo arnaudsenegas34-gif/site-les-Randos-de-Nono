@@ -26,8 +26,12 @@ $photos_urls = array();
 if ( $photos_raw ) {
     $ids = array_map( 'trim', explode( ',', $photos_raw ) );
     foreach ( $ids as $photo_id ) {
-        $url = wp_get_attachment_image_url( intval( $photo_id ), 'large' );
-        if ( $url ) $photos_urls[] = $url;
+        $photo_id = intval( $photo_id );
+        $url = wp_get_attachment_image_url( $photo_id, 'large' );
+        if ( $url ) {
+            $alt = get_post_meta( $photo_id, '_wp_attachment_image_alt', true );
+            $photos_urls[] = array( 'url' => $url, 'alt' => $alt );
+        }
     }
 }
 $sac_items     = $sac_raw ? array_filter( array_map( 'trim', explode( "\n", $sac_raw ) ) ) : array();
@@ -153,8 +157,9 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     <div class="sr-photos-section">
       <h2 class="sr-section-title">Photos</h2>
       <div class="sr-photos-grid">
-        <?php foreach ( $photos_urls as $i => $photo_url ) : ?>
-          <img class="sr-photo" src="<?php echo esc_url( $photo_url ); ?>" alt="<?php echo esc_attr( get_the_title() . ' - photo ' . ( $i + 1 ) ); ?>" loading="lazy" data-index="<?php echo intval( $i ); ?>">
+        <?php foreach ( $photos_urls as $i => $photo ) : ?>
+          <?php $alt_text = $photo['alt'] ? $photo['alt'] : get_the_title() . ' - photo ' . ( $i + 1 ); ?>
+          <img class="sr-photo" src="<?php echo esc_url( $photo['url'] ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" loading="lazy" data-index="<?php echo intval( $i ); ?>">
         <?php endforeach; ?>
       </div>
     </div>
