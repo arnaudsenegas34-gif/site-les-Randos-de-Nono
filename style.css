@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 3.2
+Version: 3.3
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -403,6 +403,7 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .simple-page h2 { font-size: 1.2rem; color: var(--vert); margin-bottom: 0.7rem; margin-top: 2.25rem; }
 .simple-page p { color: var(--gris); font-weight: 300; margin-bottom: 0.7rem; font-size: 0.93rem; }
 .simple-page a { color: var(--orange); }
+.simple-page a.btn { color: #fff; }
 .simple-page .card { background: var(--beige); border-radius: 5px; padding: 1.4rem; margin-top: 1rem; }
 
 /* ══════════════════════ PARTAGE SOCIAL ══════════════════════ */
