@@ -199,6 +199,7 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   gap: 1.5rem;
+  margin-top: 2.5rem;
 }
 /* La première carte de la grille prend deux colonnes en format paysage,
    pour casser la monotonie d'une grille parfaitement régulière */
