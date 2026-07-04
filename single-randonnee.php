@@ -37,6 +37,15 @@ if ( $photos_raw ) {
 $sac_items     = $sac_raw ? array_filter( array_map( 'trim', explode( "\n", $sac_raw ) ) ) : array();
 $conseils_items = $conseils_raw ? array_filter( array_map( 'trim', explode( "\n", $conseils_raw ) ) ) : array();
 
+$linked_articles = get_posts( array(
+    'post_type'      => 'post',
+    'posts_per_page' => -1,
+    'meta_key'       => 'article_rando_id',
+    'meta_value'     => $id,
+    'orderby'        => 'date',
+    'order'          => 'DESC',
+) );
+
 $thumb_large = get_the_post_thumbnail_url( $id, 'full' );
 
 $diff_classes = array( 'facile' => 'diff-facile', 'moyen' => 'diff-moyen', 'difficile' => 'diff-difficile' );
@@ -196,6 +205,29 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
           <li><?php echo esc_html( $conseil ); ?></li>
         <?php endforeach; ?>
       </ul>
+    </div>
+    <?php endif; ?>
+
+    <!-- ARTICLES & RÉCITS LIÉS -->
+    <?php if ( ! empty( $linked_articles ) ) : ?>
+    <div class="sr-articles-section">
+      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'book' ); ?> Articles &amp; r&eacute;cits li&eacute;s</h2>
+      <div class="sr-related-grid">
+        <?php foreach ( $linked_articles as $article ) : ?>
+          <a href="<?php echo esc_url( get_permalink( $article ) ); ?>" class="sr-related-card">
+            <?php if ( has_post_thumbnail( $article ) ) : ?>
+            <div class="sr-related-img-wrap">
+              <img src="<?php echo esc_url( get_the_post_thumbnail_url( $article, 'medium' ) ); ?>"
+                   alt="<?php echo esc_attr( get_the_title( $article ) ); ?>" loading="lazy">
+            </div>
+            <?php endif; ?>
+            <div class="sr-related-info">
+              <span class="sr-related-title"><?php echo esc_html( get_the_title( $article ) ); ?></span>
+              <span class="sr-related-lieu"><?php echo esc_html( get_the_date( 'j F Y', $article ) ); ?></span>
+            </div>
+          </a>
+        <?php endforeach; ?>
+      </div>
     </div>
     <?php endif; ?>
 

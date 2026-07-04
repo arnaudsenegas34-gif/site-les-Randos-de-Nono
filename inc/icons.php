@@ -22,6 +22,7 @@ function rando_nono_icon( $name, $class = '' ) {
         'check' => '<polyline points="20 6 9 17 4 12"/>',
         'arrow-right' => '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
         'search' => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        'book' => '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
     );
 
     if ( ! isset( $icons[ $name ] ) ) return '';
