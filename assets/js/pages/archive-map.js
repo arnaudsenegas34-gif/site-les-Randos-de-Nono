@@ -34,7 +34,7 @@
       bounds.push([m.lat, m.lon]);
 
       var popupHtml = '<div class="archive-map-popup">' +
-        (m.thumb ? '<img src="' + m.thumb + '" alt="">' : '') +
+        (m.thumb ? '<img src="' + m.thumb + '" alt="' + esc(m.titre) + '" loading="lazy" decoding="async">' : '') +
         '<div class="amp-body">' +
           '<div class="amp-titre">' + esc(m.titre) + '</div>' +
           '<div class="amp-meta">' + esc(m.lieu) + (m.distance ? ' · ' + esc(m.distance) : '') + '</div>' +

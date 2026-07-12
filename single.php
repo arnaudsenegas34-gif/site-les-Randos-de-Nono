@@ -33,7 +33,7 @@ if ( $rando_id ) {
 <main class="simple-page" id="main-content">
   <article>
     <?php if ( has_post_thumbnail() ) : ?>
-      <img src="<?php echo esc_url( get_the_post_thumbnail_url( $id, 'large' ) ); ?>" alt="<?php the_title_attribute(); ?>" style="width:100%;border-radius:8px;margin-bottom:1.5rem">
+      <img src="<?php echo esc_url( get_the_post_thumbnail_url( $id, 'large' ) ); ?>" alt="<?php the_title_attribute(); ?>" style="width:100%;border-radius:8px;margin-bottom:1.5rem" decoding="async" fetchpriority="high">
     <?php endif; ?>
     <h1><?php the_title(); ?></h1>
     <p style="font-size:0.8rem;color:var(--gris);margin-top:-0.3rem"><?php echo esc_html( get_the_date( 'j F Y' ) ); ?></p>

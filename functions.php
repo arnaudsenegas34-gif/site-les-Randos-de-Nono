@@ -498,66 +498,163 @@ function rando_nono_force_pretty_permalinks() {
 add_action( 'after_switch_theme', 'rando_nono_force_pretty_permalinks' );
 
 /* ──────────────────────────────────────────
-   7. SEO DE BASE — meta description + Open Graph
+   7. SEO DE BASE — title, meta description, Open Graph, Twitter Cards
    (pas de plugin nécessaire pour ce niveau de besoin)
    ────────────────────────────────────────── */
+
+// Séparateur "|" pour tous les <title> (donne "Titre | Les Randos de Nono").
+add_filter( 'document_title_separator', function() { return '|'; } );
+
+/**
+ * Tronque un texte à $max caractères sur une frontière de mot, avec ellipse.
+ */
+function rando_nono_trim_title( $text, $max ) {
+    $text = trim( $text );
+    if ( mb_strlen( $text ) <= $max ) return $text;
+    $trimmed    = mb_substr( $text, 0, $max );
+    $last_space = mb_strrpos( $trimmed, ' ' );
+    if ( false !== $last_space && $last_space > $max * 0.5 ) {
+        $trimmed = mb_substr( $trimmed, 0, $last_space );
+    }
+    return rtrim( $trimmed, " \t\n\r\0\x0B–—," ) . '…';
+}
+
+/**
+ * Recadre une meta description sur la fourchette [140, 160] caractères
+ * (coupe proprement sur un mot, sans dépasser $max).
+ */
+function rando_nono_meta_description_trim( $text, $max = 160 ) {
+    $text = trim( preg_replace( '/\s+/u', ' ', (string) $text ) );
+    if ( mb_strlen( $text ) > $max ) {
+        $trimmed    = mb_substr( $text, 0, $max - 1 );
+        $last_space = mb_strrpos( $trimmed, ' ' );
+        if ( false !== $last_space && $last_space > $max * 0.6 ) {
+            $trimmed = mb_substr( $trimmed, 0, $last_space );
+        }
+        $text = rtrim( $trimmed, " \t\n\r\0\x0B,." ) . '…';
+    }
+    return $text;
+}
+
+/**
+ * Title tag propre par contexte — budget ~55-60 caractères en tenant compte
+ * du " | Les Randos de Nono" ajouté automatiquement par WordPress
+ * (add_theme_support('title-tag') + document_title_parts).
+ */
+function rando_nono_document_title_parts( $title ) {
+    $overhead = mb_strlen( ' | ' . get_bloginfo( 'name' ) );
+    $budget   = max( 25, 60 - $overhead );
+
+    if ( is_singular( 'randonnee' ) ) {
+        global $post;
+        $lieu       = get_post_meta( $post->ID, 'rando_lieu', true );
+        $base_title = get_the_title();
+        $with_lieu  = $lieu ? $base_title . ' — ' . $lieu : $base_title;
+        $title['title'] = ( mb_strlen( $with_lieu ) <= $budget )
+            ? $with_lieu
+            : rando_nono_trim_title( $base_title, $budget );
+    } elseif ( is_front_page() ) {
+        $title['title']   = 'Les Randos de Nono';
+        $title['tagline'] = 'carnet de randonnée & traces GPX';
+    } elseif ( is_post_type_archive( 'randonnee' ) ) {
+        $title['title'] = rando_nono_trim_title( 'Toutes les randonnées avec trace GPX', $budget );
+    } elseif ( is_singular( 'matos' ) ) {
+        $title['title'] = rando_nono_trim_title( get_the_title() . ' — matériel testé', $budget );
+    } elseif ( is_page() ) {
+        $title['title'] = rando_nono_trim_title( get_the_title(), $budget );
+    }
+    return $title;
+}
+add_filter( 'document_title_parts', 'rando_nono_document_title_parts' );
+
 function rando_nono_seo_meta_tags() {
     $description = '';
     $title       = get_bloginfo( 'name' );
     $image       = get_template_directory_uri() . '/assets/img/og-image.jpg';
     $url         = home_url( add_query_arg( null, null ) );
+    $keywords    = '';
 
     if ( is_singular( 'randonnee' ) ) {
         global $post;
-        $lieu      = get_post_meta( $post->ID, 'rando_lieu', true );
-        $distance  = get_post_meta( $post->ID, 'rando_distance', true );
-        $denivele  = get_post_meta( $post->ID, 'rando_denivele', true );
-        $duree     = get_post_meta( $post->ID, 'rando_duree', true );
-        $content_desc = wp_trim_words( get_the_content(), 28, '…' );
-        if ( $content_desc ) {
-            $description = $content_desc;
-        } else {
-            $parts = array_filter( array( $distance, $denivele, $duree ) );
-            $description = 'Randonnée' . ( $lieu ? ' à ' . $lieu : '' )
-                . ( $parts ? ' : ' . implode( ', ', $parts ) : '' )
-                . '. Retrouvez la trace GPX, les photos et tous les détails de cette sortie.';
-        }
+        $lieu       = get_post_meta( $post->ID, 'rando_lieu', true );
+        $distance   = get_post_meta( $post->ID, 'rando_distance', true );
+        $duree      = get_post_meta( $post->ID, 'rando_duree', true );
+        $diff_terms = get_the_terms( $post->ID, 'difficulte' );
+        $difficulte = $diff_terms && ! is_wp_error( $diff_terms ) ? strtolower( $diff_terms[0]->name ) : '';
+
+        // Description générée automatiquement : nom + lieu + difficulté + stats + appel à l'action.
+        $phrase = 'Randonnée ' . get_the_title();
+        if ( $lieu )       $phrase .= ' à ' . $lieu;
+        if ( $difficulte ) $phrase .= ', niveau ' . $difficulte;
+        $stats = array_filter( array( $distance, $duree ) );
+        if ( $stats )      $phrase .= ' (' . implode( ', ', $stats ) . ')';
+        $phrase .= '. Découvrez le récit complet, les photos et la trace GPX à télécharger.';
+
+        $description = rando_nono_meta_description_trim( $phrase );
         $title = get_the_title() . ( $lieu ? ' — ' . $lieu : '' ) . ' | ' . get_bloginfo( 'name' );
         $thumb = get_the_post_thumbnail_url( $post->ID, 'large' );
         if ( $thumb ) $image = $thumb;
+
+        $keywords = implode( ', ', array_filter( array( 'randonnée', $lieu, $difficulte ? 'randonnée ' . $difficulte : '', 'trace GPX', 'Hérault' ) ) );
+
     } elseif ( is_singular( 'matos' ) ) {
-        $description = wp_trim_words( get_the_content(), 28, '…' );
+        $content_desc = wp_strip_all_tags( get_the_content() );
+        $description  = rando_nono_meta_description_trim( $content_desc ?: get_the_title() . ' — le matériel de randonnée que Nono utilise vraiment sur le terrain, sortie après sortie.' );
         $title = get_the_title() . ' | Matos de Nono';
+
     } elseif ( is_post_type_archive( 'randonnee' ) ) {
-        $description = 'Toutes les randonnées documentées par Nono dans l\'Hérault et ailleurs : traces GPX, photos, météo en temps réel et détails de chaque sortie.';
+        $description = rando_nono_meta_description_trim( 'Toutes les randonnées documentées par Nono dans l\'Hérault et ailleurs : distance, dénivelé, difficulté, trace GPX et météo en temps réel pour chaque sortie.' );
         $title = 'Toutes les randonnées | ' . get_bloginfo( 'name' );
+
     } elseif ( is_front_page() ) {
-        $description = 'Carnet de randonnée : récits, traces GPX à télécharger, météo en temps réel, équipement et statistiques de mes sorties dans l\'Hérault et ailleurs.';
+        $description = rando_nono_meta_description_trim( 'Carnet de randonnée dans l\'Hérault et ailleurs : récits, traces GPX à télécharger, météo en temps réel, équipement et statistiques de mes sorties.' );
         $title = get_bloginfo( 'name' ) . ' — Carnet de randonnée, traces GPX & Hérault';
+
     } elseif ( is_page() ) {
-        $description = wp_trim_words( get_the_content(), 28, '…' );
+        $content_desc = wp_strip_all_tags( get_the_content() );
+        $description  = rando_nono_meta_description_trim( $content_desc ?: get_the_title() . ' — ' . get_bloginfo( 'name' ) . '.' );
         $title = get_the_title() . ' | ' . get_bloginfo( 'name' );
+
     } elseif ( is_singular( 'post' ) ) {
-        $description = has_excerpt() ? get_the_excerpt() : wp_trim_words( get_the_content(), 28, '…' );
+        $raw = has_excerpt() ? get_the_excerpt() : wp_strip_all_tags( get_the_content() );
+        $description = rando_nono_meta_description_trim( $raw );
         $title = get_the_title() . ' | ' . get_bloginfo( 'name' );
         $thumb = get_the_post_thumbnail_url( get_the_ID(), 'large' );
         if ( $thumb ) $image = $thumb;
+
     } elseif ( is_home() || is_category() || is_tag() ) {
-        $description = 'Actus, récits et conseils de randonnée par Nono.';
+        $description = rando_nono_meta_description_trim( 'Actus, récits de randonnée et conseils pratiques par Nono : équipement, itinéraires et traces GPX dans l\'Hérault et ailleurs.' );
         $title = ( is_home() ? 'Actus & récits' : single_cat_title( '', false ) . ' — Actus' ) . ' | ' . get_bloginfo( 'name' );
     }
 
     if ( ! $description ) {
-        $description = get_bloginfo( 'description' );
+        $description = rando_nono_meta_description_trim( get_bloginfo( 'description' ) ?: get_bloginfo( 'name' ) );
     }
 
+    $is_public = (bool) get_option( 'blog_public' );
+
     echo "\n" . '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
+    if ( $is_public ) {
+        echo '<meta name="robots" content="index, follow, max-image-preview:large">' . "\n";
+    }
+    echo '<meta name="author" content="Arnaud — ' . esc_attr( get_bloginfo( 'name' ) ) . '">' . "\n";
+    if ( $keywords ) {
+        echo '<meta name="keywords" content="' . esc_attr( $keywords ) . '">' . "\n";
+    }
+
     echo '<meta property="og:title" content="' . esc_attr( $title ) . '">' . "\n";
     echo '<meta property="og:description" content="' . esc_attr( $description ) . '">' . "\n";
     echo '<meta property="og:type" content="' . ( is_singular( 'randonnee' ) || is_singular( 'post' ) ? 'article' : 'website' ) . '">' . "\n";
     echo '<meta property="og:url" content="' . esc_url( $url ) . '">' . "\n";
     echo '<meta property="og:image" content="' . esc_url( $image ) . '">' . "\n";
+    echo '<meta property="og:site_name" content="' . esc_attr( get_bloginfo( 'name' ) ) . '">' . "\n";
+    echo '<meta property="og:locale" content="fr_FR">' . "\n";
+
     echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+    echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '">' . "\n";
+    echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '">' . "\n";
+    echo '<meta name="twitter:image" content="' . esc_url( $image ) . '">' . "\n";
+
     echo '<link rel="canonical" href="' . esc_url( $url ) . '">' . "\n";
 }
 add_action( 'wp_head', 'rando_nono_seo_meta_tags', 1 );
@@ -565,7 +662,53 @@ add_action( 'wp_head', 'rando_nono_seo_meta_tags', 1 );
 /* ──────────────────────────────────────────
    7bis. SCHEMA.ORG JSON-LD — données structurées pour Google
    ────────────────────────────────────────── */
+
+/**
+ * Extrait le dernier segment d'un lieu libre ("Mourèze, Hérault" → "Hérault"),
+ * utilisé comme niveau intermédiaire du fil d'Ariane et du BreadcrumbList.
+ */
+function rando_nono_lieu_region( $lieu ) {
+    if ( ! $lieu ) return '';
+    $parts = array_map( 'trim', explode( ',', $lieu ) );
+    return end( $parts );
+}
+
 function rando_nono_schema_jsonld() {
+
+    // ── Page d'accueil : WebSite + Organization ──
+    if ( is_front_page() ) {
+        $site_url = home_url( '/' );
+
+        $website = array(
+            '@context'        => 'https://schema.org',
+            '@type'           => 'WebSite',
+            'name'            => get_bloginfo( 'name' ),
+            'url'             => $site_url,
+            'inLanguage'      => 'fr-FR',
+            'potentialAction' => array(
+                '@type'       => 'SearchAction',
+                'target'      => array(
+                    '@type'       => 'EntryPoint',
+                    'urlTemplate' => get_post_type_archive_link( 'randonnee' ) . '?recherche={search_term_string}',
+                ),
+                'query-input' => 'required name=search_term_string',
+            ),
+        );
+
+        $organization = array(
+            '@context' => 'https://schema.org',
+            '@type'    => 'Organization',
+            'name'     => get_bloginfo( 'name' ),
+            'url'      => $site_url,
+            'logo'     => get_template_directory_uri() . '/assets/img/favicon-512.png',
+            'sameAs'   => array( 'https://www.instagram.com/a._.sng?igsh=MWpyYWVyazh6NWJ6dw==' ),
+        );
+
+        echo '<script type="application/ld+json">' . wp_json_encode( $website,      JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+        echo '<script type="application/ld+json">' . wp_json_encode( $organization, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+        return;
+    }
+
     if ( ! is_singular( 'randonnee' ) ) return;
     global $post;
 
@@ -573,6 +716,7 @@ function rando_nono_schema_jsonld() {
     $titre      = get_the_title( $id );
     $url        = get_permalink( $id );
     $lieu       = get_post_meta( $id, 'rando_lieu', true );
+    $region     = rando_nono_lieu_region( $lieu );
     $lat        = get_post_meta( $id, 'rando_lat', true );
     $lon        = get_post_meta( $id, 'rando_lon', true );
     $distance   = get_post_meta( $id, 'rando_distance', true );
@@ -587,42 +731,51 @@ function rando_nono_schema_jsonld() {
         ? mb_substr( $contenu, 0, 200 ) . ( mb_strlen( $contenu ) > 200 ? '…' : '' )
         : 'Randonnée' . ( $lieu ? ' à ' . $lieu : '' ) . ( $distance ? ' — ' . $distance : '' );
 
-    // BreadcrumbList
+    // BreadcrumbList — Accueil > Randonnées > [Région] > Titre
+    $crumbs = array(
+        array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Accueil',    'item' => home_url( '/' ) ),
+        array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Randonnées', 'item' => get_post_type_archive_link( 'randonnee' ) ),
+    );
+    if ( $region ) {
+        $crumbs[] = array(
+            '@type'    => 'ListItem',
+            'position' => 3,
+            'name'     => $region,
+            'item'     => add_query_arg( 'recherche', $region, get_post_type_archive_link( 'randonnee' ) ),
+        );
+    }
+    $crumbs[] = array( '@type' => 'ListItem', 'position' => count( $crumbs ) + 1, 'name' => $titre, 'item' => $url );
+
     $breadcrumb = array(
         '@context'        => 'https://schema.org',
         '@type'           => 'BreadcrumbList',
-        'itemListElement' => array(
-            array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Accueil',      'item' => home_url( '/' ) ),
-            array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Randonnées',   'item' => get_post_type_archive_link( 'randonnee' ) ),
-            array( '@type' => 'ListItem', 'position' => 3, 'name' => $titre,         'item' => $url ),
-        ),
+        'itemListElement' => $crumbs,
     );
 
-    // SportsActivity
-    $activity = array(
+    // HikingTrail / TouristAttraction — type dédié aux itinéraires de randonnée
+    $trail = array(
         '@context'    => 'https://schema.org',
-        '@type'       => 'SportsEvent',
+        '@type'       => array( 'HikingTrail', 'TouristAttraction' ),
         'name'        => $titre,
         'url'         => $url,
         'description' => $desc,
-        'sport'       => 'Randonnée pédestre',
     );
-    if ( $image ) $activity['image'] = $image;
+    if ( $image ) $trail['image'] = $image;
     if ( $lieu ) {
-        $activity['location'] = array( '@type' => 'Place', 'name' => $lieu );
-        if ( $lat && $lon ) {
-            $activity['location']['geo'] = array( '@type' => 'GeoCoordinates', 'latitude' => (float) $lat, 'longitude' => (float) $lon );
-        }
+        $trail['address'] = array( '@type' => 'PostalAddress', 'addressLocality' => $lieu, 'addressCountry' => 'FR' );
+    }
+    if ( $lat && $lon ) {
+        $trail['geo'] = array( '@type' => 'GeoCoordinates', 'latitude' => (float) $lat, 'longitude' => (float) $lon );
     }
     $props = array();
-    if ( $difficulte ) $props[] = array( '@type' => 'PropertyValue', 'name' => 'Difficulté',         'value' => $difficulte );
-    if ( $distance )   $props[] = array( '@type' => 'PropertyValue', 'name' => 'Distance',           'value' => $distance );
-    if ( $denivele )   $props[] = array( '@type' => 'PropertyValue', 'name' => 'Dénivelé positif',   'value' => $denivele );
-    if ( $duree )      $props[] = array( '@type' => 'PropertyValue', 'name' => 'Durée',              'value' => $duree );
-    if ( $props ) $activity['additionalProperty'] = $props;
+    if ( $difficulte ) $props[] = array( '@type' => 'PropertyValue', 'name' => 'Difficulté',       'value' => $difficulte );
+    if ( $distance )   $props[] = array( '@type' => 'PropertyValue', 'name' => 'Distance',         'value' => $distance );
+    if ( $denivele )   $props[] = array( '@type' => 'PropertyValue', 'name' => 'Dénivelé positif', 'value' => $denivele );
+    if ( $duree )      $props[] = array( '@type' => 'PropertyValue', 'name' => 'Durée',            'value' => $duree );
+    if ( $props ) $trail['additionalProperty'] = $props;
 
     echo '<script type="application/ld+json">' . wp_json_encode( $breadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
-    echo '<script type="application/ld+json">' . wp_json_encode( $activity,   JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+    echo '<script type="application/ld+json">' . wp_json_encode( $trail,      JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
 }
 add_action( 'wp_head', 'rando_nono_schema_jsonld', 3 );
 
@@ -635,6 +788,143 @@ add_filter( 'wp_sitemaps_post_types', function( $post_types ) {
     }
     return $post_types;
 } );
+
+// Inclure la taxonomie "difficulté" dans le sitemap XML natif (/wp-sitemap.xml).
+add_filter( 'wp_sitemaps_taxonomies', function( $taxonomies ) {
+    if ( ! isset( $taxonomies['difficulte'] ) ) {
+        $taxonomies['difficulte'] = get_taxonomy( 'difficulte' );
+    }
+    return $taxonomies;
+} );
+
+/**
+ * robots.txt virtuel — autorise l'indexation et référence le sitemap natif
+ * de WordPress (/wp-sitemap.xml, toujours à jour, inutile d'en écrire un statique).
+ * Ne s'applique que si le site est public (réglages > Lecture > "Décourager les
+ * moteurs de recherche" désactivé) : WordPress gère lui-même le cas contraire.
+ */
+add_filter( 'robots_txt', function( $output, $public ) {
+    if ( ! $public ) return $output;
+    $output  = "User-agent: *\n";
+    $output .= "Allow: /\n";
+    $output .= "Disallow: /wp-admin/\n";
+    $output .= "Allow: /wp-admin/admin-ajax.php\n";
+    $output .= "\n";
+    $output .= 'Sitemap: ' . home_url( '/wp-sitemap.xml' ) . "\n";
+    return $output;
+}, 10, 2 );
+
+/**
+ * Indices de ressources (preconnect) — uniquement sur les pages qui chargent
+ * réellement Leaflet / Chart.js, pour ne pas gaspiller de connexions ailleurs.
+ */
+add_filter( 'wp_resource_hints', function( $urls, $relation_type ) {
+    if ( 'preconnect' !== $relation_type ) return $urls;
+    $needs_leaflet = is_front_page() || is_post_type_archive( 'randonnee' ) || is_singular( 'randonnee' );
+    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' );
+    if ( $needs_leaflet ) {
+        $urls[] = 'https://unpkg.com';
+        $urls[] = 'https://cdnjs.cloudflare.com';
+    }
+    if ( $needs_modal ) {
+        $urls[] = 'https://cdn.jsdelivr.net';
+    }
+    return $urls;
+}, 10, 2 );
+
+/**
+ * Manifest, theme-color et préchargement des polices critiques (au-dessus
+ * de la ligne de flottaison sur toutes les pages : Abril Fatface pour les
+ * titres, Merriweather Regular pour le texte).
+ */
+function rando_nono_head_extra() {
+    $theme_uri = get_template_directory_uri();
+    echo '<link rel="manifest" href="' . esc_url( $theme_uri . '/manifest.json' ) . '">' . "\n";
+    echo '<meta name="theme-color" content="#2E5E3B">' . "\n";
+    echo '<link rel="preload" href="' . esc_url( $theme_uri . '/assets/fonts/abril-fatface.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+    echo '<link rel="preload" href="' . esc_url( $theme_uri . '/assets/fonts/merriweather-regular.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+}
+add_action( 'wp_head', 'rando_nono_head_extra', 1 );
+
+/* ──────────────────────────────────────────
+   MAILLAGE INTERNE AUTOMATIQUE — randonnées similaires
+   Sélectionne, sans aucune saisie manuelle, jusqu'à 4 randonnées proches
+   géographiquement, de même difficulté et de durée comparable.
+   ────────────────────────────────────────── */
+
+/**
+ * Convertit une durée texte libre ("4h30", "3 h", "2h") en minutes.
+ */
+function rando_nono_duree_to_minutes( $duree ) {
+    if ( ! $duree ) return null;
+    if ( preg_match( '/(\d+)\s*h(?:\D*(\d+))?/i', $duree, $m ) ) {
+        $h   = (int) $m[1];
+        $min = isset( $m[2] ) && '' !== $m[2] ? (int) $m[2] : 0;
+        return $h * 60 + $min;
+    }
+    return null;
+}
+
+/**
+ * Distance à vol d'oiseau entre deux points GPS (formule de Haversine), en km.
+ */
+function rando_nono_haversine_km( $lat1, $lon1, $lat2, $lon2 ) {
+    $earth_radius = 6371;
+    $d_lat = deg2rad( $lat2 - $lat1 );
+    $d_lon = deg2rad( $lon2 - $lon1 );
+    $a = sin( $d_lat / 2 ) * sin( $d_lat / 2 )
+        + cos( deg2rad( $lat1 ) ) * cos( deg2rad( $lat2 ) ) * sin( $d_lon / 2 ) * sin( $d_lon / 2 );
+    $c = 2 * atan2( sqrt( $a ), sqrt( 1 - $a ) );
+    return $earth_radius * $c;
+}
+
+/**
+ * Retourne jusqu'à $limit randonnées similaires à $post_id : priorité à la
+ * proximité géographique, puis à la même difficulté, puis à une durée
+ * comparable. Alimente automatiquement le maillage interne de chaque fiche.
+ *
+ * @return WP_Post[]
+ */
+function rando_nono_get_related_randos( $post_id, $limit = 4 ) {
+    $lat        = (float) get_post_meta( $post_id, 'rando_lat', true );
+    $lon        = (float) get_post_meta( $post_id, 'rando_lon', true );
+    $minutes    = rando_nono_duree_to_minutes( get_post_meta( $post_id, 'rando_duree', true ) );
+    $diff_terms = get_the_terms( $post_id, 'difficulte' );
+    $difficulte = $diff_terms && ! is_wp_error( $diff_terms ) ? $diff_terms[0]->term_id : 0;
+
+    $candidates = get_posts( array(
+        'post_type'      => 'randonnee',
+        'posts_per_page' => -1,
+        'post__not_in'   => array( $post_id ),
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'no_found_rows'  => true,
+    ) );
+
+    $scored = array();
+    foreach ( $candidates as $candidate ) {
+        $cid       = $candidate->ID;
+        $c_lat     = (float) get_post_meta( $cid, 'rando_lat', true );
+        $c_lon     = (float) get_post_meta( $cid, 'rando_lon', true );
+        $c_minutes = rando_nono_duree_to_minutes( get_post_meta( $cid, 'rando_duree', true ) );
+        $c_terms   = get_the_terms( $cid, 'difficulte' );
+        $c_diff    = $c_terms && ! is_wp_error( $c_terms ) ? $c_terms[0]->term_id : 0;
+
+        // Score composite (plus bas = plus proche) : km à vol d'oiseau +
+        // pénalité si difficulté différente + pénalité si durée très différente.
+        $score = 0;
+        $score += ( $lat && $lon && $c_lat && $c_lon ) ? rando_nono_haversine_km( $lat, $lon, $c_lat, $c_lon ) : 100;
+        if ( ! $difficulte || $c_diff !== $difficulte ) $score += 50;
+        $score += ( null !== $minutes && null !== $c_minutes ) ? abs( $minutes - $c_minutes ) / 10 : 15;
+
+        $scored[] = array( 'id' => $cid, 'score' => $score );
+    }
+
+    usort( $scored, function( $a, $b ) { return $a['score'] <=> $b['score']; } );
+    $scored = array_slice( $scored, 0, $limit );
+
+    return array_map( function( $item ) { return get_post( $item['id'] ); }, $scored );
+}
 
 /**
  * Favicon — généré à partir de l'image hero, recadré en carré.
@@ -662,6 +952,11 @@ function rando_nono_breadcrumb() {
     } elseif ( is_singular( 'randonnee' ) ) {
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<a href="' . esc_url( get_post_type_archive_link( 'randonnee' ) ) . '">Randonnées</a>';
+        $region = rando_nono_lieu_region( get_post_meta( get_the_ID(), 'rando_lieu', true ) );
+        if ( $region ) {
+            echo '<span class="breadcrumb-sep">›</span>';
+            echo '<a href="' . esc_url( add_query_arg( 'recherche', $region, get_post_type_archive_link( 'randonnee' ) ) ) . '">' . esc_html( $region ) . '</a>';
+        }
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<span class="breadcrumb-current">' . esc_html( get_the_title() ) . '</span>';
 
@@ -682,27 +977,6 @@ function rando_nono_breadcrumb() {
 
     echo '</nav>';
 }
-
-/**
- * Title tag propre par contexte (vient compléter add_theme_support('title-tag')
- * en forçant un format cohérent pour les randos).
- */
-function rando_nono_document_title_parts( $title ) {
-    if ( is_singular( 'randonnee' ) ) {
-        global $post;
-        $lieu = get_post_meta( $post->ID, 'rando_lieu', true );
-        $title['title'] = get_the_title() . ( $lieu ? ' — ' . $lieu : '' ) . ' : trace GPX et récit de randonnée';
-    } elseif ( is_front_page() ) {
-        $title['title']   = 'Les Randos de Nono';
-        $title['tagline'] = 'récits de randonnée, traces GPX à télécharger et carnet de sorties dans l\'Hérault';
-    } elseif ( is_post_type_archive( 'randonnee' ) ) {
-        $title['title'] = 'Toutes les randonnées avec trace GPX à télécharger';
-    } elseif ( is_singular( 'matos' ) ) {
-        $title['title'] = get_the_title() . ' — matériel de randonnée testé sur le terrain';
-    }
-    return $title;
-}
-add_filter( 'document_title_parts', 'rando_nono_document_title_parts' );
 
 /**
  * Texte alternatif automatique pour les images à la une des randonnées

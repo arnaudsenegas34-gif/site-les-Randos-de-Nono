@@ -79,9 +79,9 @@ if ( ! $featured_query->have_posts() ) {
         <div class="derniere-img-wrap">
           <span class="derniere-badge">Nouveau</span>
           <?php if ( $f_thumb ) : ?>
-            <img src="<?php echo esc_url( $f_thumb ); ?>" alt="<?php the_title_attribute(); ?>">
+            <img src="<?php echo esc_url( $f_thumb ); ?>" alt="<?php the_title_attribute(); ?>" decoding="async" fetchpriority="high">
           <?php else : ?>
-            <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/placeholder-rando.jpg' ); ?>" alt="Photo à venir" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">
+            <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/placeholder-rando.jpg' ); ?>" alt="Photo à venir" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" decoding="async" fetchpriority="high">
           <?php endif; ?>
         </div>
         <div class="derniere-content">
@@ -233,7 +233,7 @@ endif;
                  aria-label="Voir le détail de <?php the_title_attribute(); ?>">
               <div class="matos-img">
                 <?php if ( $m_thumb ) : ?>
-                  <img src="<?php echo esc_url( $m_thumb ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy">
+                  <img src="<?php echo esc_url( $m_thumb ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy" decoding="async">
                 <?php else : ?>
                   <?php echo rando_nono_icon( 'backpack', 'icon-svg-lg' ); ?>
                 <?php endif; ?>

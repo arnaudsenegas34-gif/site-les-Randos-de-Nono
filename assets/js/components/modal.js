@@ -284,6 +284,7 @@
         slide.className = 'slide' + (i === 0 ? ' active' : '');
         var img = new Image();
         img.src = url; img.alt = titre ? titre + ' — photo ' + (i + 1) : 'Photo ' + (i + 1);
+        img.loading = 'lazy'; img.decoding = 'async';
         slide.appendChild(img);
         slideshow.appendChild(slide);
 

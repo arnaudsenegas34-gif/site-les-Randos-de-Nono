@@ -59,7 +59,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
 <!-- HERO -->
 <section class="sr-hero">
   <?php if ( $thumb_large ) : ?>
-    <img class="sr-hero-img" src="<?php echo esc_url( $thumb_large ); ?>" alt="<?php the_title_attribute(); ?>">
+    <img class="sr-hero-img" src="<?php echo esc_url( $thumb_large ); ?>" alt="<?php the_title_attribute(); ?>" decoding="async" fetchpriority="high">
   <?php else : ?>
     <div class="sr-hero-img sr-hero-placeholder"></div>
   <?php endif; ?>
@@ -230,7 +230,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       <div class="sr-photos-grid">
         <?php foreach ( $photos_urls as $i => $photo ) : ?>
           <?php $alt_text = $photo['alt'] ? $photo['alt'] : get_the_title() . ' - photo ' . ( $i + 1 ); ?>
-          <img class="sr-photo" src="<?php echo esc_url( $photo['url'] ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" loading="lazy" data-index="<?php echo intval( $i ); ?>">
+          <img class="sr-photo" src="<?php echo esc_url( $photo['url'] ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" loading="lazy" decoding="async" data-index="<?php echo intval( $i ); ?>">
         <?php endforeach; ?>
       </div>
     </div>
@@ -280,7 +280,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
             <?php if ( has_post_thumbnail( $article ) ) : ?>
             <div class="sr-related-img-wrap">
               <img src="<?php echo esc_url( get_the_post_thumbnail_url( $article, 'medium' ) ); ?>"
-                   alt="<?php echo esc_attr( get_the_title( $article ) ); ?>" loading="lazy">
+                   alt="<?php echo esc_attr( get_the_title( $article ) ); ?>" loading="lazy" decoding="async">
             </div>
             <?php endif; ?>
             <div class="sr-related-info">
@@ -349,48 +349,32 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
   </div>
 </section>
 
-<!-- RANDONNÉES SIMILAIRES -->
+<!-- RANDONNÉES SIMILAIRES (maillage interne automatique : proximité, difficulté, durée) -->
 <?php
-$related_args = array(
-    'post_type'      => 'randonnee',
-    'posts_per_page' => 3,
-    'post__not_in'   => array( $id ),
-    'orderby'        => 'rand',
-    'no_found_rows'  => true,
-);
-if ( $diff_terms && ! is_wp_error( $diff_terms ) ) {
-    $related_args['tax_query'] = array(
-        array(
-            'taxonomy' => 'difficulte',
-            'field'    => 'term_id',
-            'terms'    => wp_list_pluck( $diff_terms, 'term_id' ),
-        ),
-    );
-}
-$related_query = new WP_Query( $related_args );
-if ( $related_query->have_posts() ) :
+$related_randos = rando_nono_get_related_randos( $id, 4 );
+if ( ! empty( $related_randos ) ) :
 ?>
 <section class="sr-related-section">
   <div class="sr-container">
     <h2 class="sr-section-title">Randonn&eacute;es similaires</h2>
     <div class="sr-related-grid">
-      <?php while ( $related_query->have_posts() ) : $related_query->the_post(); ?>
-      <a href="<?php the_permalink(); ?>" class="sr-related-card">
-        <?php if ( has_post_thumbnail() ) : ?>
+      <?php foreach ( $related_randos as $related ) : setup_postdata( $related ); ?>
+      <a href="<?php echo esc_url( get_permalink( $related ) ); ?>" class="sr-related-card">
+        <?php if ( has_post_thumbnail( $related ) ) : ?>
         <div class="sr-related-img-wrap">
-          <img src="<?php echo esc_url( get_the_post_thumbnail_url( null, 'medium' ) ); ?>"
-               alt="<?php the_title_attribute(); ?>" loading="lazy">
+          <img src="<?php echo esc_url( get_the_post_thumbnail_url( $related, 'medium' ) ); ?>"
+               alt="<?php echo esc_attr( get_the_title( $related ) ); ?>" loading="lazy" decoding="async">
         </div>
         <?php endif; ?>
         <div class="sr-related-info">
-          <span class="sr-related-title"><?php the_title(); ?></span>
-          <?php $rlieu = get_post_meta( get_the_ID(), 'rando_lieu', true ); ?>
+          <span class="sr-related-title"><?php echo esc_html( get_the_title( $related ) ); ?></span>
+          <?php $rlieu = get_post_meta( $related->ID, 'rando_lieu', true ); ?>
           <?php if ( $rlieu ) : ?>
           <span class="sr-related-lieu"><?php echo esc_html( $rlieu ); ?></span>
           <?php endif; ?>
         </div>
       </a>
-      <?php endwhile; wp_reset_postdata(); ?>
+      <?php endforeach; wp_reset_postdata(); ?>
     </div>
   </div>
 </section>

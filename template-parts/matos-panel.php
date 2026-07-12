@@ -9,7 +9,7 @@
   <div class="matos-panel" id="matos-panel">
 
     <div class="matos-panel-img" id="matos-panel-img">
-      <img src="" alt="">
+      <img src="" alt="" loading="lazy" decoding="async">
       <button class="matos-panel-close" id="matos-panel-close" aria-label="Fermer">✕</button>
     </div>
 

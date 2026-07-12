@@ -59,9 +59,9 @@ $thumb = get_the_post_thumbnail_url( $id, 'medium' );
 >
   <div class="card-photo-wrap">
     <?php if ( $thumb ) : ?>
-      <img class="card-photo" src="<?php echo esc_url( $thumb ); ?>" alt="<?php the_title_attribute(); ?>">
+      <img class="card-photo" src="<?php echo esc_url( $thumb ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy" decoding="async">
     <?php else : ?>
-      <img class="card-photo card-photo-placeholder" src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/placeholder-rando.jpg' ); ?>" alt="Photo à venir — <?php the_title_attribute(); ?>">
+      <img class="card-photo card-photo-placeholder" src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/placeholder-rando.jpg' ); ?>" alt="Photo à venir — <?php the_title_attribute(); ?>" loading="lazy" decoding="async">
     <?php endif; ?>
     <div class="card-badges">
       <span class="badge badge-diff-<?php echo esc_attr( $difficulte ); ?>"><?php echo esc_html( ucfirst( $difficulte ) ); ?></span>
