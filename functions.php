@@ -85,6 +85,10 @@ function rando_nono_assets() {
     }
     if ( is_singular( 'randonnee' ) ) {
         wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx' ), filemtime( get_template_directory() . '/assets/js/pages/single-randonnee.js' ), true );
+
+        // ── Suivi GPS en direct (démarrer / suivre la randonnée depuis le téléphone) ──
+        wp_enqueue_style( 'rando-nono-live-tracking', $theme_uri . '/assets/css/components/live-tracking.css', array( 'rando-nono-single' ), filemtime( get_template_directory() . '/assets/css/components/live-tracking.css' ) );
+        wp_enqueue_script( 'rando-nono-live-tracking', $theme_uri . '/assets/js/components/live-tracking.js', array( 'rando-nono-single' ), filemtime( get_template_directory() . '/assets/js/components/live-tracking.js' ), true );
     }
 
     // ── Carte d'ensemble (page "Toutes les randonnées") ──

@@ -163,6 +163,70 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     </div>
     <?php endif; ?>
 
+    <!-- SUIVI GPS EN DIRECT -->
+    <div class="sr-tracking" id="sr-tracking" data-rando-id="<?php echo esc_attr( $id ); ?>" data-rando-title="<?php echo esc_attr( get_the_title() ); ?>">
+      <button type="button" class="btn sr-track-start" id="sr-track-start">
+        <?php echo rando_nono_icon( 'play' ); ?> D&eacute;marrer la randonn&eacute;e
+      </button>
+      <p class="sr-tracking-hint">Suivez votre position, votre distance parcourue et votre temps en direct depuis votre t&eacute;l&eacute;phone pendant la rando.</p>
+    </div>
+
+    <!-- Barre de suivi live (affichée pendant la randonnée) -->
+    <div class="sr-track-bar" id="sr-track-bar" hidden aria-live="polite">
+      <div class="sr-track-stats">
+        <div class="sr-track-stat">
+          <span class="sr-track-value" id="sr-track-time">00:00:00</span>
+          <span class="sr-track-label">Temps</span>
+        </div>
+        <div class="sr-track-stat">
+          <span class="sr-track-value" id="sr-track-distance">0,00 km</span>
+          <span class="sr-track-label">Distance</span>
+        </div>
+        <div class="sr-track-stat">
+          <span class="sr-track-value" id="sr-track-pace">&ndash;&ndash;</span>
+          <span class="sr-track-label">Allure</span>
+        </div>
+        <div class="sr-track-stat">
+          <span class="sr-track-value" id="sr-track-elevation">&ndash;&ndash;</span>
+          <span class="sr-track-label">D+ parcouru</span>
+        </div>
+      </div>
+      <p class="sr-track-status" id="sr-track-status"></p>
+      <div class="sr-track-controls">
+        <button type="button" class="sr-track-btn sr-track-btn-pause" id="sr-track-pause"><?php echo rando_nono_icon( 'pause' ); ?> Pause</button>
+        <button type="button" class="sr-track-btn sr-track-btn-stop" id="sr-track-stop"><?php echo rando_nono_icon( 'stop' ); ?> Terminer</button>
+      </div>
+    </div>
+
+    <!-- Récapitulatif de fin de randonnée -->
+    <div class="sr-track-recap" id="sr-track-recap" hidden>
+      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'navigation' ); ?> R&eacute;capitulatif de votre sortie</h2>
+      <div class="sr-track-recap-grid">
+        <div class="sr-track-recap-item">
+          <span class="sr-track-recap-value" id="sr-recap-time">&ndash;</span>
+          <span class="sr-track-recap-label">Dur&eacute;e</span>
+        </div>
+        <div class="sr-track-recap-item">
+          <span class="sr-track-recap-value" id="sr-recap-distance">&ndash;</span>
+          <span class="sr-track-recap-label">Distance</span>
+        </div>
+        <div class="sr-track-recap-item">
+          <span class="sr-track-recap-value" id="sr-recap-pace">&ndash;</span>
+          <span class="sr-track-recap-label">Allure moyenne</span>
+        </div>
+        <div class="sr-track-recap-item">
+          <span class="sr-track-recap-value" id="sr-recap-elevation">&ndash;</span>
+          <span class="sr-track-recap-label">D&eacute;nivel&eacute; positif</span>
+        </div>
+      </div>
+      <div class="sr-track-recap-actions">
+        <button type="button" class="btn btn-sm sr-btn-gpx" id="sr-recap-download">
+          <?php echo rando_nono_icon( 'download' ); ?> T&eacute;l&eacute;charger ma trace GPX
+        </button>
+        <button type="button" class="btn btn-sm sr-btn-outline" id="sr-recap-restart">Refaire un suivi</button>
+      </div>
+    </div>
+
     <!-- GALERIE PHOTOS -->
     <?php if ( ! empty( $photos_urls ) ) : ?>
     <div class="sr-photos-section">

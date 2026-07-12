@@ -23,6 +23,10 @@ function rando_nono_icon( $name, $class = '' ) {
         'arrow-right' => '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
         'search' => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
         'book' => '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
+        'play' => '<polygon points="6 3 20 12 6 21 6 3"/>',
+        'pause' => '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+        'stop' => '<rect x="5" y="5" width="14" height="14" rx="2"/>',
+        'navigation' => '<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
     );
 
     if ( ! isset( $icons[ $name ] ) ) return '';

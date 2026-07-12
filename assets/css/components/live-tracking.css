@@ -1,0 +1,177 @@
+/* live-tracking.css — Suivi GPS en direct d'une randonnée */
+
+/* ── Bloc "Démarrer la randonnée" ── */
+.sr-tracking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  background: var(--beige);
+  border-radius: 8px;
+  padding: 1.6rem 1.4rem;
+  margin-bottom: 2.5rem;
+}
+.sr-track-start {
+  background: var(--vert) !important;
+}
+.sr-track-start:hover {
+  background: var(--sombre) !important;
+}
+.sr-tracking-hint {
+  font-size: 0.8rem;
+  color: var(--sombre);
+  font-weight: 300;
+  max-width: 42ch;
+  opacity: 0.85;
+}
+.sr-tracking.is-hidden { display: none; }
+
+/* ── Barre de suivi live (fixe en bas d'écran) ── */
+.sr-track-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 500;
+  background: var(--sombre);
+  color: var(--beige);
+  padding: 0.9rem 1.2rem calc(0.9rem + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+}
+.sr-track-bar[hidden] { display: none; }
+
+.sr-track-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.sr-track-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+.sr-track-value {
+  font-family: 'Merriweather', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.sr-track-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange);
+  font-weight: 300;
+}
+.sr-track-status {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 300;
+  color: rgba(232,223,200,0.75);
+  margin: 0.5rem 0 0;
+  min-height: 1em;
+}
+.sr-track-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.7rem;
+}
+.sr-track-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Merriweather', serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.6rem 1.2rem;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.sr-track-btn .icon-svg { stroke: currentColor; }
+.sr-track-btn-pause {
+  background: var(--orange);
+  color: #fff;
+}
+.sr-track-btn-pause:hover { background: #b45e04; }
+.sr-track-btn-pause.is-resume { background: var(--vert); }
+.sr-track-btn-pause.is-resume:hover { background: #234a2e; }
+.sr-track-btn-stop {
+  background: transparent;
+  color: var(--beige);
+  border: 1.5px solid rgba(232,223,200,0.5);
+}
+.sr-track-btn-stop:hover { background: rgba(232,223,200,0.12); }
+
+.sr-track-bar.is-paused { opacity: 0.92; }
+
+/* ── Marqueur "vous êtes ici" sur la carte Leaflet ── */
+.sr-track-me-marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1E88E5;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 4px rgba(30,136,229,0.3), 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* ── Récapitulatif de fin de sortie ── */
+.sr-track-recap { margin-bottom: 2.5rem; }
+.sr-track-recap[hidden] { display: none; }
+.sr-track-recap-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+.sr-track-recap-item {
+  background: var(--beige);
+  border-radius: 8px;
+  padding: 1.1rem 0.8rem;
+  text-align: center;
+}
+.sr-track-recap-value {
+  display: block;
+  font-family: 'Abril Fatface', serif;
+  font-size: 1.3rem;
+  color: var(--vert);
+  margin-bottom: 0.25rem;
+}
+.sr-track-recap-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--sombre);
+  opacity: 0.7;
+}
+.sr-track-recap-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.sr-btn-outline {
+  background: transparent !important;
+  color: var(--vert) !important;
+  border: 1.5px solid var(--vert) !important;
+}
+.sr-btn-outline:hover { background: rgba(46,94,59,0.08) !important; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .sr-track-stats { gap: 0.25rem; }
+  .sr-track-value { font-size: 0.92rem; }
+  .sr-track-label { font-size: 0.56rem; }
+  .sr-track-recap-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+body.sr-tracking-active { padding-bottom: 92px; }
+@media (max-width: 640px) {
+  body.sr-tracking-active { padding-bottom: 110px; }
+}

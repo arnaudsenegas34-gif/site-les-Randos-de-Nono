@@ -74,6 +74,8 @@
     }
 
     setTimeout(function () { map.invalidateSize(); }, 300);
+
+    window.srMap = map;
   }
 
   /* ── Météo Open-Meteo ── */
