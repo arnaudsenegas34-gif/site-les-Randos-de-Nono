@@ -159,17 +159,13 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
         <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo esc_attr( $lat ); ?>,<?php echo esc_attr( $lon ); ?>&travelmode=driving" target="_blank" rel="noopener" class="btn btn-sm sr-btn-gpx">
           Aller au d&eacute;part
         </a>
+        <button type="button" class="btn btn-sm sr-track-start" id="sr-track-start" data-rando-id="<?php echo esc_attr( $id ); ?>" data-rando-title="<?php echo esc_attr( get_the_title() ); ?>">
+          <?php echo rando_nono_icon( 'play' ); ?> D&eacute;marrer la randonn&eacute;e
+        </button>
       </div>
+      <p class="sr-tracking-hint" id="sr-tracking-hint">Suivez votre position, votre distance parcourue et votre temps en direct depuis votre t&eacute;l&eacute;phone pendant la rando.</p>
     </div>
     <?php endif; ?>
-
-    <!-- SUIVI GPS EN DIRECT -->
-    <div class="sr-tracking" id="sr-tracking" data-rando-id="<?php echo esc_attr( $id ); ?>" data-rando-title="<?php echo esc_attr( get_the_title() ); ?>">
-      <button type="button" class="btn sr-track-start" id="sr-track-start">
-        <?php echo rando_nono_icon( 'play' ); ?> D&eacute;marrer la randonn&eacute;e
-      </button>
-      <p class="sr-tracking-hint">Suivez votre position, votre distance parcourue et votre temps en direct depuis votre t&eacute;l&eacute;phone pendant la rando.</p>
-    </div>
 
     <!-- Barre de suivi live (affichée pendant la randonnée) -->
     <div class="sr-track-bar" id="sr-track-bar" hidden aria-live="polite">

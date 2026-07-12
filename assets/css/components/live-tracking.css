@@ -1,31 +1,16 @@
 /* live-tracking.css — Suivi GPS en direct d'une randonnée */
 
-/* ── Bloc "Démarrer la randonnée" ── */
-.sr-tracking {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  text-align: center;
-  background: var(--beige);
-  border-radius: 8px;
-  padding: 1.6rem 1.4rem;
-  margin-bottom: 2.5rem;
-}
-.sr-track-start {
-  background: var(--vert) !important;
-}
-.sr-track-start:hover {
-  background: var(--sombre) !important;
-}
+/* ── Bouton "Démarrer la randonnée" (dans la barre d'actions de la carte) ── */
+.sr-track-start[hidden],
+.sr-tracking-hint[hidden] { display: none; }
 .sr-tracking-hint {
-  font-size: 0.8rem;
-  color: var(--sombre);
+  font-size: 0.76rem;
+  color: var(--gris);
   font-weight: 300;
-  max-width: 42ch;
-  opacity: 0.85;
+  font-style: italic;
+  max-width: 52ch;
+  margin-top: 0.6rem;
 }
-.sr-tracking.is-hidden { display: none; }
 
 /* ── Barre de suivi live (fixe en bas d'écran) ── */
 .sr-track-bar {

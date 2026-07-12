@@ -32,14 +32,14 @@
   }
 
   function init() {
-    els.root = document.getElementById('sr-tracking');
-    if (!els.root) return;
+    els.startBtn = document.getElementById('sr-track-start');
+    if (!els.startBtn) return;
 
-    randoId = els.root.dataset.randoId || 'rando';
+    randoId = els.startBtn.dataset.randoId || 'rando';
     storageKey = 'srTrack_' + randoId;
     state = freshState();
 
-    els.startBtn      = document.getElementById('sr-track-start');
+    els.hint            = document.getElementById('sr-tracking-hint');
     els.bar            = document.getElementById('sr-track-bar');
     els.time           = document.getElementById('sr-track-time');
     els.distance       = document.getElementById('sr-track-distance');
@@ -92,9 +92,11 @@
     state.points          = saved.points || [];
     state.elevationGain   = saved.elevationGain || 0;
 
+    hideStartControls();
     showBar();
     redrawPath();
     updateDisplay();
+    document.body.classList.add('sr-tracking-active');
 
     if (saved.status === 'paused') {
       state.status = 'paused';
@@ -118,7 +120,7 @@
     }
     state.status = 'tracking';
 
-    els.root.classList.add('is-hidden');
+    hideStartControls();
     showBar();
     setPausedUi(false);
     setStatus('Recherche du signal GPS…');
@@ -235,8 +237,18 @@
     if (state.meMarker && window.srMap) window.srMap.removeLayer(state.meMarker);
     state = freshState();
     els.recap.hidden = true;
-    els.root.classList.remove('is-hidden');
+    showStartControls();
     setStatus('');
+  }
+
+  function hideStartControls() {
+    els.startBtn.hidden = true;
+    if (els.hint) els.hint.hidden = true;
+  }
+
+  function showStartControls() {
+    els.startBtn.hidden = false;
+    if (els.hint) els.hint.hidden = false;
   }
 
   /* ── Affichage ── */
@@ -378,7 +390,7 @@
   /* ── Export GPX de la trace enregistrée ── */
   function downloadGpx() {
     if (!state.points.length) return;
-    var title = els.root.dataset.randoTitle || 'randonnee';
+    var title = els.startBtn.dataset.randoTitle || 'randonnee';
     var trkpts = state.points.map(function (p) {
       var ele = typeof p.alt === 'number' ? '<ele>' + p.alt.toFixed(1) + '</ele>' : '';
       return '<trkpt lat="' + p.lat + '" lon="' + p.lon + '">' + ele + '<time>' + new Date(p.t).toISOString() + '</time></trkpt>';
