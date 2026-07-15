@@ -55,6 +55,11 @@ get_header();
     <h2>Données personnelles</h2>
     <p>Ce site propose un <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>. Les informations que vous y transmettez (nom, e-mail, message) sont utilisées uniquement pour répondre à votre demande et ne sont ni conservées au-delà du nécessaire, ni transmises à des tiers.</p>
     <p>
+      Avec votre consentement, des données de mesure d'audience (Google Analytics) et publicitaires (pixel Facebook)
+      peuvent également être collectées ; voir la section <a href="#cookies">Cookies</a> ci-dessous. Les données
+      de géolocalisation utilisées par le suivi GPS en direct restent quant à elles uniquement sur votre appareil.
+    </p>
+    <p>
       Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès,
       de rectification et de suppression des données vous concernant.
     </p>
@@ -66,27 +71,42 @@ get_header();
     <p>Le site peut utiliser des cookies techniques nécessaires à son bon fonctionnement.</p>
     <p>
       Avec votre accord, le site utilise également <strong>Google Analytics</strong> pour mesurer son audience
-      (pages consultées, provenance des visites, type d'appareil). Ce service ne dépose un cookie de mesure
-      d'audience que si vous cliquez sur « Accepter » dans le bandeau proposé lors de votre première visite.
-      Vous pouvez à tout moment revenir sur votre choix :
+      (pages consultées, provenance des visites, type d'appareil) et le <strong>pixel Facebook (Meta)</strong>
+      à des fins de mesure publicitaire. Ces services ne déposent un cookie que si vous cliquez sur « Accepter »
+      dans le bandeau proposé lors de votre première visite. Vous pouvez à tout moment revenir sur votre choix :
     </p>
     <p><button type="button" id="cookie-consent-manage" class="btn-nav">Gérer mes préférences cookies</button></p>
     <p>Des services tiers intégrés au site peuvent également déposer des cookies, notamment :</p>
     <ul>
-      <li>les services de cartographie OpenStreetMap ;</li>
-      <li>les services d'affichage des données météorologiques ;</li>
+      <li>les services de cartographie OpenStreetMap / Leaflet ;</li>
+      <li>le service météo Open-Meteo ;</li>
       <li>les boutons ou liens de partage vers les réseaux sociaux.</li>
     </ul>
     <p>L'utilisateur peut configurer son navigateur afin de refuser tout ou partie des cookies.</p>
 
     <hr>
 
+    <h2>Géolocalisation et suivi GPS en direct</h2>
+    <p>
+      Le site propose une fonctionnalité de suivi GPS en direct permettant, avec l'autorisation explicite du
+      navigateur, de suivre sa position pendant une randonnée (distance parcourue, allure, dénivelé, tracé sur la carte).
+    </p>
+    <p>
+      Cette géolocalisation est traitée uniquement dans le navigateur de l'utilisateur : les positions GPS sont
+      stockées localement sur son appareil (stockage local du navigateur) et ne sont ni transmises ni conservées
+      sur les serveurs du site. Elles sont supprimées en vidant le stockage du navigateur ou en arrêtant le suivi.
+    </p>
+
+    <hr>
+
     <h2>Services tiers</h2>
     <p>Le site utilise des services externes pour certaines fonctionnalités :</p>
     <ul>
-      <li>OpenStreetMap pour l'affichage des cartes interactives ;</li>
-      <li>des fournisseurs de données météorologiques pour l'affichage des conditions météo ;</li>
-      <li>des plateformes de réseaux sociaux via des liens de partage.</li>
+      <li>OpenStreetMap et Leaflet pour l'affichage des cartes interactives ;</li>
+      <li>Open-Meteo pour l'affichage des prévisions météo ;</li>
+      <li>Google Analytics pour les statistiques de fréquentation (avec consentement) ;</li>
+      <li>le pixel Facebook (Meta) pour la mesure publicitaire (avec consentement) ;</li>
+      <li>des plateformes de réseaux sociaux (Instagram) via des liens de partage.</li>
     </ul>
     <p>Ces services disposent de leurs propres politiques de confidentialité et conditions d'utilisation.</p>
 
