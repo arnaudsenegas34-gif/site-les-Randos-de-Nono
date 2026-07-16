@@ -7,8 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 require_once get_template_directory() . '/inc/icons.php';
 
-// Seeder de données de test (admin uniquement — à retirer en production)
-if ( is_admin() ) {
+// Seeder de données de test (admin uniquement, et seulement quand WP_DEBUG est
+// actif — ainsi il est automatiquement inactif sur un site en production sans
+// dépendre d'un oubli de suppression manuelle du fichier).
+if ( is_admin() && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
     require_once get_template_directory() . '/inc/data-seeder.php';
 }
 
@@ -26,15 +28,23 @@ add_action( 'after_setup_theme', 'rando_nono_setup' );
 /* ──────────────────────────────────────────
    2. ENQUEUE STYLES & SCRIPTS
    ────────────────────────────────────────── */
+/**
+ * Version de cache-busting d'un asset local, basée sur sa date de modification
+ * (fallback sur la version du thème si le fichier est introuvable).
+ */
+function rando_nono_asset_ver( $relative_path ) {
+    $file = get_template_directory() . $relative_path;
+    return file_exists( $file ) ? filemtime( $file ) : wp_get_theme()->get( 'Version' );
+}
+
 function rando_nono_assets() {
-    $theme_version = wp_get_theme()->get( 'Version' );
-    $theme_uri     = get_template_directory_uri();
+    $theme_uri = get_template_directory_uri();
 
     // ── Polices ──
-    wp_enqueue_style( 'rando-nono-fonts', $theme_uri . '/assets/css/fonts.css', array(), $theme_version );
+    wp_enqueue_style( 'rando-nono-fonts', $theme_uri . '/assets/css/fonts.css', array(), rando_nono_asset_ver( '/assets/css/fonts.css' ) );
 
     // ── Style principal ──
-    wp_enqueue_style( 'rando-nono-style', get_stylesheet_uri(), array( 'rando-nono-fonts' ), $theme_version );
+    wp_enqueue_style( 'rando-nono-style', get_stylesheet_uri(), array( 'rando-nono-fonts' ), rando_nono_asset_ver( '/style.css' ) );
 
     // La modale (carte + profil altimétrique) n'existe que sur l'accueil et l'archive des randonnées :
     // inutile de charger Leaflet/Chart.js/modal.js sur les mentions légales, le 404, etc.
@@ -42,22 +52,24 @@ function rando_nono_assets() {
     $needs_leaflet = $needs_modal || is_singular( 'randonnee' );
     $main_deps     = array();
 
-    // ── Leaflet (carte interactive) ──
+    // ── Leaflet (carte interactive) — hébergé localement dans assets/vendor/ ──
+    // (plus de dépendance à unpkg/cdnjs : évite une requête réseau externe à chaque
+    // visite et le risque d'un CDN tiers compromis servant du JS modifié)
     if ( $needs_leaflet ) {
-        wp_enqueue_style( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', array(), '1.9.4' );
-        wp_enqueue_script( 'leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), '1.9.4', true );
-        wp_enqueue_script( 'leaflet-gpx', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
+        wp_enqueue_style( 'leaflet', $theme_uri . '/assets/vendor/leaflet/leaflet.css', array(), '1.9.4' );
+        wp_enqueue_script( 'leaflet', $theme_uri . '/assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true );
+        wp_enqueue_script( 'leaflet-gpx', $theme_uri . '/assets/vendor/leaflet-gpx/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
     }
 
     if ( $needs_modal ) {
         // ── CSS modal isolé ──
-        wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal.css', array( 'rando-nono-style' ), $theme_version );
+        wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/components/modal.css' ) );
 
-        // ── Chart.js (profil altimétrique) ──
-        wp_enqueue_script( 'chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', array(), '4.4.0', true );
+        // ── Chart.js (profil altimétrique) — hébergé localement ──
+        wp_enqueue_script( 'chartjs', $theme_uri . '/assets/vendor/chartjs/chart.umd.min.js', array(), '4.4.0', true );
 
-        wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), $theme_version, true );
-        wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), $theme_version, true );
+        wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/components/modal.js' ), true );
+        wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), rando_nono_asset_ver( '/assets/js/pages/randos.js' ), true );
 
         // Données PHP → JS (URLs dynamiques)
         wp_localize_script( 'rando-nono-modal', 'randoNono', array(
@@ -71,32 +83,32 @@ function rando_nono_assets() {
 
     // Le panneau "Matos de Nono" n'existe que sur l'accueil.
     if ( is_front_page() ) {
-        wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), $theme_version );
-        wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
+        wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/components/matos.css' ) );
+        wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), rando_nono_asset_ver( '/assets/js/components/matos.js' ), true );
     }
 
     // ── Favoris (localStorage) — boutons cœur présents sur les cartes, la fiche randonnée et la page /favoris/ ──
-    wp_enqueue_script( 'rando-nono-favoris', $theme_uri . '/assets/js/components/favoris.js', array(), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-favoris', $theme_uri . '/assets/js/components/favoris.js', array(), rando_nono_asset_ver( '/assets/js/components/favoris.js' ), true );
 
-    wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', $main_deps, $theme_version, true );
+    wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', $main_deps, rando_nono_asset_ver( '/assets/js/main.js' ), true );
 
     // ── Single randonnée (CSS + JS chargés uniquement sur la fiche) ──
     // Les articles (post) réutilisent le même CSS pour la navigation précédent/suivant,
     // mais n'ont pas besoin de la carte Leaflet.
     if ( is_singular( 'randonnee' ) || is_singular( 'post' ) ) {
-        wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), filemtime( get_template_directory() . '/assets/css/single-randonnee.css' ) );
+        wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/single-randonnee.css' ) );
     }
     if ( is_singular( 'randonnee' ) ) {
-        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx' ), filemtime( get_template_directory() . '/assets/js/pages/single-randonnee.js' ), true );
+        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx' ), rando_nono_asset_ver( '/assets/js/pages/single-randonnee.js' ), true );
 
         // ── Suivi GPS en direct (démarrer / suivre la randonnée depuis le téléphone) ──
-        wp_enqueue_style( 'rando-nono-live-tracking', $theme_uri . '/assets/css/components/live-tracking.css', array( 'rando-nono-single' ), filemtime( get_template_directory() . '/assets/css/components/live-tracking.css' ) );
-        wp_enqueue_script( 'rando-nono-live-tracking', $theme_uri . '/assets/js/components/live-tracking.js', array( 'rando-nono-single' ), filemtime( get_template_directory() . '/assets/js/components/live-tracking.js' ), true );
+        wp_enqueue_style( 'rando-nono-live-tracking', $theme_uri . '/assets/css/components/live-tracking.css', array( 'rando-nono-single' ), rando_nono_asset_ver( '/assets/css/components/live-tracking.css' ) );
+        wp_enqueue_script( 'rando-nono-live-tracking', $theme_uri . '/assets/js/components/live-tracking.js', array( 'rando-nono-single' ), rando_nono_asset_ver( '/assets/js/components/live-tracking.js' ), true );
     }
 
     // ── Carte d'ensemble (page "Toutes les randonnées") ──
     if ( is_post_type_archive( 'randonnee' ) ) {
-        wp_enqueue_script( 'rando-nono-archive-map', $theme_uri . '/assets/js/pages/archive-map.js', array( 'leaflet' ), filemtime( get_template_directory() . '/assets/js/pages/archive-map.js' ), true );
+        wp_enqueue_script( 'rando-nono-archive-map', $theme_uri . '/assets/js/pages/archive-map.js', array( 'leaflet' ), rando_nono_asset_ver( '/assets/js/pages/archive-map.js' ), true );
     }
 }
 add_action( 'wp_enqueue_scripts', 'rando_nono_assets' );
@@ -129,6 +141,29 @@ function rando_nono_register_cpt() {
     ) );
 }
 add_action( 'init', 'rando_nono_register_cpt' );
+
+/**
+ * Expose les champs personnalisés de la randonnée dans l'API REST
+ * (/wp-json/wp/v2/randonnee/<id>, champ "meta") — lecture seule pour un
+ * client externe (future appli mobile, widget, intégration partenaire) ;
+ * l'écriture reste réservée à qui peut éditer l'article (comportement par
+ * défaut de register_post_meta sans auth_callback dédié).
+ */
+function rando_nono_register_rest_meta() {
+    $fields = array(
+        'rando_lieu', 'rando_lat', 'rando_lon', 'rando_distance', 'rando_denivele',
+        'rando_denivele_neg', 'rando_duree', 'rando_date', 'rando_meilleure_saison',
+        'rando_maps_url', 'rando_gpx_url', 'rando_conseils',
+    );
+    foreach ( $fields as $field ) {
+        register_post_meta( 'randonnee', $field, array(
+            'type'         => 'string',
+            'single'       => true,
+            'show_in_rest' => true,
+        ) );
+    }
+}
+add_action( 'init', 'rando_nono_register_rest_meta' );
 
 /* ──────────────────────────────────────────
    3bis. RÉGLAGE "PROCHAIN PROJET" — paramétrable depuis l'admin, sans coder
@@ -399,64 +434,47 @@ function rando_nono_article_rando_save( $post_id ) {
 add_action( 'save_post_post', 'rando_nono_article_rando_save' );
 
 /* ──────────────────────────────────────────
-   5bis. CRÉATION AUTOMATIQUE DE LA PAGE "MENTIONS LÉGALES"
+   5bis. CRÉATION AUTOMATIQUE DES PAGES DU THÈME
+   (mentions légales, contact, favoris) — une seule fabrique factorisée au
+   lieu de trois blocs quasi identiques : la page est créée si elle manque au
+   changement de thème, puis re-vérifiée une fois par jour via un transient
+   (utile après une restauration de sauvegarde ayant perdu la page).
    ────────────────────────────────────────── */
-function rando_nono_create_mentions_legales_page() {
-    if ( get_page_by_path( 'mentions-legales' ) ) return;
+function rando_nono_ensure_page_exists( $slug, $title ) {
+    if ( get_page_by_path( $slug ) ) return;
     wp_insert_post( array(
-        'post_title'   => 'Mentions légales',
-        'post_name'    => 'mentions-legales',
+        'post_title'   => $title,
+        'post_name'    => $slug,
         'post_status'  => 'publish',
         'post_type'    => 'page',
         'post_content' => '',
     ) );
 }
-add_action( 'after_switch_theme', 'rando_nono_create_mentions_legales_page' );
-add_action( 'init', function() {
-    if ( get_transient( 'rando_nono_ml_checked' ) ) return;
-    rando_nono_create_mentions_legales_page();
-    set_transient( 'rando_nono_ml_checked', 1, DAY_IN_SECONDS );
-} );
 
-/* ──────────────────────────────────────────
-   5ter. CRÉATION AUTOMATIQUE DE LA PAGE "CONTACT" + TRAITEMENT DU FORMULAIRE
-   ────────────────────────────────────────── */
-function rando_nono_create_contact_page() {
-    if ( get_page_by_path( 'contact' ) ) return;
-    wp_insert_post( array(
-        'post_title'   => 'Contact',
-        'post_name'    => 'contact',
-        'post_status'  => 'publish',
-        'post_type'    => 'page',
-        'post_content' => '',
-    ) );
+/**
+ * Exécute $callback au plus une fois par jour (via transient), en plus d'un
+ * déclenchement systématique à l'activation du thème. Sert pour toute
+ * vérification idempotente coûteuse (création de page, de table SQL, flush
+ * des règles de réécriture...) qu'on ne veut pas relancer à chaque requête.
+ */
+function rando_nono_run_once_daily( $transient_key, callable $callback ) {
+    add_action( 'after_switch_theme', $callback );
+    add_action( 'init', function() use ( $transient_key, $callback ) {
+        if ( get_transient( $transient_key ) ) return;
+        $callback();
+        set_transient( $transient_key, 1, DAY_IN_SECONDS );
+    } );
 }
-add_action( 'after_switch_theme', 'rando_nono_create_contact_page' );
-add_action( 'init', function() {
-    if ( get_transient( 'rando_nono_contact_checked' ) ) return;
-    rando_nono_create_contact_page();
-    set_transient( 'rando_nono_contact_checked', 1, DAY_IN_SECONDS );
-} );
 
-/* ──────────────────────────────────────────
-   5quater. CRÉATION AUTOMATIQUE DE LA PAGE "MES RANDOS À FAIRE" (favoris)
-   ────────────────────────────────────────── */
-function rando_nono_create_favoris_page() {
-    if ( get_page_by_path( 'favoris' ) ) return;
-    wp_insert_post( array(
-        'post_title'   => 'Mes randos à faire',
-        'post_name'    => 'favoris',
-        'post_status'  => 'publish',
-        'post_type'    => 'page',
-        'post_content' => '',
-    ) );
+function rando_nono_register_page_autocreate( $slug, $title ) {
+    rando_nono_run_once_daily( 'rando_nono_page_checked_' . $slug, function() use ( $slug, $title ) {
+        rando_nono_ensure_page_exists( $slug, $title );
+    } );
 }
-add_action( 'after_switch_theme', 'rando_nono_create_favoris_page' );
-add_action( 'init', function() {
-    if ( get_transient( 'rando_nono_favoris_checked' ) ) return;
-    rando_nono_create_favoris_page();
-    set_transient( 'rando_nono_favoris_checked', 1, DAY_IN_SECONDS );
-} );
+
+rando_nono_register_page_autocreate( 'mentions-legales', 'Mentions légales' );
+rando_nono_register_page_autocreate( 'contact', 'Contact' );
+rando_nono_register_page_autocreate( 'favoris', 'Mes randos à faire' );
 
 function rando_nono_handle_contact_form() {
     if ( ! is_page( 'contact' ) || ! isset( $_POST['rando_nono_contact_submit'] ) ) return;
@@ -849,24 +867,6 @@ add_filter( 'robots_txt', function( $output, $public ) {
 }, 10, 2 );
 
 /**
- * Indices de ressources (preconnect) — uniquement sur les pages qui chargent
- * réellement Leaflet / Chart.js, pour ne pas gaspiller de connexions ailleurs.
- */
-add_filter( 'wp_resource_hints', function( $urls, $relation_type ) {
-    if ( 'preconnect' !== $relation_type ) return $urls;
-    $needs_leaflet = is_front_page() || is_post_type_archive( 'randonnee' ) || is_singular( 'randonnee' ) || is_search();
-    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
-    if ( $needs_leaflet ) {
-        $urls[] = 'https://unpkg.com';
-        $urls[] = 'https://cdnjs.cloudflare.com';
-    }
-    if ( $needs_modal ) {
-        $urls[] = 'https://cdn.jsdelivr.net';
-    }
-    return $urls;
-}, 10, 2 );
-
-/**
  * Manifest, theme-color et préchargement des polices critiques (au-dessus
  * de la ligne de flottaison sur toutes les pages : Abril Fatface pour les
  * titres, Merriweather Regular pour le texte).
@@ -1251,12 +1251,7 @@ function rando_nono_newsletter_create_table() {
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta( $sql );
 }
-add_action( 'after_switch_theme', 'rando_nono_newsletter_create_table' );
-add_action( 'init', function() {
-    if ( get_transient( 'rando_nono_newsletter_table_checked' ) ) return;
-    rando_nono_newsletter_create_table();
-    set_transient( 'rando_nono_newsletter_table_checked', 1, DAY_IN_SECONDS );
-} );
+rando_nono_run_once_daily( 'rando_nono_newsletter_table_checked', 'rando_nono_newsletter_create_table' );
 
 /**
  * Traitement du formulaire d'inscription (présent dans le pied de page, sur toutes les pages).
@@ -1446,12 +1441,7 @@ function rando_nono_avis_create_table() {
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     dbDelta( $sql );
 }
-add_action( 'after_switch_theme', 'rando_nono_avis_create_table' );
-add_action( 'init', function() {
-    if ( get_transient( 'rando_nono_avis_table_checked' ) ) return;
-    rando_nono_avis_create_table();
-    set_transient( 'rando_nono_avis_table_checked', 1, DAY_IN_SECONDS );
-} );
+rando_nono_run_once_daily( 'rando_nono_avis_table_checked', 'rando_nono_avis_create_table' );
 
 /**
  * Moyenne et nombre d'avis publiés pour une randonnée (utilisé dans l'affichage et le schema.org).
