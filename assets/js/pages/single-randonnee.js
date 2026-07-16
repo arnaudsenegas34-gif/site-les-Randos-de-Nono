@@ -25,6 +25,7 @@
     initMeteo();
     initLightbox();
     initShare();
+    initPrint();
   }
 
   /* ── Carte Leaflet ── */
@@ -231,6 +232,36 @@
         });
       });
     }
+  }
+
+  /* ── Fiche imprimable / PDF ── */
+  function initPrint() {
+    var btn = document.getElementById('sr-print-btn');
+    var mapWrap = document.getElementById('sr-print-map-wrap');
+    var mapLoaded = false;
+
+    function loadPrintMap() {
+      if (mapLoaded || !mapWrap) return;
+      var lat = parseFloat(mapWrap.dataset.lat);
+      var lon = parseFloat(mapWrap.dataset.lon);
+      if (isNaN(lat) || isNaN(lon)) return;
+      mapLoaded = true;
+      var url = 'https://staticmap.openstreetmap.de/staticmap.php?center=' + lat + ',' + lon +
+        '&zoom=13&size=650x320&maptype=mapnik&markers=' + lat + ',' + lon + ',red-pushpin';
+      var img = document.createElement('img');
+      img.src = url;
+      img.alt = 'Carte de localisation';
+      mapWrap.appendChild(img);
+    }
+
+    if (btn) {
+      btn.addEventListener('click', function () {
+        loadPrintMap();
+        window.print();
+      });
+    }
+
+    window.addEventListener('beforeprint', loadPrintMap);
   }
 
   function esc(s) {

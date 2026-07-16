@@ -1,3 +1,32 @@
+<?php
+$rando_nono_nl_status = isset( $_GET['newsletter'] ) ? sanitize_key( $_GET['newsletter'] ) : '';
+?>
+<section class="newsletter-band" aria-labelledby="newsletter-heading">
+  <div class="newsletter-inner">
+    <div class="newsletter-text">
+      <h2 id="newsletter-heading" class="newsletter-title">Ne rate aucune rando</h2>
+      <p class="newsletter-sub">Reçois un e-mail à chaque nouvelle randonnée publiée, avec le récit et la trace GPX.</p>
+    </div>
+    <?php if ( 'ok' === $rando_nono_nl_status ) : ?>
+      <p class="newsletter-msg newsletter-msg-ok">Merci, ton inscription est confirmée !</p>
+    <?php elseif ( 'desabonne' === $rando_nono_nl_status ) : ?>
+      <p class="newsletter-msg newsletter-msg-ok">Tu as bien été désabonné.</p>
+    <?php elseif ( 'error' === $rando_nono_nl_status ) : ?>
+      <p class="newsletter-msg newsletter-msg-error">Adresse e-mail invalide, réessaie.</p>
+    <?php else : ?>
+      <form class="newsletter-form" method="post" action="<?php echo esc_url( home_url( add_query_arg( null, null ) ) ); ?>">
+        <?php wp_nonce_field( 'rando_nono_newsletter_form', 'rando_nono_newsletter_nonce' ); ?>
+        <div class="contact-honeypot" aria-hidden="true">
+          <label for="site_web_nl">Site web</label>
+          <input type="text" id="site_web_nl" name="site_web_nl" tabindex="-1" autocomplete="off">
+        </div>
+        <input type="email" id="newsletter_email" name="newsletter_email" aria-label="Adresse e-mail" placeholder="ton@email.fr" required>
+        <button type="submit" name="rando_nono_newsletter_submit" value="1">S'abonner</button>
+      </form>
+    <?php endif; ?>
+  </div>
+</section>
+
 <footer class="site-footer">
   <div class="logo">Les Randos de <span>Nono</span></div>
   <p>Traces GPX & récits de rando · Hérault, France</p>

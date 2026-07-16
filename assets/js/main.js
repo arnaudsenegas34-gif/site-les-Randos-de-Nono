@@ -11,6 +11,16 @@
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ══════════════════════════════════════════════
+     PWA HORS-LIGNE — enregistrement du service worker
+     Permet de consulter hors-ligne les randonnées déjà visitées sur le terrain.
+  ══════════════════════════════════════════════ */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+    });
+  }
+
+  /* ══════════════════════════════════════════════
      PARALLAXE HERO
   ══════════════════════════════════════════════ */
   const heroEl      = document.getElementById('hero');

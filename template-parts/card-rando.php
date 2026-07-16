@@ -67,6 +67,9 @@ $thumb = get_the_post_thumbnail_url( $id, 'medium' );
       <span class="badge badge-diff-<?php echo esc_attr( $difficulte ); ?>"><?php echo esc_html( ucfirst( $difficulte ) ); ?></span>
       <?php if ( $gpx_url ) : ?><span class="badge badge-gpx">GPX</span><?php endif; ?>
     </div>
+    <button type="button" class="card-fav-btn js-favori-btn" data-id="<?php echo esc_attr( $id ); ?>" aria-pressed="false" aria-label="Ajouter aux favoris" onclick="event.stopPropagation()">
+      <?php echo rando_nono_icon( 'heart' ); ?>
+    </button>
   </div>
   <div class="card-body">
     <div class="card-meta">

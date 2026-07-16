@@ -38,7 +38,7 @@ function rando_nono_assets() {
 
     // La modale (carte + profil altimétrique) n'existe que sur l'accueil et l'archive des randonnées :
     // inutile de charger Leaflet/Chart.js/modal.js sur les mentions légales, le 404, etc.
-    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' );
+    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
     $needs_leaflet = $needs_modal || is_singular( 'randonnee' );
     $main_deps     = array();
 
@@ -74,6 +74,9 @@ function rando_nono_assets() {
         wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), $theme_version );
         wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), $theme_version, true );
     }
+
+    // ── Favoris (localStorage) — boutons cœur présents sur les cartes, la fiche randonnée et la page /favoris/ ──
+    wp_enqueue_script( 'rando-nono-favoris', $theme_uri . '/assets/js/components/favoris.js', array(), $theme_version, true );
 
     wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', $main_deps, $theme_version, true );
 
@@ -435,6 +438,26 @@ add_action( 'init', function() {
     set_transient( 'rando_nono_contact_checked', 1, DAY_IN_SECONDS );
 } );
 
+/* ──────────────────────────────────────────
+   5quater. CRÉATION AUTOMATIQUE DE LA PAGE "MES RANDOS À FAIRE" (favoris)
+   ────────────────────────────────────────── */
+function rando_nono_create_favoris_page() {
+    if ( get_page_by_path( 'favoris' ) ) return;
+    wp_insert_post( array(
+        'post_title'   => 'Mes randos à faire',
+        'post_name'    => 'favoris',
+        'post_status'  => 'publish',
+        'post_type'    => 'page',
+        'post_content' => '',
+    ) );
+}
+add_action( 'after_switch_theme', 'rando_nono_create_favoris_page' );
+add_action( 'init', function() {
+    if ( get_transient( 'rando_nono_favoris_checked' ) ) return;
+    rando_nono_create_favoris_page();
+    set_transient( 'rando_nono_favoris_checked', 1, DAY_IN_SECONDS );
+} );
+
 function rando_nono_handle_contact_form() {
     if ( ! is_page( 'contact' ) || ! isset( $_POST['rando_nono_contact_submit'] ) ) return;
 
@@ -689,7 +712,7 @@ function rando_nono_schema_jsonld() {
                 '@type'       => 'SearchAction',
                 'target'      => array(
                     '@type'       => 'EntryPoint',
-                    'urlTemplate' => get_post_type_archive_link( 'randonnee' ) . '?recherche={search_term_string}',
+                    'urlTemplate' => home_url( '/?s={search_term_string}' ),
                 ),
                 'query-input' => 'required name=search_term_string',
             ),
@@ -774,6 +797,17 @@ function rando_nono_schema_jsonld() {
     if ( $duree )      $props[] = array( '@type' => 'PropertyValue', 'name' => 'Durée',            'value' => $duree );
     if ( $props ) $trail['additionalProperty'] = $props;
 
+    $avis_stats = rando_nono_get_avis_stats( $id );
+    if ( $avis_stats['total'] > 0 ) {
+        $trail['aggregateRating'] = array(
+            '@type'       => 'AggregateRating',
+            'ratingValue' => $avis_stats['moyenne'],
+            'reviewCount' => $avis_stats['total'],
+            'bestRating'  => 5,
+            'worstRating' => 1,
+        );
+    }
+
     echo '<script type="application/ld+json">' . wp_json_encode( $breadcrumb, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
     echo '<script type="application/ld+json">' . wp_json_encode( $trail,      JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
 }
@@ -820,8 +854,8 @@ add_filter( 'robots_txt', function( $output, $public ) {
  */
 add_filter( 'wp_resource_hints', function( $urls, $relation_type ) {
     if ( 'preconnect' !== $relation_type ) return $urls;
-    $needs_leaflet = is_front_page() || is_post_type_archive( 'randonnee' ) || is_singular( 'randonnee' );
-    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' );
+    $needs_leaflet = is_front_page() || is_post_type_archive( 'randonnee' ) || is_singular( 'randonnee' ) || is_search();
+    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
     if ( $needs_leaflet ) {
         $urls[] = 'https://unpkg.com';
         $urls[] = 'https://cdnjs.cloudflare.com';
@@ -969,6 +1003,10 @@ function rando_nono_breadcrumb() {
     } elseif ( is_page() ) {
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<span class="breadcrumb-current">' . esc_html( get_the_title() ) . '</span>';
+
+    } elseif ( is_search() ) {
+        echo '<span class="breadcrumb-sep">›</span>';
+        echo '<span class="breadcrumb-current">Recherche &laquo; ' . esc_html( get_search_query() ) . ' &raquo;</span>';
 
     } elseif ( is_404() ) {
         echo '<span class="breadcrumb-sep">›</span>';
@@ -1188,3 +1226,468 @@ function rando_nono_cookie_banner() {
     <?php
 }
 add_action( 'wp_footer', 'rando_nono_cookie_banner' );
+
+/* ──────────────────────────────────────────
+   9. NEWSLETTER — inscription + notification automatique des nouvelles randos
+   ────────────────────────────────────────── */
+function rando_nono_newsletter_table_name() {
+    global $wpdb;
+    return $wpdb->prefix . 'rando_nono_newsletter';
+}
+
+function rando_nono_newsletter_create_table() {
+    global $wpdb;
+    $table           = rando_nono_newsletter_table_name();
+    $charset_collate = $wpdb->get_charset_collate();
+    $sql = "CREATE TABLE $table (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        email VARCHAR(190) NOT NULL,
+        token VARCHAR(64) NOT NULL,
+        date_inscription DATETIME NOT NULL,
+        statut VARCHAR(20) NOT NULL DEFAULT 'actif',
+        PRIMARY KEY (id),
+        UNIQUE KEY email (email)
+    ) $charset_collate;";
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta( $sql );
+}
+add_action( 'after_switch_theme', 'rando_nono_newsletter_create_table' );
+add_action( 'init', function() {
+    if ( get_transient( 'rando_nono_newsletter_table_checked' ) ) return;
+    rando_nono_newsletter_create_table();
+    set_transient( 'rando_nono_newsletter_table_checked', 1, DAY_IN_SECONDS );
+} );
+
+/**
+ * Traitement du formulaire d'inscription (présent dans le pied de page, sur toutes les pages).
+ */
+function rando_nono_handle_newsletter_form() {
+    if ( ! isset( $_POST['rando_nono_newsletter_submit'] ) ) return;
+
+    $redirect = wp_get_referer() ? wp_get_referer() : home_url( '/' );
+
+    if ( ! isset( $_POST['rando_nono_newsletter_nonce'] ) || ! wp_verify_nonce( $_POST['rando_nono_newsletter_nonce'], 'rando_nono_newsletter_form' ) ) {
+        wp_safe_redirect( add_query_arg( 'newsletter', 'error', $redirect ) );
+        exit;
+    }
+
+    // Piège à robots.
+    if ( ! empty( $_POST['site_web_nl'] ) ) {
+        wp_safe_redirect( add_query_arg( 'newsletter', 'ok', $redirect ) );
+        exit;
+    }
+
+    $email = isset( $_POST['newsletter_email'] ) ? sanitize_email( wp_unslash( $_POST['newsletter_email'] ) ) : '';
+    if ( ! is_email( $email ) ) {
+        wp_safe_redirect( add_query_arg( 'newsletter', 'error', $redirect ) );
+        exit;
+    }
+
+    global $wpdb;
+    $table    = rando_nono_newsletter_table_name();
+    $existing = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE email = %s", $email ) );
+    if ( ! $existing ) {
+        $wpdb->insert( $table, array(
+            'email'            => $email,
+            'token'            => wp_generate_password( 32, false ),
+            'date_inscription' => current_time( 'mysql' ),
+            'statut'           => 'actif',
+        ) );
+    }
+
+    wp_safe_redirect( add_query_arg( 'newsletter', 'ok', $redirect ) );
+    exit;
+}
+add_action( 'template_redirect', 'rando_nono_handle_newsletter_form' );
+
+/**
+ * Désabonnement en un clic, depuis le lien présent dans chaque e-mail envoyé.
+ */
+function rando_nono_handle_newsletter_unsubscribe() {
+    if ( ! isset( $_GET['newsletter_desabonner'] ) ) return;
+    $token = sanitize_text_field( wp_unslash( $_GET['newsletter_desabonner'] ) );
+
+    global $wpdb;
+    $table = rando_nono_newsletter_table_name();
+    $wpdb->delete( $table, array( 'token' => $token ) );
+
+    wp_safe_redirect( add_query_arg( 'newsletter', 'desabonne', home_url( '/' ) ) );
+    exit;
+}
+add_action( 'template_redirect', 'rando_nono_handle_newsletter_unsubscribe' );
+
+/**
+ * Dès qu'une randonnée passe en "publié" pour la première fois, programme
+ * l'envoi (différé d'une minute, via WP-Cron) d'un e-mail à tous les abonnés.
+ * Le flag _rando_nono_newsletter_sent évite les envois en double si l'article
+ * est ensuite modifié et republié.
+ */
+function rando_nono_newsletter_notify_new_rando( $new_status, $old_status, $post ) {
+    if ( 'randonnee' !== $post->post_type ) return;
+    if ( 'publish' !== $new_status || 'publish' === $old_status ) return;
+    if ( get_post_meta( $post->ID, '_rando_nono_newsletter_sent', true ) ) return;
+
+    update_post_meta( $post->ID, '_rando_nono_newsletter_sent', current_time( 'mysql' ) );
+    wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'rando_nono_send_newsletter_event', array( $post->ID ) );
+}
+add_action( 'transition_post_status', 'rando_nono_newsletter_notify_new_rando', 10, 3 );
+
+function rando_nono_send_newsletter_event( $post_id ) {
+    $post = get_post( $post_id );
+    if ( ! $post || 'publish' !== $post->post_status ) return;
+
+    global $wpdb;
+    $table = rando_nono_newsletter_table_name();
+    $subs  = $wpdb->get_results( "SELECT email, token FROM $table WHERE statut = 'actif'" );
+    if ( empty( $subs ) ) return;
+
+    $lieu     = get_post_meta( $post_id, 'rando_lieu', true );
+    $distance = get_post_meta( $post_id, 'rando_distance', true );
+    $url      = get_permalink( $post_id );
+    $titre    = get_the_title( $post_id );
+    $subject  = 'Nouvelle randonnée : ' . $titre;
+
+    foreach ( $subs as $sub ) {
+        $unsub  = add_query_arg( 'newsletter_desabonner', $sub->token, home_url( '/' ) );
+        $body   = "Une nouvelle randonnée vient d'être publiée sur Les Randos de Nono !\n\n";
+        $body  .= $titre . ( $lieu ? ' — ' . $lieu : '' ) . ( $distance ? ' (' . $distance . ')' : '' ) . "\n\n";
+        $body  .= "Découvrir le récit et la trace GPX :\n" . $url . "\n\n";
+        $body  .= "---\nSe désabonner en un clic :\n" . $unsub . "\n";
+        wp_mail( $sub->email, $subject, $body );
+    }
+}
+add_action( 'rando_nono_send_newsletter_event', 'rando_nono_send_newsletter_event' );
+
+/**
+ * Page d'administration — liste des abonnés + export CSV.
+ */
+function rando_nono_newsletter_menu() {
+    add_menu_page( 'Newsletter', 'Newsletter', 'manage_options', 'rando-nono-newsletter', 'rando_nono_newsletter_page', 'dashicons-email-alt', 26 );
+}
+add_action( 'admin_menu', 'rando_nono_newsletter_menu' );
+
+function rando_nono_newsletter_page() {
+    if ( ! current_user_can( 'manage_options' ) ) return;
+
+    global $wpdb;
+    $table       = rando_nono_newsletter_table_name();
+    $subscribers = $wpdb->get_results( "SELECT email, date_inscription FROM $table WHERE statut = 'actif' ORDER BY date_inscription DESC" );
+    $count       = count( $subscribers );
+    ?>
+    <div class="wrap">
+        <h1>Newsletter</h1>
+        <p><strong><?php echo intval( $count ); ?></strong> abonné<?php echo $count > 1 ? 's' : ''; ?> actif<?php echo $count > 1 ? 's' : ''; ?>.</p>
+        <p>Un e-mail est envoyé automatiquement à tous les abonnés (une minute après publication, via WP-Cron) à chaque nouvelle randonnée mise en ligne.</p>
+        <?php if ( $count ) : ?>
+        <p>
+            <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rando_nono_newsletter_export' ), 'rando_nono_newsletter_export' ) ); ?>" class="button">Exporter en CSV</a>
+        </p>
+        <table class="widefat striped" style="max-width:600px">
+            <thead><tr><th>E-mail</th><th>Inscrit le</th></tr></thead>
+            <tbody>
+            <?php foreach ( $subscribers as $sub ) : ?>
+                <tr><td><?php echo esc_html( $sub->email ); ?></td><td><?php echo esc_html( mysql2date( 'd/m/Y', $sub->date_inscription ) ); ?></td></tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php else : ?>
+        <p><em>Aucun abonné pour le moment.</em></p>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+function rando_nono_newsletter_export() {
+    if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Accès refusé' );
+    check_admin_referer( 'rando_nono_newsletter_export' );
+
+    global $wpdb;
+    $table       = rando_nono_newsletter_table_name();
+    $subscribers = $wpdb->get_results( "SELECT email, date_inscription FROM $table WHERE statut = 'actif' ORDER BY date_inscription ASC" );
+
+    nocache_headers();
+    header( 'Content-Type: text/csv; charset=utf-8' );
+    header( 'Content-Disposition: attachment; filename=newsletter-randos-de-nono.csv' );
+
+    $out = fopen( 'php://output', 'w' );
+    fputcsv( $out, array( 'email', 'date_inscription' ) );
+    foreach ( $subscribers as $sub ) {
+        fputcsv( $out, array( $sub->email, $sub->date_inscription ) );
+    }
+    fclose( $out );
+    exit;
+}
+add_action( 'admin_post_rando_nono_newsletter_export', 'rando_nono_newsletter_export' );
+
+/* ──────────────────────────────────────────
+   10. AVIS & NOTES DES LECTEURS — modération avant publication
+   ────────────────────────────────────────── */
+function rando_nono_avis_table_name() {
+    global $wpdb;
+    return $wpdb->prefix . 'rando_nono_avis';
+}
+
+function rando_nono_avis_create_table() {
+    global $wpdb;
+    $table           = rando_nono_avis_table_name();
+    $charset_collate = $wpdb->get_charset_collate();
+    $sql = "CREATE TABLE $table (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        rando_id BIGINT UNSIGNED NOT NULL,
+        nom VARCHAR(100) NOT NULL,
+        note TINYINT UNSIGNED NOT NULL,
+        commentaire TEXT NOT NULL,
+        date_avis DATETIME NOT NULL,
+        statut VARCHAR(20) NOT NULL DEFAULT 'en_attente',
+        PRIMARY KEY (id),
+        KEY rando_id (rando_id),
+        KEY statut (statut)
+    ) $charset_collate;";
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta( $sql );
+}
+add_action( 'after_switch_theme', 'rando_nono_avis_create_table' );
+add_action( 'init', function() {
+    if ( get_transient( 'rando_nono_avis_table_checked' ) ) return;
+    rando_nono_avis_create_table();
+    set_transient( 'rando_nono_avis_table_checked', 1, DAY_IN_SECONDS );
+} );
+
+/**
+ * Moyenne et nombre d'avis publiés pour une randonnée (utilisé dans l'affichage et le schema.org).
+ */
+function rando_nono_get_avis_stats( $rando_id ) {
+    global $wpdb;
+    $table = rando_nono_avis_table_name();
+    $row   = $wpdb->get_row( $wpdb->prepare( "SELECT COUNT(*) as total, AVG(note) as moyenne FROM $table WHERE rando_id = %d AND statut = 'publie'", $rando_id ) );
+    return array(
+        'total'   => $row ? (int) $row->total : 0,
+        'moyenne' => ( $row && $row->total > 0 ) ? round( (float) $row->moyenne, 1 ) : 0,
+    );
+}
+
+function rando_nono_get_avis_list( $rando_id ) {
+    global $wpdb;
+    $table = rando_nono_avis_table_name();
+    return $wpdb->get_results( $wpdb->prepare( "SELECT nom, note, commentaire, date_avis FROM $table WHERE rando_id = %d AND statut = 'publie' ORDER BY date_avis DESC", $rando_id ) );
+}
+
+/**
+ * Traitement du formulaire d'avis (sur la fiche de chaque randonnée). Les avis sont
+ * enregistrés "en attente" et n'apparaissent qu'après validation manuelle (anti-spam).
+ */
+function rando_nono_handle_avis_form() {
+    if ( ! isset( $_POST['rando_nono_avis_submit'] ) || ! is_singular( 'randonnee' ) ) return;
+
+    $post_id  = get_queried_object_id();
+    $redirect = get_permalink( $post_id ) . '#avis';
+
+    if ( ! isset( $_POST['rando_nono_avis_nonce'] ) || ! wp_verify_nonce( $_POST['rando_nono_avis_nonce'], 'rando_nono_avis_form_' . $post_id ) ) {
+        wp_safe_redirect( add_query_arg( 'avis', 'error', $redirect ) );
+        exit;
+    }
+
+    // Piège à robots.
+    if ( ! empty( $_POST['site_web_avis'] ) ) {
+        wp_safe_redirect( add_query_arg( 'avis', 'merci', $redirect ) );
+        exit;
+    }
+
+    $nom         = isset( $_POST['avis_nom'] ) ? sanitize_text_field( wp_unslash( $_POST['avis_nom'] ) ) : '';
+    $note        = isset( $_POST['avis_note'] ) ? intval( $_POST['avis_note'] ) : 0;
+    $commentaire = isset( $_POST['avis_commentaire'] ) ? sanitize_textarea_field( wp_unslash( $_POST['avis_commentaire'] ) ) : '';
+
+    if ( '' === $nom || $note < 1 || $note > 5 || '' === $commentaire ) {
+        wp_safe_redirect( add_query_arg( 'avis', 'error', $redirect ) );
+        exit;
+    }
+
+    global $wpdb;
+    $wpdb->insert( rando_nono_avis_table_name(), array(
+        'rando_id'    => $post_id,
+        'nom'         => $nom,
+        'note'        => $note,
+        'commentaire' => $commentaire,
+        'date_avis'   => current_time( 'mysql' ),
+        'statut'      => 'en_attente',
+    ) );
+
+    wp_safe_redirect( add_query_arg( 'avis', 'merci', $redirect ) );
+    exit;
+}
+add_action( 'template_redirect', 'rando_nono_handle_avis_form' );
+
+/**
+ * Page d'administration — modération des avis (approuver / supprimer).
+ */
+function rando_nono_avis_pending_count() {
+    global $wpdb;
+    $table = rando_nono_avis_table_name();
+    return (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE statut = 'en_attente'" );
+}
+
+function rando_nono_avis_menu() {
+    $pending    = rando_nono_avis_pending_count();
+    $menu_label = 'Avis';
+    if ( $pending > 0 ) {
+        $menu_label .= ' <span class="awaiting-mod"><span class="pending-count">' . intval( $pending ) . '</span></span>';
+    }
+    add_menu_page( 'Avis lecteurs', $menu_label, 'moderate_comments', 'rando-nono-avis', 'rando_nono_avis_page', 'dashicons-star-half', 27 );
+}
+add_action( 'admin_menu', 'rando_nono_avis_menu' );
+
+function rando_nono_avis_page() {
+    if ( ! current_user_can( 'moderate_comments' ) ) return;
+
+    global $wpdb;
+    $table = rando_nono_avis_table_name();
+    $avis  = $wpdb->get_results( "SELECT a.*, p.post_title FROM $table a LEFT JOIN {$wpdb->posts} p ON p.ID = a.rando_id ORDER BY (a.statut = 'en_attente') DESC, a.date_avis DESC" );
+    ?>
+    <div class="wrap">
+        <h1>Avis lecteurs</h1>
+        <p>Chaque avis déposé sur une fiche randonnée apparaît ici en attente de validation avant d'être visible publiquement.</p>
+        <?php if ( empty( $avis ) ) : ?>
+            <p><em>Aucun avis pour le moment.</em></p>
+        <?php else : ?>
+        <table class="widefat striped">
+            <thead><tr><th>Randonnée</th><th>Nom</th><th>Note</th><th>Commentaire</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody>
+            <?php foreach ( $avis as $a ) : ?>
+                <tr>
+                    <td><?php echo esc_html( $a->post_title ? $a->post_title : '(rando supprimée)' ); ?></td>
+                    <td><?php echo esc_html( $a->nom ); ?></td>
+                    <td><?php echo esc_html( str_repeat( '★', (int) $a->note ) . str_repeat( '☆', 5 - (int) $a->note ) ); ?></td>
+                    <td><?php echo esc_html( wp_trim_words( $a->commentaire, 20 ) ); ?></td>
+                    <td><?php echo esc_html( mysql2date( 'd/m/Y', $a->date_avis ) ); ?></td>
+                    <td><?php echo ( 'publie' === $a->statut ) ? '<span style="color:#2E5E3B">Publié</span>' : '<span style="color:#D97706">En attente</span>'; ?></td>
+                    <td>
+                        <?php if ( 'publie' !== $a->statut ) : ?>
+                            <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rando_nono_avis_approve&id=' . $a->id ), 'rando_nono_avis_action_' . $a->id ) ); ?>" class="button button-small">Approuver</a>
+                        <?php endif; ?>
+                        <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rando_nono_avis_delete&id=' . $a->id ), 'rando_nono_avis_action_' . $a->id ) ); ?>" class="button button-small" onclick="return confirm('Supprimer cet avis ?');">Supprimer</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+function rando_nono_avis_approve() {
+    if ( ! current_user_can( 'moderate_comments' ) ) wp_die( 'Accès refusé' );
+    $id = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
+    check_admin_referer( 'rando_nono_avis_action_' . $id );
+    global $wpdb;
+    $wpdb->update( rando_nono_avis_table_name(), array( 'statut' => 'publie' ), array( 'id' => $id ) );
+    wp_safe_redirect( admin_url( 'admin.php?page=rando-nono-avis' ) );
+    exit;
+}
+add_action( 'admin_post_rando_nono_avis_approve', 'rando_nono_avis_approve' );
+
+function rando_nono_avis_delete() {
+    if ( ! current_user_can( 'moderate_comments' ) ) wp_die( 'Accès refusé' );
+    $id = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
+    check_admin_referer( 'rando_nono_avis_action_' . $id );
+    global $wpdb;
+    $wpdb->delete( rando_nono_avis_table_name(), array( 'id' => $id ) );
+    wp_safe_redirect( admin_url( 'admin.php?page=rando-nono-avis' ) );
+    exit;
+}
+add_action( 'admin_post_rando_nono_avis_delete', 'rando_nono_avis_delete' );
+
+/* ──────────────────────────────────────────
+   11. PWA HORS-LIGNE — service worker servi à la racine du site
+   Permet de consulter hors-ligne (sur le terrain) les randonnées déjà
+   visitées : récit, carte, trace GPX. /sw.js et /hors-ligne/ sont de fausses
+   routes WordPress (aucun fichier physique à cet endroit) pour que le
+   service worker ait le scope '/', quel que soit le dossier du thème.
+   ────────────────────────────────────────── */
+function rando_nono_pwa_rewrite_rules() {
+    add_rewrite_rule( '^sw\.js$', 'index.php?rando_nono_sw=1', 'top' );
+    add_rewrite_rule( '^hors-ligne/?$', 'index.php?rando_nono_offline=1', 'top' );
+}
+add_action( 'init', 'rando_nono_pwa_rewrite_rules' );
+
+add_filter( 'query_vars', function( $vars ) {
+    $vars[] = 'rando_nono_sw';
+    $vars[] = 'rando_nono_offline';
+    return $vars;
+} );
+
+// Les nouvelles règles de réécriture doivent être prises en compte une fois sur
+// les sites où le thème était déjà actif avant leur ajout (after_switch_theme
+// ne se déclenche que lors d'une activation). Priorité 20 : après l'ajout des
+// règles ci-dessus (priorité par défaut 10), pour qu'elles soient incluses au flush.
+function rando_nono_pwa_maybe_flush_rewrites() {
+    if ( get_transient( 'rando_nono_pwa_rewrite_flushed' ) ) return;
+    flush_rewrite_rules();
+    set_transient( 'rando_nono_pwa_rewrite_flushed', 1, DAY_IN_SECONDS );
+}
+add_action( 'init', 'rando_nono_pwa_maybe_flush_rewrites', 20 );
+
+function rando_nono_serve_sw() {
+    if ( ! get_query_var( 'rando_nono_sw' ) ) return;
+
+    $theme_uri = get_template_directory_uri();
+    $version   = wp_get_theme()->get( 'Version' );
+    $offline_url = home_url( '/hors-ligne/' );
+
+    $app_shell = array(
+        home_url( '/' ),
+        $offline_url,
+        get_post_type_archive_link( 'randonnee' ),
+        $theme_uri . '/style.css',
+        $theme_uri . '/assets/css/fonts.css',
+        $theme_uri . '/assets/js/main.js',
+        $theme_uri . '/assets/js/components/favoris.js',
+    );
+
+    $sw_js = file_get_contents( get_template_directory() . '/assets/js/sw.js' );
+    $sw_js = str_replace(
+        array( '__CACHE_VERSION__', '__OFFLINE_URL__', '__APP_SHELL_JSON__' ),
+        array(
+            esc_js( $version ),
+            wp_json_encode( $offline_url ),
+            wp_json_encode( array_values( $app_shell ) ),
+        ),
+        $sw_js
+    );
+
+    nocache_headers();
+    header( 'Content-Type: application/javascript; charset=utf-8' );
+    header( 'Service-Worker-Allowed: /' );
+    echo $sw_js;
+    exit;
+}
+add_action( 'template_redirect', 'rando_nono_serve_sw' );
+
+function rando_nono_serve_offline_page() {
+    if ( ! get_query_var( 'rando_nono_offline' ) ) return;
+    nocache_headers();
+    header( 'Content-Type: text/html; charset=utf-8' );
+    ?>
+<!DOCTYPE html>
+<html lang="fr-FR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hors ligne — Les Randos de Nono</title>
+<style>
+  body { font-family: Georgia, serif; background:#FAF8F3; color:#1A2E1F; text-align:center; padding:4rem 1.5rem; }
+  h1 { color:#2E5E3B; font-size:1.6rem; margin-bottom:1rem; }
+  p { color:#5E5E52; max-width:32em; margin:0 auto 1.5rem; }
+  a { display:inline-block; padding:0.7rem 1.3rem; background:#D97706; color:#fff; border-radius:5px; text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body>
+  <h1>Pas de connexion</h1>
+  <p>Cette page n'est pas disponible hors ligne. Reconnecte-toi pour la consulter, ou retourne sur une randonnée déjà visitée pendant que tu avais du réseau.</p>
+  <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Retour à l'accueil</a>
+</body>
+</html>
+    <?php
+    exit;
+}
+add_action( 'template_redirect', 'rando_nono_serve_offline_page' );

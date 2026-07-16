@@ -17,6 +17,28 @@
 .sr-hero-placeholder {
   background: linear-gradient(135deg, var(--sombre), var(--vert));
 }
+.sr-fav-btn {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(26,46,31,0.55);
+  backdrop-filter: blur(3px);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.sr-fav-btn .icon-svg { width: 20px; height: 20px; }
+.sr-fav-btn:hover { transform: scale(1.06); }
+.sr-fav-btn.is-favori { background: var(--orange); }
+.sr-fav-btn.is-favori .icon-svg { fill: currentColor; }
 .sr-hero-overlay {
   position: absolute;
   inset: 0;
@@ -328,6 +350,51 @@
   flex-shrink: 0;
 }
 
+/* ══════════════════════ AVIS DES LECTEURS ══════════════════════ */
+.sr-avis-section { margin-bottom: 2.5rem; }
+.sr-avis-summary { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 1.5rem; }
+.sr-avis-stars { color: var(--orange); font-size: 1.2rem; letter-spacing: 0.1em; }
+.sr-avis-avg { font-family: 'Abril Fatface', serif; font-size: 1.2rem; color: var(--vert); }
+.sr-avis-count { font-size: 0.8rem; color: var(--gris); font-weight: 300; }
+.sr-avis-empty { font-size: 0.85rem; color: var(--gris); font-weight: 300; margin-bottom: 1.5rem; }
+.sr-avis-list { list-style: none; display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1.75rem; }
+.sr-avis-item { padding: 0.9rem 1.1rem; background: var(--beige); border-radius: 5px; border-left: 3px solid var(--orange); }
+.sr-avis-item-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.35rem; }
+.sr-avis-item-nom { font-weight: 600; font-size: 0.85rem; color: var(--sombre); }
+.sr-avis-item-stars { color: var(--orange); font-size: 0.8rem; letter-spacing: 0.08em; }
+.sr-avis-item-date { font-size: 0.72rem; color: var(--gris); font-weight: 300; margin-left: auto; }
+.sr-avis-item-texte { font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.6; }
+
+.sr-avis-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 0.15rem;
+  font-size: 1.7rem;
+  margin: 0.2rem 0 0.4rem;
+}
+.sr-avis-rating input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.sr-avis-rating label {
+  color: rgba(46,94,59,0.2);
+  cursor: pointer;
+  transition: color 0.15s;
+  line-height: 1;
+}
+.sr-avis-rating input:checked ~ label,
+.sr-avis-rating label:hover,
+.sr-avis-rating label:hover ~ label {
+  color: var(--orange);
+}
+.sr-avis-rating input:focus-visible + label {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
 /* ══════════════════════ PARTAGE ══════════════════════ */
 .sr-share-section {
   display: flex;
@@ -465,4 +532,40 @@
   .sr-lightbox-next { right: 0.5rem; }
   .sr-related-grid { grid-template-columns: 1fr; }
   .sr-related-img-wrap { height: 180px; }
+}
+
+/* ══════════════════════ FICHE IMPRIMABLE / PDF ══════════════════════ */
+.sr-print-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 1.1rem;
+  background: var(--beige);
+  border-radius: 6px;
+  margin-bottom: 1.75rem;
+}
+.sr-print-hint { font-size: 0.78rem; color: var(--gris); font-weight: 300; }
+.sr-print-map-wrap { display: none; }
+.sr-print-map-wrap img { width: 100%; border-radius: 8px; }
+
+@media print {
+  .site-header, .nav-mobile-drawer, .newsletter-band, .site-footer, .cookie-consent,
+  .breadcrumb, .skip-link,
+  .sr-print-bar, .sr-gpx-bar, .sr-map-actions, .sr-tracking-hint,
+  .sr-track-bar, .sr-track-recap,
+  .sr-photos-section, .sr-meteo-section, .sr-articles-section,
+  .sr-avis-section, .sr-nav-posts, .sr-share-section, .sr-back,
+  .sr-related-section, .sr-lightbox, .sr-fav-btn {
+    display: none !important;
+  }
+  .sr-map { display: none !important; }
+  .sr-print-map-wrap { display: block !important; margin-bottom: 1.5rem; }
+  .sr-hero { height: auto; page-break-inside: avoid; }
+  .sr-hero-img { position: static; height: 240px; }
+  .sr-hero-overlay { position: static; background: none; padding: 0.75rem 0; }
+  .sr-hero-title, .sr-hero-lieu, .sr-hero-badge { color: var(--sombre) !important; }
+  .sr-meta-grid { page-break-inside: avoid; }
+  .sr-sac-section, .sr-conseils-section { page-break-inside: avoid; }
+  body { background: #fff; }
 }

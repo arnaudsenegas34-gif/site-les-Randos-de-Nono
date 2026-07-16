@@ -37,6 +37,10 @@ if ( $photos_raw ) {
 $sac_items     = $sac_raw ? array_filter( array_map( 'trim', explode( "\n", $sac_raw ) ) ) : array();
 $conseils_items = $conseils_raw ? array_filter( array_map( 'trim', explode( "\n", $conseils_raw ) ) ) : array();
 
+$avis_stats = rando_nono_get_avis_stats( $id );
+$avis_list  = rando_nono_get_avis_list( $id );
+$avis_statut = isset( $_GET['avis'] ) ? sanitize_key( $_GET['avis'] ) : '';
+
 $linked_articles = get_posts( array(
     'post_type'      => 'post',
     'posts_per_page' => -1,
@@ -63,6 +67,9 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
   <?php else : ?>
     <div class="sr-hero-img sr-hero-placeholder"></div>
   <?php endif; ?>
+  <button type="button" class="sr-fav-btn js-favori-btn sr-no-print" data-id="<?php echo esc_attr( $id ); ?>" aria-pressed="false" aria-label="Ajouter aux favoris">
+    <?php echo rando_nono_icon( 'heart' ); ?>
+  </button>
   <div class="sr-hero-overlay">
     <div class="sr-hero-content">
       <span class="sr-hero-badge sr-<?php echo esc_attr( $diff_class ); ?>"><?php echo esc_html( ucfirst( $difficulte ) ); ?></span>
@@ -122,6 +129,14 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       <?php endif; ?>
     </div>
 
+    <!-- FICHE IMPRIMABLE / PDF -->
+    <div class="sr-print-bar sr-no-print">
+      <button type="button" class="btn btn-sm sr-btn-outline" id="sr-print-btn">
+        <?php echo rando_nono_icon( 'printer' ); ?> Fiche imprimable / PDF
+      </button>
+      <span class="sr-print-hint">G&eacute;n&egrave;re une version pr&ecirc;te &agrave; imprimer ou &agrave; enregistrer en PDF, utile sans r&eacute;seau sur le terrain.</span>
+    </div>
+
     <!-- CONTENU PRINCIPAL -->
     <?php if ( get_the_content() ) : ?>
     <div class="sr-content">
@@ -150,7 +165,8 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
            data-lat="<?php echo esc_attr( $lat ); ?>"
            data-lon="<?php echo esc_attr( $lon ); ?>"
            data-gpx="<?php echo esc_attr( $gpx_url ); ?>"></div>
-      <div class="sr-map-actions">
+      <div class="sr-print-map-wrap sr-print-only" id="sr-print-map-wrap" data-lat="<?php echo esc_attr( $lat ); ?>" data-lon="<?php echo esc_attr( $lon ); ?>"></div>
+      <div class="sr-map-actions sr-no-print">
         <?php if ( $maps_url ) : ?>
           <a href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener" class="btn btn-sm">
             <?php echo rando_nono_icon( 'map' ); ?> Activité Suunto
@@ -293,6 +309,66 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       </div>
     </div>
     <?php endif; ?>
+
+    <!-- AVIS DES LECTEURS -->
+    <div class="sr-avis-section" id="avis">
+      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'star' ); ?> Avis des lecteurs</h2>
+
+      <?php if ( $avis_stats['total'] > 0 ) : ?>
+        <div class="sr-avis-summary">
+          <span class="sr-avis-stars" aria-hidden="true"><?php echo str_repeat( '★', (int) round( $avis_stats['moyenne'] ) ) . str_repeat( '☆', 5 - (int) round( $avis_stats['moyenne'] ) ); ?></span>
+          <span class="sr-avis-avg"><?php echo esc_html( number_format_i18n( $avis_stats['moyenne'], 1 ) ); ?>/5</span>
+          <span class="sr-avis-count"><?php echo esc_html( $avis_stats['total'] ); ?> avis</span>
+        </div>
+      <?php else : ?>
+        <p class="sr-avis-empty">Sois le premier &agrave; donner ton avis sur cette randonn&eacute;e !</p>
+      <?php endif; ?>
+
+      <?php if ( ! empty( $avis_list ) ) : ?>
+        <ul class="sr-avis-list">
+          <?php foreach ( $avis_list as $a ) : ?>
+          <li class="sr-avis-item">
+            <div class="sr-avis-item-head">
+              <span class="sr-avis-item-nom"><?php echo esc_html( $a->nom ); ?></span>
+              <span class="sr-avis-item-stars" aria-hidden="true"><?php echo str_repeat( '★', (int) $a->note ) . str_repeat( '☆', 5 - (int) $a->note ); ?></span>
+              <span class="sr-avis-item-date"><?php echo esc_html( mysql2date( 'd/m/Y', $a->date_avis ) ); ?></span>
+            </div>
+            <p class="sr-avis-item-texte"><?php echo esc_html( $a->commentaire ); ?></p>
+          </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+
+      <?php if ( 'merci' === $avis_statut ) : ?>
+        <div class="card contact-alert contact-alert-ok">Merci pour ton avis ! Il sera publi&eacute; apr&egrave;s validation.</div>
+      <?php elseif ( 'error' === $avis_statut ) : ?>
+        <div class="card contact-alert contact-alert-error">Merci de remplir tous les champs (nom, note, commentaire).</div>
+      <?php endif; ?>
+
+      <form class="sr-avis-form contact-form" method="post" action="<?php echo esc_url( get_permalink( $id ) . '#avis' ); ?>">
+        <?php wp_nonce_field( 'rando_nono_avis_form_' . $id, 'rando_nono_avis_nonce' ); ?>
+        <div class="contact-honeypot" aria-hidden="true">
+          <label for="site_web_avis">Site web</label>
+          <input type="text" id="site_web_avis" name="site_web_avis" tabindex="-1" autocomplete="off">
+        </div>
+
+        <label for="avis_nom">Ton pr&eacute;nom</label>
+        <input type="text" id="avis_nom" name="avis_nom" required>
+
+        <label id="sr-avis-rating-label">Ta note</label>
+        <div class="sr-avis-rating" role="radiogroup" aria-labelledby="sr-avis-rating-label">
+          <?php for ( $n = 5; $n >= 1; $n-- ) : ?>
+            <input type="radio" id="avis_note_<?php echo intval( $n ); ?>" name="avis_note" value="<?php echo intval( $n ); ?>" required>
+            <label for="avis_note_<?php echo intval( $n ); ?>" title="<?php echo intval( $n ); ?> &eacute;toile<?php echo $n > 1 ? 's' : ''; ?>">&#9733;</label>
+          <?php endfor; ?>
+        </div>
+
+        <label for="avis_commentaire">Ton avis</label>
+        <textarea id="avis_commentaire" name="avis_commentaire" rows="4" required></textarea>
+
+        <button type="submit" name="rando_nono_avis_submit" value="1" class="btn-nav btn-nav-solid">Publier mon avis</button>
+      </form>
+    </div>
 
     <!-- NAVIGATION PRÉCÉDENT / SUIVANT -->
     <?php
