@@ -55,15 +55,60 @@ get_header();
     <h2>Données personnelles</h2>
     <p>Ce site propose un <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>. Les informations que vous y transmettez (nom, e-mail, message) sont utilisées uniquement pour répondre à votre demande et ne sont ni conservées au-delà du nécessaire, ni transmises à des tiers.</p>
     <p>
+      Le site propose également une <a href="#newsletter">newsletter</a> et un espace d'<a href="#avis">avis lecteurs</a>,
+      décrits ci-dessous, qui impliquent la collecte de données personnelles (adresse e-mail pour la newsletter ;
+      nom et commentaire pour les avis).
+    </p>
+    <p>
       Avec votre consentement, des données de mesure d'audience (Google Analytics) et publicitaires (pixel Facebook)
       peuvent également être collectées ; voir la section <a href="#cookies">Cookies</a> ci-dessous. Les données
-      de géolocalisation utilisées par le suivi GPS en direct restent quant à elles uniquement sur votre appareil.
+      de géolocalisation utilisées par le suivi GPS en direct, ainsi que vos favoris et le contenu mis en cache pour
+      la consultation hors ligne, restent quant à eux uniquement sur votre appareil (voir <a href="#stockage-local">Stockage local</a>).
     </p>
     <p>
       Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès,
       de rectification et de suppression des données vous concernant.
     </p>
     <p>Pour toute demande relative à vos données personnelles, utilisez le <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>.</p>
+
+    <hr>
+
+    <h2 id="newsletter">Newsletter</h2>
+    <p>
+      Le site propose une inscription par e-mail permettant de recevoir une notification à chaque publication
+      d'une nouvelle randonnée. L'adresse e-mail fournie est enregistrée dans la base de données du site et
+      utilisée exclusivement à cette fin ; elle n'est ni revendue ni transmise à des tiers.
+    </p>
+    <p>
+      Vous pouvez vous désabonner à tout moment, sans justification, en cliquant sur le lien de désabonnement
+      présent au bas de chaque e-mail reçu. Votre adresse est alors supprimée de la liste des abonnés.
+    </p>
+
+    <hr>
+
+    <h2 id="avis">Avis et commentaires sur les randonnées</h2>
+    <p>
+      Le site permet de déposer un avis (note et commentaire, accompagnés du prénom renseigné) sur chaque fiche
+      randonnée. Ces avis sont enregistrés dans la base de données du site puis vérifiés manuellement avant
+      d'être publiés : ils ne sont donc visibles publiquement qu'après validation.
+    </p>
+    <p>
+      Le prénom et le commentaire associés à un avis publié sont visibles par tous les visiteurs du site.
+      Pour demander la modification ou la suppression d'un avis, utilisez le
+      <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>.
+    </p>
+
+    <hr>
+
+    <h2 id="stockage-local">Stockage local (favoris et mode hors ligne)</h2>
+    <p>
+      Le site propose une fonctionnalité de favoris (« Mes randos à faire ») ainsi qu'un mode de consultation
+      hors ligne des randonnées déjà visitées. Ces fonctionnalités reposent uniquement sur le stockage local
+      de votre navigateur (localStorage et cache du navigateur) : la liste de vos favoris et les pages mises
+      en cache pour une consultation hors ligne restent sur votre appareil et ne sont jamais transmises au
+      serveur du site. Vous pouvez les supprimer à tout moment en vidant les données de navigation de votre
+      navigateur pour ce site.
+    </p>
 
     <hr>
 
