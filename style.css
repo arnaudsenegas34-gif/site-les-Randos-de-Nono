@@ -304,6 +304,7 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .icon-svg { width: 13px; height: 13px; flex-shrink: 0; stroke-width: 2px; }
 .icon-svg-lg { width: 18px; height: 18px; }
 .card-title { font-family: 'Abril Fatface', serif; font-size: 1.3rem; color: var(--vert); margin-bottom: 0.55rem; }
+a.card-title { display: block; }
 .card-desc { font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.6; margin-bottom: 1.25rem; }
 .card-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; }
 .btn-sm { font-size: 0.72rem; padding: 0.55rem 1.05rem; }

@@ -86,7 +86,7 @@ if ( ! $featured_query->have_posts() ) {
         </div>
         <div class="derniere-content">
           <span class="meta-item"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $f_lieu ); ?> · <?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $f_date ); ?></span>
-          <h3 class="card-title"><?php the_title(); ?></h3>
+          <h3 class="card-title"><a href="<?php echo esc_url( get_permalink( $fid ) ); ?>"><?php the_title(); ?></a></h3>
           <p class="derniere-desc"><?php echo esc_html( wp_trim_words( get_the_content(), 28 ) ); ?></p>
 
           <div class="derniere-stats-row">
@@ -96,7 +96,8 @@ if ( ! $featured_query->have_posts() ) {
           </div>
 
           <div class="derniere-actions">
-            <button class="btn js-open-modal-featured"
+            <a class="btn js-open-modal-featured"
+              href="<?php echo esc_url( get_permalink( $fid ) ); ?>"
               data-id="<?php echo esc_attr( $fid ); ?>"
               data-url="<?php echo esc_url( get_permalink( $fid ) ); ?>"
               data-slug="<?php echo esc_attr( get_post_field( 'post_name', $fid ) ); ?>"
@@ -115,7 +116,7 @@ if ( ! $featured_query->have_posts() ) {
               data-recit="<?php echo esc_attr( $f_recit ); ?>"
               data-sac='<?php echo esc_attr( wp_json_encode( array_values( $f_sac ) ) ); ?>'
               data-conseils='<?php echo esc_attr( wp_json_encode( array_values( $f_conseils ) ) ); ?>'
-            >Voir la randonnée</button>
+            >Voir la randonnée</a>
             <?php if ( $f_gpx ) : ?>
               <a class="btn btn-outline" style="border-color:var(--vert);color:var(--vert)" href="<?php echo esc_url( $f_gpx ); ?>" download><?php echo rando_nono_icon( 'download' ); ?> GPX</a>
             <?php endif; ?>
