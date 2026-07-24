@@ -240,28 +240,167 @@
     var mapWrap = document.getElementById('sr-print-map-wrap');
     var mapLoaded = false;
 
-    function loadPrintMap() {
-      if (mapLoaded || !mapWrap) return;
+    function project(la, lo, zoom) {
+      var n = Math.pow(2, zoom);
+      var latRad = la * Math.PI / 180;
+      return {
+        x: ( lo + 180 ) / 360 * n,
+        y: ( 1 - Math.log( Math.tan( latRad ) + 1 / Math.cos( latRad ) ) / Math.PI ) / 2 * n
+      };
+    }
+
+    /* Mosaïque de tuiles OSM (même serveur que la carte interactive) plutôt
+       qu'un service tiers de "static map" externe, peu fiable/hors-ligne.
+       Trace le GPX par-dessus si fourni, avec un zoom ajusté pour le contenir. */
+    function buildPrintMap(lat, lon, track, callback) {
+      var TILE = 150;
+      var COLS = 5, ROWS = 5;
+      var HALF = ( COLS - 1 ) / 2;
+      var subdomains = [ 'a', 'b', 'c' ];
+
+      var centerLat = lat, centerLon = lon, zoom = 13;
+
+      if ( track && track.length > 1 ) {
+        var minLat = track[0][0], maxLat = track[0][0], minLon = track[0][1], maxLon = track[0][1];
+        for ( var i = 1; i < track.length; i++ ) {
+          if ( track[i][0] < minLat ) minLat = track[i][0];
+          if ( track[i][0] > maxLat ) maxLat = track[i][0];
+          if ( track[i][1] < minLon ) minLon = track[i][1];
+          if ( track[i][1] > maxLon ) maxLon = track[i][1];
+        }
+        centerLat = ( minLat + maxLat ) / 2;
+        centerLon = ( minLon + maxLon ) / 2;
+
+        var maxAllowedW = COLS * TILE * 0.82;
+        var maxAllowedH = ROWS * TILE * 0.82;
+        zoom = 8;
+        for ( var z = 16; z >= 8; z-- ) {
+          var p1 = project( maxLat, minLon, z );
+          var p2 = project( minLat, maxLon, z );
+          var wPx = ( p2.x - p1.x ) * TILE;
+          var hPx = ( p2.y - p1.y ) * TILE;
+          if ( wPx <= maxAllowedW && hPx <= maxAllowedH ) { zoom = z; break; }
+        }
+      }
+
+      var centerP = project( centerLat, centerLon, zoom );
+      var centerXTile = Math.floor( centerP.x );
+      var centerYTile = Math.floor( centerP.y );
+
+      var frame = document.createElement('div');
+      frame.style.cssText = 'position:relative;width:' + ( COLS * TILE ) + 'px;height:' + ( ROWS * TILE ) + 'px;';
+
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + COLS + ',' + TILE + 'px);grid-template-rows:repeat(' + ROWS + ',' + TILE + 'px);width:' + ( COLS * TILE ) + 'px;height:' + ( ROWS * TILE ) + 'px;overflow:hidden;';
+
+      var toLoad = 0, loaded = 0, done = false;
+      function finish() {
+        if ( done ) return;
+        done = true;
+        if ( callback ) callback();
+      }
+      setTimeout(finish, 4000);
+      function tileDone() {
+        loaded++;
+        if ( loaded >= toLoad ) finish();
+      }
+
+      for ( var dy = -HALF; dy <= HALF; dy++ ) {
+        for ( var dx = -HALF; dx <= HALF; dx++ ) {
+          var tx = centerXTile + dx;
+          var ty = centerYTile + dy;
+          var sub = subdomains[ Math.abs( tx + ty ) % subdomains.length ];
+          var tileImg = document.createElement('img');
+          tileImg.width = TILE;
+          tileImg.height = TILE;
+          tileImg.alt = '';
+          tileImg.style.cssText = 'display:block;width:' + TILE + 'px;height:' + TILE + 'px;';
+          toLoad++;
+          tileImg.addEventListener('load', tileDone);
+          tileImg.addEventListener('error', tileDone);
+          tileImg.src = 'https://' + sub + '.tile.openstreetmap.org/' + zoom + '/' + tx + '/' + ty + '.png';
+          grid.appendChild(tileImg);
+        }
+      }
+
+      function toLocalPx( la, lo ) {
+        var p = project( la, lo, zoom );
+        return {
+          x: ( p.x - ( centerXTile - HALF ) ) * TILE,
+          y: ( p.y - ( centerYTile - HALF ) ) * TILE
+        };
+      }
+
+      frame.appendChild(grid);
+
+      if ( track && track.length > 1 ) {
+        var svgNS = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', COLS * TILE);
+        svg.setAttribute('height', ROWS * TILE);
+        svg.style.cssText = 'position:absolute;left:0;top:0;';
+        var poly = document.createElementNS(svgNS, 'polyline');
+        var step = Math.max( 1, Math.floor( track.length / 400 ) );
+        var coords = [];
+        for ( var ti = 0; ti < track.length; ti += step ) {
+          var pt = toLocalPx( track[ti][0], track[ti][1] );
+          coords.push( pt.x.toFixed(1) + ',' + pt.y.toFixed(1) );
+        }
+        poly.setAttribute('points', coords.join(' '));
+        poly.setAttribute('fill', 'none');
+        poly.setAttribute('stroke', '#D97706');
+        poly.setAttribute('stroke-width', '3');
+        poly.setAttribute('stroke-linecap', 'round');
+        poly.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(poly);
+        frame.appendChild(svg);
+      }
+
+      var startPt = toLocalPx( lat, lon );
+      var marker = document.createElement('div');
+      marker.setAttribute('aria-label', 'Point de départ');
+      marker.style.cssText = 'position:absolute;left:' + ( startPt.x - 7 ) + 'px;top:' + ( startPt.y - 7 ) + 'px;width:14px;height:14px;border-radius:50%;background:#D97706;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);';
+      frame.appendChild(marker);
+
+      mapWrap.appendChild(frame);
+    }
+
+    function loadPrintMap(callback) {
+      if (mapLoaded || !mapWrap) { if (callback) callback(); return; }
       var lat = parseFloat(mapWrap.dataset.lat);
       var lon = parseFloat(mapWrap.dataset.lon);
-      if (isNaN(lat) || isNaN(lon)) return;
+      if (isNaN(lat) || isNaN(lon)) { if (callback) callback(); return; }
       mapLoaded = true;
-      var url = 'https://staticmap.openstreetmap.de/staticmap.php?center=' + lat + ',' + lon +
-        '&zoom=13&size=650x320&maptype=mapnik&markers=' + lat + ',' + lon + ',red-pushpin';
-      var img = document.createElement('img');
-      img.src = url;
-      img.alt = 'Carte de localisation';
-      mapWrap.appendChild(img);
+      var gpxUrl = mapWrap.dataset.gpx || '';
+
+      if ( gpxUrl ) {
+        fetch(gpxUrl).then(function (r) { return r.text(); }).then(function (text) {
+          var xml = new DOMParser().parseFromString(text, 'application/xml');
+          var nodes = xml.getElementsByTagName('trkpt');
+          var pts = [];
+          for ( var i = 0; i < nodes.length; i++ ) {
+            var la = parseFloat( nodes[i].getAttribute('lat') );
+            var lo = parseFloat( nodes[i].getAttribute('lon') );
+            if ( !isNaN(la) && !isNaN(lo) ) pts.push([ la, lo ]);
+          }
+          buildPrintMap( lat, lon, pts.length > 1 ? pts : null, callback );
+        }).catch(function () {
+          buildPrintMap( lat, lon, null, callback );
+        });
+      } else {
+        buildPrintMap( lat, lon, null, callback );
+      }
     }
 
     if (btn) {
       btn.addEventListener('click', function () {
-        loadPrintMap();
-        window.print();
+        loadPrintMap(function () {
+          window.print();
+        });
       });
     }
 
-    window.addEventListener('beforeprint', loadPrintMap);
+    window.addEventListener('beforeprint', function () { loadPrintMap(); });
   }
 
   function esc(s) {

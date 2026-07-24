@@ -165,7 +165,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
            data-lat="<?php echo esc_attr( $lat ); ?>"
            data-lon="<?php echo esc_attr( $lon ); ?>"
            data-gpx="<?php echo esc_attr( $gpx_url ); ?>"></div>
-      <div class="sr-print-map-wrap sr-print-only" id="sr-print-map-wrap" data-lat="<?php echo esc_attr( $lat ); ?>" data-lon="<?php echo esc_attr( $lon ); ?>"></div>
+      <div class="sr-print-map-wrap sr-print-only" id="sr-print-map-wrap" data-lat="<?php echo esc_attr( $lat ); ?>" data-lon="<?php echo esc_attr( $lon ); ?>" data-gpx="<?php echo esc_attr( $gpx_url ); ?>"></div>
       <div class="sr-map-actions sr-no-print">
         <?php if ( $maps_url ) : ?>
           <a href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener" class="btn btn-sm">
