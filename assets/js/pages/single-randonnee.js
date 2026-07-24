@@ -246,21 +246,66 @@
       var lon = parseFloat(mapWrap.dataset.lon);
       if (isNaN(lat) || isNaN(lon)) { if (callback) callback(); return; }
       mapLoaded = true;
-      var url = 'https://staticmap.openstreetmap.de/staticmap.php?center=' + lat + ',' + lon +
-        '&zoom=13&size=650x320&maptype=mapnik&markers=' + lat + ',' + lon + ',red-pushpin';
-      var img = document.createElement('img');
-      img.alt = 'Carte de localisation';
+
       var done = false;
       function finish() {
         if (done) return;
         done = true;
         if (callback) callback();
       }
-      img.addEventListener('load', finish);
-      img.addEventListener('error', finish);
       setTimeout(finish, 3000);
-      img.src = url;
-      mapWrap.appendChild(img);
+
+      /* Mosaïque de tuiles OSM (même serveur que la carte interactive) plutôt
+         qu'un service tiers de "static map" externe, peu fiable/hors-ligne. */
+      var ZOOM = 13;
+      var TILE = 170;
+      var n = Math.pow(2, ZOOM);
+      var latRad = lat * Math.PI / 180;
+      var xTileF = ( lon + 180 ) / 360 * n;
+      var yTileF = ( 1 - Math.log( Math.tan( latRad ) + 1 / Math.cos( latRad ) ) / Math.PI ) / 2 * n;
+      var centerXTile = Math.floor( xTileF );
+      var centerYTile = Math.floor( yTileF );
+      var subdomains = [ 'a', 'b', 'c' ];
+
+      var frame = document.createElement('div');
+      frame.style.cssText = 'position:relative;width:' + ( 3 * TILE ) + 'px;height:' + ( 3 * TILE ) + 'px;';
+
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,' + TILE + 'px);grid-template-rows:repeat(3,' + TILE + 'px);width:' + ( 3 * TILE ) + 'px;height:' + ( 3 * TILE ) + 'px;overflow:hidden;';
+
+      var toLoad = 0, loaded = 0;
+      function tileDone() {
+        loaded++;
+        if ( loaded >= toLoad ) finish();
+      }
+
+      for ( var dy = -1; dy <= 1; dy++ ) {
+        for ( var dx = -1; dx <= 1; dx++ ) {
+          var tx = centerXTile + dx;
+          var ty = centerYTile + dy;
+          var sub = subdomains[ Math.abs( tx + ty ) % subdomains.length ];
+          var tileImg = document.createElement('img');
+          tileImg.width = TILE;
+          tileImg.height = TILE;
+          tileImg.alt = '';
+          tileImg.style.cssText = 'display:block;width:' + TILE + 'px;height:' + TILE + 'px;';
+          toLoad++;
+          tileImg.addEventListener('load', tileDone);
+          tileImg.addEventListener('error', tileDone);
+          tileImg.src = 'https://' + sub + '.tile.openstreetmap.org/' + ZOOM + '/' + tx + '/' + ty + '.png';
+          grid.appendChild(tileImg);
+        }
+      }
+
+      var markerX = TILE + ( xTileF - centerXTile ) * TILE;
+      var markerY = TILE + ( yTileF - centerYTile ) * TILE;
+      var marker = document.createElement('div');
+      marker.setAttribute('aria-label', 'Point de départ');
+      marker.style.cssText = 'position:absolute;left:' + ( markerX - 7 ) + 'px;top:' + ( markerY - 7 ) + 'px;width:14px;height:14px;border-radius:50%;background:#D97706;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);';
+
+      frame.appendChild(grid);
+      frame.appendChild(marker);
+      mapWrap.appendChild(frame);
     }
 
     if (btn) {

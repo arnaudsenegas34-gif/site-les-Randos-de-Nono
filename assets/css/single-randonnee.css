@@ -547,7 +547,7 @@
 }
 .sr-print-hint { font-size: 0.78rem; color: var(--gris); font-weight: 300; }
 .sr-print-map-wrap { display: none; }
-.sr-print-map-wrap img { width: 100%; border-radius: 8px; }
+.sr-print-map-wrap > div { margin: 0 auto; border-radius: 8px; overflow: hidden; }
 
 @media print {
   .site-header, .nav-mobile-drawer, .newsletter-band, .site-footer, .cookie-consent,
