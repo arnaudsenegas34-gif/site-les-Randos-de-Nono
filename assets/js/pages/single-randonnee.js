@@ -240,28 +240,38 @@
     var mapWrap = document.getElementById('sr-print-map-wrap');
     var mapLoaded = false;
 
-    function loadPrintMap() {
-      if (mapLoaded || !mapWrap) return;
+    function loadPrintMap(callback) {
+      if (mapLoaded || !mapWrap) { if (callback) callback(); return; }
       var lat = parseFloat(mapWrap.dataset.lat);
       var lon = parseFloat(mapWrap.dataset.lon);
-      if (isNaN(lat) || isNaN(lon)) return;
+      if (isNaN(lat) || isNaN(lon)) { if (callback) callback(); return; }
       mapLoaded = true;
       var url = 'https://staticmap.openstreetmap.de/staticmap.php?center=' + lat + ',' + lon +
         '&zoom=13&size=650x320&maptype=mapnik&markers=' + lat + ',' + lon + ',red-pushpin';
       var img = document.createElement('img');
-      img.src = url;
       img.alt = 'Carte de localisation';
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        if (callback) callback();
+      }
+      img.addEventListener('load', finish);
+      img.addEventListener('error', finish);
+      setTimeout(finish, 3000);
+      img.src = url;
       mapWrap.appendChild(img);
     }
 
     if (btn) {
       btn.addEventListener('click', function () {
-        loadPrintMap();
-        window.print();
+        loadPrintMap(function () {
+          window.print();
+        });
       });
     }
 
-    window.addEventListener('beforeprint', loadPrintMap);
+    window.addEventListener('beforeprint', function () { loadPrintMap(); });
   }
 
   function esc(s) {
