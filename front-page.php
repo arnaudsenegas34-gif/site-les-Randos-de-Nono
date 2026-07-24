@@ -6,7 +6,7 @@
 <section class="hero" id="hero">
   <div class="hero-bg-layer" id="hero-bg-layer" style="background-image:url('<?php echo esc_url( get_template_directory_uri() . '/assets/img/hero-bg.jpg' ); ?>')"></div>
   <div class="hero-inner">
-    <p class="hero-eyebrow">Hérault · Languedoc · Corsica</p>
+    <p class="hero-eyebrow">Hérault · Languedoc · et d'autres</p>
     <h1>Les Randos de <span style="color:var(--beige)">Nono</span></h1>
     <p class="hero-desc">Récits de randonnées, traces GPX à télécharger, météo en temps réel et les détails de chaque sortie.</p>
     <div class="hero-actions">
