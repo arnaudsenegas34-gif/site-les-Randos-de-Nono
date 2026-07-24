@@ -1259,7 +1259,12 @@ rando_nono_run_once_daily( 'rando_nono_newsletter_table_checked', 'rando_nono_ne
 function rando_nono_handle_newsletter_form() {
     if ( ! isset( $_POST['rando_nono_newsletter_submit'] ) ) return;
 
-    $redirect = wp_get_referer() ? wp_get_referer() : home_url( '/' );
+    // wp_get_referer() renvoie systématiquement false quand le formulaire est
+    // posté sur l'URL même de la page (cas du formulaire du pied de page,
+    // présent sur toutes les pages) : on utilise donc l'URL d'origine transmise
+    // en champ caché, validée pour rester sur le site.
+    $submitted_redirect = isset( $_POST['newsletter_redirect'] ) ? esc_url_raw( wp_unslash( $_POST['newsletter_redirect'] ) ) : '';
+    $redirect            = wp_validate_redirect( $submitted_redirect, home_url( '/' ) );
 
     if ( ! isset( $_POST['rando_nono_newsletter_nonce'] ) || ! wp_verify_nonce( $_POST['rando_nono_newsletter_nonce'], 'rando_nono_newsletter_form' ) ) {
         wp_safe_redirect( add_query_arg( 'newsletter', 'error', $redirect ) );
@@ -1272,7 +1277,9 @@ function rando_nono_handle_newsletter_form() {
         exit;
     }
 
-    $email = isset( $_POST['newsletter_email'] ) ? sanitize_email( wp_unslash( $_POST['newsletter_email'] ) ) : '';
+    // trim() est indispensable : un espace ajouté par le clavier mobile ou un
+    // copier-coller fait échouer is_email() alors que l'adresse est valide.
+    $email = isset( $_POST['newsletter_email'] ) ? sanitize_email( trim( wp_unslash( $_POST['newsletter_email'] ) ) ) : '';
     if ( ! is_email( $email ) ) {
         wp_safe_redirect( add_query_arg( 'newsletter', 'error', $redirect ) );
         exit;

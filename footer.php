@@ -16,6 +16,7 @@ $rando_nono_nl_status = isset( $_GET['newsletter'] ) ? sanitize_key( $_GET['news
     <?php else : ?>
       <form class="newsletter-form" method="post" action="<?php echo esc_url( home_url( add_query_arg( null, null ) ) ); ?>">
         <?php wp_nonce_field( 'rando_nono_newsletter_form', 'rando_nono_newsletter_nonce' ); ?>
+        <input type="hidden" name="newsletter_redirect" value="<?php echo esc_url( home_url( add_query_arg( null, null ) ) ); ?>">
         <div class="contact-honeypot" aria-hidden="true">
           <label for="site_web_nl">Site web</label>
           <input type="text" id="site_web_nl" name="site_web_nl" tabindex="-1" autocomplete="off">
