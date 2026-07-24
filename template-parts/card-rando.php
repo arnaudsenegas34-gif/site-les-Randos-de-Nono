@@ -76,7 +76,7 @@ $thumb = get_the_post_thumbnail_url( $id, 'medium' );
       <span class="meta-item"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $lieu ); ?></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $date_sortie ); ?></span>
     </div>
-    <div class="card-title"><?php the_title(); ?></div>
+    <a class="card-title" href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php the_title(); ?></a>
     <div class="card-meta" style="margin-bottom:0.85rem">
       <span class="meta-item"><?php echo rando_nono_icon( 'ruler' ); ?> <?php echo esc_html( $distance ); ?></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'trending-up' ); ?> <?php echo esc_html( $denivele ); ?></span>
@@ -89,7 +89,7 @@ $thumb = get_the_post_thumbnail_url( $id, 'medium' );
     ?>
     <div class="card-desc"><?php echo esc_html( wp_trim_words( get_the_content(), $trim_length ) ); ?></div>
     <div class="card-actions">
-      <button class="btn btn-sm js-open-modal">Voir la rando</button>
+      <a class="btn btn-sm js-open-modal" href="<?php echo esc_url( get_permalink( $id ) ); ?>">Voir la rando</a>
       <?php if ( $gpx_url ) : ?>
         <a class="btn btn-sm" style="background:var(--vert)" href="<?php echo esc_url( $gpx_url ); ?>" download onclick="event.stopPropagation()"><?php echo rando_nono_icon( 'download' ); ?> GPX</a>
       <?php endif; ?>

@@ -16,11 +16,15 @@
       return;
     }
 
-    /* ── Cartes de la grille ── */
+    /* ── Cartes de la grille ──
+       Le titre et le bouton "Voir la rando" sont de vrais liens <a href="…">
+       vers la page de la randonnée (crawlables par Google, fonctionnels sans JS).
+       Ici on intercepte le clic pour garder l'ouverture en modale. */
     document.querySelectorAll('.rando-card').forEach(card => {
       card.addEventListener('click', function (e) {
         // Ignorer les clics sur le bouton GPX
         if (e.target.closest('[download]')) return;
+        e.preventDefault();
         window.RandoModal.open(card);
       });
 
@@ -28,6 +32,7 @@
       const btnVoir = card.querySelector('.js-open-modal');
       if (btnVoir) {
         btnVoir.addEventListener('click', function (e) {
+          e.preventDefault();
           e.stopPropagation();
           window.RandoModal.open(card);
         });
@@ -37,6 +42,7 @@
     /* ── Rando mise en avant (featured) ── */
     document.querySelectorAll('.js-open-modal-featured').forEach(btn => {
       btn.addEventListener('click', function (e) {
+        e.preventDefault();
         e.stopPropagation();
         // Le bouton porte directement tous ses data-*
         window.RandoModal.open(btn);
