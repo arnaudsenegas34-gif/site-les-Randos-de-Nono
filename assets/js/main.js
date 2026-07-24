@@ -71,6 +71,33 @@
   }
 
   /* ══════════════════════════════════════════════
+     NAV ACTIVE — mise en avant du bouton de la section visible
+     Sur la page d'accueil, "Accueil" reste actif tant qu'aucune
+     des sections ancrées (Matos, Statistiques, À propos) n'est
+     à l'écran ; ensuite le bouton correspondant prend le relais.
+  ══════════════════════════════════════════════ */
+  if (heroEl) {
+    const navButtons = document.querySelectorAll('[data-nav-key]');
+    const setActiveNav = (key) => {
+      navButtons.forEach(btn => btn.classList.toggle('is-current', btn.dataset.navKey === key));
+    };
+    const navSections = ['matos', 'statistiques', 'apropos']
+      .map(id => ({ id, el: document.getElementById(id) }))
+      .filter(s => s.el);
+
+    if (navSections.length) {
+      const navObs = new IntersectionObserver((entries) => {
+        const visible = navSections.find(s => {
+          const rect = s.el.getBoundingClientRect();
+          return rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2;
+        });
+        setActiveNav(visible ? visible.id : 'accueil');
+      }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
+      navSections.forEach(s => navObs.observe(s.el));
+    }
+  }
+
+  /* ══════════════════════════════════════════════
      MENU HAMBURGER MOBILE
   ══════════════════════════════════════════════ */
   const menuToggle   = document.getElementById('menu-toggle');

@@ -99,12 +99,14 @@ button { font-family: inherit; }
   color: var(--orange);
   transform: translateY(-1px);
 }
-.btn-nav-solid {
+.btn-nav-solid,
+.btn-nav.is-current {
   background: var(--orange);
   border-color: var(--orange);
   color: #fff;
 }
-.btn-nav-solid:hover {
+.btn-nav-solid:hover,
+.btn-nav.is-current:hover {
   background: #b45e04;
   border-color: #b45e04;
   color: #fff;
@@ -121,6 +123,7 @@ button { font-family: inherit; }
   transition: opacity 0.2s, color 0.2s;
 }
 .nav-links a:hover { opacity: 1; color: var(--orange); }
+.nav-links li.current-menu-item > a { opacity: 1; color: var(--orange); }
 .menu-toggle { display: none; background: none; border: none; color: var(--vert); font-size: 1.4rem; cursor: pointer; }
 
 .site-search-wrap { display: flex; align-items: center; margin-left: 0.4rem; }
@@ -200,7 +203,6 @@ button { font-family: inherit; }
   margin-bottom: 2rem;
   text-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
-.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
@@ -230,14 +232,11 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
   gap: 1.5rem;
   margin-top: 2.5rem;
 }
-/* La première carte de la grille prend deux colonnes en format paysage,
-   pour casser la monotonie d'une grille parfaitement régulière */
-.randos-grid > div:first-child .rando-card { grid-column: span 2; }
-.randos-grid > div:first-child .card-photo,
-.randos-grid > div:first-child .card-photo-placeholder { height: 280px; }
-.randos-grid > div:first-child .card-title { font-size: 1.6rem; }
 
 .rando-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: var(--beige);
   border-radius: 5px;
   overflow: hidden;
@@ -298,15 +297,15 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
 .card-fav-btn.is-favori { background: var(--orange); }
 .card-fav-btn.is-favori .icon-svg { fill: currentColor; }
 
-.card-body { padding: 1.5rem 1.4rem 1.4rem; }
+.card-body { display: flex; flex-direction: column; flex: 1; padding: 1.5rem 1.4rem 1.4rem; }
 .card-meta { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
 .meta-item { font-size: 0.7rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.32rem; }
 .icon-svg { width: 13px; height: 13px; flex-shrink: 0; stroke-width: 2px; }
 .icon-svg-lg { width: 18px; height: 18px; }
 .card-title { font-family: 'Abril Fatface', serif; font-size: 1.3rem; color: var(--vert); margin-bottom: 0.55rem; }
 a.card-title { display: block; }
-.card-desc { font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.6; margin-bottom: 1.25rem; }
-.card-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; }
+.card-desc { flex: 1; font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.6; margin-bottom: 1.25rem; }
+.card-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: auto; }
 .btn-sm { font-size: 0.72rem; padding: 0.55rem 1.05rem; }
 
 .see-more-wrap { text-align: center; margin-top: 2.75rem; }
@@ -735,7 +734,7 @@ a.card-title { display: block; }
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .nav-mobile-drawer a:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
-.nav-mobile-drawer a.solid { background: var(--orange); color: #fff; border-color: var(--orange); }
+.nav-mobile-drawer a.is-current { background: var(--orange); color: #fff; border-color: var(--orange); }
 @media (max-width: 600px) {
   .randos-grid { grid-template-columns: 1fr; }
   .favoris-grid { grid-template-columns: 1fr; }

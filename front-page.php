@@ -9,10 +9,6 @@
     <p class="hero-eyebrow">Hérault · Languedoc · et d'autres</p>
     <h1>Les Randos de <span style="color:var(--beige)">Nono</span></h1>
     <p class="hero-desc">Récits de randonnées, traces GPX à télécharger, météo en temps réel et les détails de chaque sortie.</p>
-    <div class="hero-actions">
-      <a href="#randos" class="btn">Voir les randonnées</a>
-      <a href="#matos" class="btn btn-outline">Mon équipement</a>
-    </div>
   </div>
 </section>
 
