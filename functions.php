@@ -293,6 +293,12 @@ function rando_nono_featured_callback( $post ) {
     $checked = get_post_meta( $post->ID, 'rando_a_la_une', true );
     echo '<label><input type="checkbox" name="rando_a_la_une" value="1" ' . checked( $checked, '1', false ) . ' /> Afficher dans le bloc "Dernière randonnée"</label>';
     echo '<p style="color:#6B6B5E;font-size:12px">Si aucune n\'est cochée, la plus récente est affichée automatiquement.</p>';
+
+    if ( 'publish' === $post->post_status ) {
+        echo '<hr>';
+        echo '<label><input type="checkbox" name="rando_nono_renvoyer_newsletter" value="1" /> Renvoyer l\'e-mail de newsletter aux abonnés</label>';
+        echo '<p style="color:#6B6B5E;font-size:12px">À cocher puis "Mettre à jour" pour renvoyer (ex : le premier envoi n\'est jamais arrivé).</p>';
+    }
 }
 
 function rando_nono_save_meta( $post_id ) {
@@ -309,6 +315,10 @@ function rando_nono_save_meta( $post_id ) {
     if ( isset( $_POST['rando_nono_featured_nonce'] ) && wp_verify_nonce( $_POST['rando_nono_featured_nonce'], 'rando_nono_featured_save' ) ) {
         if ( ! ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) && current_user_can( 'edit_post', $post_id ) ) {
             update_post_meta( $post_id, 'rando_a_la_une', isset( $_POST['rando_a_la_une'] ) ? '1' : '' );
+
+            if ( ! empty( $_POST['rando_nono_renvoyer_newsletter'] ) && 'publish' === get_post_status( $post_id ) ) {
+                rando_nono_schedule_newsletter_send( $post_id );
+            }
         }
     }
 }
@@ -1324,13 +1334,25 @@ add_action( 'template_redirect', 'rando_nono_handle_newsletter_unsubscribe' );
  * Le flag _rando_nono_newsletter_sent évite les envois en double si l'article
  * est ensuite modifié et republié.
  */
+function rando_nono_schedule_newsletter_send( $post_id ) {
+    update_post_meta( $post_id, '_rando_nono_newsletter_sent', current_time( 'mysql' ) );
+    wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'rando_nono_send_newsletter_event', array( $post_id ) );
+
+    // Sur beaucoup d'hébergeurs, WP-Cron ne se déclenche que via la visite
+    // d'une page par un internaute ; sur un site peu fréquenté, l'envoi
+    // programmé peut donc attendre longtemps. spawn_cron() force WordPress à
+    // vérifier tout de suite s'il a une tâche en attente à traiter.
+    if ( function_exists( 'spawn_cron' ) ) {
+        spawn_cron();
+    }
+}
+
 function rando_nono_newsletter_notify_new_rando( $new_status, $old_status, $post ) {
     if ( 'randonnee' !== $post->post_type ) return;
     if ( 'publish' !== $new_status || 'publish' === $old_status ) return;
     if ( get_post_meta( $post->ID, '_rando_nono_newsletter_sent', true ) ) return;
 
-    update_post_meta( $post->ID, '_rando_nono_newsletter_sent', current_time( 'mysql' ) );
-    wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'rando_nono_send_newsletter_event', array( $post->ID ) );
+    rando_nono_schedule_newsletter_send( $post->ID );
 }
 add_action( 'transition_post_status', 'rando_nono_newsletter_notify_new_rando', 10, 3 );
 
@@ -1349,6 +1371,13 @@ function rando_nono_send_newsletter_event( $post_id ) {
     $titre    = get_the_title( $post_id );
     $subject  = 'Nouvelle randonnée : ' . $titre;
 
+    // wp_mail() peut échouer silencieusement (SMTP mal configuré, hébergeur qui
+    // bloque l'envoi...) ; on journalise l'erreur pour pouvoir la diagnostiquer.
+    $log_failure = function( $wp_error ) {
+        error_log( 'Rando Nono newsletter : échec wp_mail — ' . $wp_error->get_error_message() );
+    };
+    add_action( 'wp_mail_failed', $log_failure );
+
     foreach ( $subs as $sub ) {
         $unsub  = add_query_arg( 'newsletter_desabonner', $sub->token, home_url( '/' ) );
         $body   = "Une nouvelle randonnée vient d'être publiée sur Les Randos de Nono !\n\n";
@@ -1357,6 +1386,8 @@ function rando_nono_send_newsletter_event( $post_id ) {
         $body  .= "---\nSe désabonner en un clic :\n" . $unsub . "\n";
         wp_mail( $sub->email, $subject, $body );
     }
+
+    remove_action( 'wp_mail_failed', $log_failure );
 }
 add_action( 'rando_nono_send_newsletter_event', 'rando_nono_send_newsletter_event' );
 
