@@ -1368,6 +1368,12 @@ function rando_nono_send_newsletter_event( $post_id ) {
     $titre    = get_the_title( $post_id );
     $subject  = 'Nouvelle randonnée : ' . $titre;
 
+    // Expéditeur générique du site plutôt que l'adresse e-mail personnelle de
+    // l'administrateur (celle utilisée pour Réglages > Général), pour ne pas
+    // l'exposer à chaque abonné.
+    $domain  = wp_parse_url( home_url(), PHP_URL_HOST );
+    $headers = array( 'From: ' . get_bloginfo( 'name' ) . ' <newsletter@' . $domain . '>' );
+
     // wp_mail() peut échouer silencieusement (SMTP mal configuré, hébergeur qui
     // bloque l'envoi...) ; on journalise l'erreur pour pouvoir la diagnostiquer.
     $log_failure = function( $wp_error ) {
@@ -1381,7 +1387,7 @@ function rando_nono_send_newsletter_event( $post_id ) {
         $body  .= $titre . ( $lieu ? ' — ' . $lieu : '' ) . ( $distance ? ' (' . $distance . ')' : '' ) . "\n\n";
         $body  .= "Découvrir le récit et la trace GPX :\n" . $url . "\n\n";
         $body  .= "---\nSe désabonner en un clic :\n" . $unsub . "\n";
-        wp_mail( $sub->email, $subject, $body );
+        wp_mail( $sub->email, $subject, $body, $headers );
     }
 
     remove_action( 'wp_mail_failed', $log_failure );
