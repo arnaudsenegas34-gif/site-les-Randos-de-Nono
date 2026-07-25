@@ -1329,22 +1329,19 @@ function rando_nono_handle_newsletter_unsubscribe() {
 add_action( 'template_redirect', 'rando_nono_handle_newsletter_unsubscribe' );
 
 /**
- * Dès qu'une randonnée passe en "publié" pour la première fois, programme
- * l'envoi (différé d'une minute, via WP-Cron) d'un e-mail à tous les abonnés.
- * Le flag _rando_nono_newsletter_sent évite les envois en double si l'article
- * est ensuite modifié et republié.
+ * Dès qu'une randonnée passe en "publié" pour la première fois, envoie un
+ * e-mail à tous les abonnés. Le flag _rando_nono_newsletter_sent évite les
+ * envois en double si l'article est ensuite modifié et republié.
  */
 function rando_nono_schedule_newsletter_send( $post_id ) {
     update_post_meta( $post_id, '_rando_nono_newsletter_sent', current_time( 'mysql' ) );
-    wp_schedule_single_event( time() + MINUTE_IN_SECONDS, 'rando_nono_send_newsletter_event', array( $post_id ) );
 
-    // Sur beaucoup d'hébergeurs, WP-Cron ne se déclenche que via la visite
-    // d'une page par un internaute ; sur un site peu fréquenté, l'envoi
-    // programmé peut donc attendre longtemps. spawn_cron() force WordPress à
-    // vérifier tout de suite s'il a une tâche en attente à traiter.
-    if ( function_exists( 'spawn_cron' ) ) {
-        spawn_cron();
-    }
+    // Envoi immédiat plutôt que différé via WP-Cron : sur beaucoup
+    // d'hébergeurs, WP-Cron dépend d'une requête "loopback" (le serveur
+    // s'appelle lui-même) qui est bloquée par le pare-feu/l'hébergeur, et
+    // l'e-mail programmé ne part alors jamais. On envoie donc tout de suite,
+    // pendant la même requête que la publication/le renvoi manuel.
+    rando_nono_send_newsletter_event( $post_id );
 }
 
 function rando_nono_newsletter_notify_new_rando( $new_status, $old_status, $post ) {
