@@ -258,7 +258,7 @@
       var HALF = ( COLS - 1 ) / 2;
       var subdomains = [ 'a', 'b', 'c' ];
 
-      var centerLat = lat, centerLon = lon, zoom = 13;
+      var centerLat = lat, centerLon = lon, zoom = 15;
 
       if ( track && track.length > 1 ) {
         var minLat = track[0][0], maxLat = track[0][0], minLon = track[0][1], maxLon = track[0][1];
@@ -271,10 +271,10 @@
         centerLat = ( minLat + maxLat ) / 2;
         centerLon = ( minLon + maxLon ) / 2;
 
-        var maxAllowedW = COLS * TILE * 0.82;
-        var maxAllowedH = ROWS * TILE * 0.82;
+        var maxAllowedW = COLS * TILE * 0.96;
+        var maxAllowedH = ROWS * TILE * 0.96;
         zoom = 8;
-        for ( var z = 16; z >= 8; z-- ) {
+        for ( var z = 18; z >= 8; z-- ) {
           var p1 = project( maxLat, minLon, z );
           var p2 = project( minLat, maxLon, z );
           var wPx = ( p2.x - p1.x ) * TILE;
