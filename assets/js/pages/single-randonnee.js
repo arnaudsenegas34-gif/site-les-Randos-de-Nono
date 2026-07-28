@@ -240,6 +240,13 @@
     var mapWrap = document.getElementById('sr-print-map-wrap');
     var mapLoaded = false;
 
+    var TILE = 165;
+    var COLS = 5, ROWS = 5;
+    var HALF = ( COLS - 1 ) / 2;
+    var MAX_ZOOM = 18;
+    var TARGET_ZOOM = 15; /* en dessous, le tracé est jugé pas assez zoomé */
+    var subdomains = [ 'a', 'b', 'c' ];
+
     function project(la, lo, zoom) {
       var n = Math.pow(2, zoom);
       var latRad = la * Math.PI / 180;
@@ -249,61 +256,61 @@
       };
     }
 
-    /* Mosaïque de tuiles OSM (même serveur que la carte interactive) plutôt
-       qu'un service tiers de "static map" externe, peu fiable/hors-ligne.
-       Trace le GPX par-dessus si fourni, avec un zoom ajusté pour le contenir. */
-    function buildPrintMap(lat, lon, track, callback) {
-      var TILE = 150;
-      var COLS = 5, ROWS = 5;
-      var HALF = ( COLS - 1 ) / 2;
-      var subdomains = [ 'a', 'b', 'c' ];
-
-      var centerLat = lat, centerLon = lon, zoom = 15;
-
-      if ( track && track.length > 1 ) {
-        var minLat = track[0][0], maxLat = track[0][0], minLon = track[0][1], maxLon = track[0][1];
-        for ( var i = 1; i < track.length; i++ ) {
-          if ( track[i][0] < minLat ) minLat = track[i][0];
-          if ( track[i][0] > maxLat ) maxLat = track[i][0];
-          if ( track[i][1] < minLon ) minLon = track[i][1];
-          if ( track[i][1] > maxLon ) maxLon = track[i][1];
-        }
-        centerLat = ( minLat + maxLat ) / 2;
-        centerLon = ( minLon + maxLon ) / 2;
-
-        var maxAllowedW = COLS * TILE * 0.96;
-        var maxAllowedH = ROWS * TILE * 0.96;
-        zoom = 8;
-        for ( var z = 18; z >= 8; z-- ) {
-          var p1 = project( maxLat, minLon, z );
-          var p2 = project( minLat, maxLon, z );
-          var wPx = ( p2.x - p1.x ) * TILE;
-          var hPx = ( p2.y - p1.y ) * TILE;
-          if ( wPx <= maxAllowedW && hPx <= maxAllowedH ) { zoom = z; break; }
-        }
+    function bboxOf(points) {
+      var minLat = points[0][0], maxLat = points[0][0], minLon = points[0][1], maxLon = points[0][1];
+      for ( var i = 1; i < points.length; i++ ) {
+        if ( points[i][0] < minLat ) minLat = points[i][0];
+        if ( points[i][0] > maxLat ) maxLat = points[i][0];
+        if ( points[i][1] < minLon ) minLon = points[i][1];
+        if ( points[i][1] > maxLon ) maxLon = points[i][1];
       }
+      return { minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon };
+    }
+
+    function fitZoom(box) {
+      var maxAllowedW = COLS * TILE * 0.96;
+      var maxAllowedH = ROWS * TILE * 0.96;
+      var zoom = 8;
+      for ( var z = MAX_ZOOM; z >= 8; z-- ) {
+        var p1 = project( box.maxLat, box.minLon, z );
+        var p2 = project( box.minLat, box.maxLon, z );
+        var wPx = ( p2.x - p1.x ) * TILE;
+        var hPx = ( p2.y - p1.y ) * TILE;
+        if ( wPx <= maxAllowedW && hPx <= maxAllowedH ) { zoom = z; break; }
+      }
+      return zoom;
+    }
+
+    /* Construit un segment de carte : mosaïque de tuiles OSM (même serveur que
+       la carte interactive, plus fiable qu'un service tiers de "static map"),
+       avec le tracé GPX et des repères de départ/arrivée bien visibles. */
+    function buildSegment(points, label, showStart, endLabel, countTile, tileDone) {
+      var hasTrack = points.length > 1;
+      var box = hasTrack ? bboxOf(points) : { minLat: points[0][0], maxLat: points[0][0], minLon: points[0][1], maxLon: points[0][1] };
+      var centerLat = ( box.minLat + box.maxLat ) / 2;
+      var centerLon = ( box.minLon + box.maxLon ) / 2;
+      var zoom = hasTrack ? fitZoom(box) : TARGET_ZOOM;
 
       var centerP = project( centerLat, centerLon, zoom );
       var centerXTile = Math.floor( centerP.x );
       var centerYTile = Math.floor( centerP.y );
 
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-bottom:1.25rem;';
+
+      if ( label ) {
+        var title = document.createElement('p');
+        title.textContent = label;
+        title.style.cssText = 'font-weight:600;font-size:0.85rem;margin:0 0 0.4rem;color:#1A2E1F;';
+        wrap.appendChild(title);
+      }
+
       var frame = document.createElement('div');
-      frame.style.cssText = 'position:relative;width:' + ( COLS * TILE ) + 'px;height:' + ( ROWS * TILE ) + 'px;';
+      frame.className = 'sr-print-map-frame';
+      frame.style.cssText = 'position:relative;display:inline-block;width:' + ( COLS * TILE ) + 'px;height:' + ( ROWS * TILE ) + 'px;';
 
       var grid = document.createElement('div');
       grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + COLS + ',' + TILE + 'px);grid-template-rows:repeat(' + ROWS + ',' + TILE + 'px);width:' + ( COLS * TILE ) + 'px;height:' + ( ROWS * TILE ) + 'px;overflow:hidden;';
-
-      var toLoad = 0, loaded = 0, done = false;
-      function finish() {
-        if ( done ) return;
-        done = true;
-        if ( callback ) callback();
-      }
-      setTimeout(finish, 4000);
-      function tileDone() {
-        loaded++;
-        if ( loaded >= toLoad ) finish();
-      }
 
       for ( var dy = -HALF; dy <= HALF; dy++ ) {
         for ( var dx = -HALF; dx <= HALF; dx++ ) {
@@ -315,7 +322,7 @@
           tileImg.height = TILE;
           tileImg.alt = '';
           tileImg.style.cssText = 'display:block;width:' + TILE + 'px;height:' + TILE + 'px;';
-          toLoad++;
+          countTile();
           tileImg.addEventListener('load', tileDone);
           tileImg.addEventListener('error', tileDone);
           tileImg.src = 'https://' + sub + '.tile.openstreetmap.org/' + zoom + '/' + tx + '/' + ty + '.png';
@@ -333,36 +340,55 @@
 
       frame.appendChild(grid);
 
-      if ( track && track.length > 1 ) {
+      if ( hasTrack ) {
         var svgNS = 'http://www.w3.org/2000/svg';
         var svg = document.createElementNS(svgNS, 'svg');
         svg.setAttribute('width', COLS * TILE);
         svg.setAttribute('height', ROWS * TILE);
         svg.style.cssText = 'position:absolute;left:0;top:0;';
         var poly = document.createElementNS(svgNS, 'polyline');
-        var step = Math.max( 1, Math.floor( track.length / 400 ) );
+        var step = Math.max( 1, Math.floor( points.length / 500 ) );
         var coords = [];
-        for ( var ti = 0; ti < track.length; ti += step ) {
-          var pt = toLocalPx( track[ti][0], track[ti][1] );
+        for ( var ti = 0; ti < points.length; ti += step ) {
+          var pt = toLocalPx( points[ti][0], points[ti][1] );
           coords.push( pt.x.toFixed(1) + ',' + pt.y.toFixed(1) );
+        }
+        var lastIdx = points.length - 1;
+        if ( ( lastIdx % step ) !== 0 ) {
+          var lastPt = toLocalPx( points[lastIdx][0], points[lastIdx][1] );
+          coords.push( lastPt.x.toFixed(1) + ',' + lastPt.y.toFixed(1) );
         }
         poly.setAttribute('points', coords.join(' '));
         poly.setAttribute('fill', 'none');
         poly.setAttribute('stroke', '#D97706');
-        poly.setAttribute('stroke-width', '3');
+        poly.setAttribute('stroke-width', '4');
         poly.setAttribute('stroke-linecap', 'round');
         poly.setAttribute('stroke-linejoin', 'round');
         svg.appendChild(poly);
         frame.appendChild(svg);
       }
 
-      var startPt = toLocalPx( lat, lon );
-      var marker = document.createElement('div');
-      marker.setAttribute('aria-label', 'Point de départ');
-      marker.style.cssText = 'position:absolute;left:' + ( startPt.x - 7 ) + 'px;top:' + ( startPt.y - 7 ) + 'px;width:14px;height:14px;border-radius:50%;background:#D97706;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);';
-      frame.appendChild(marker);
+      /* Repère rond, gros, contrasté : la précision (centre exact du point
+         GPS) prime sur la forme — pas d'icône en goutte dont la pointe
+         pourrait être mal alignée. */
+      function addPin( la, lo, color, text ) {
+        var p = toLocalPx( la, lo );
+        var dot = document.createElement('div');
+        dot.style.cssText = 'position:absolute;left:' + ( p.x - 11 ) + 'px;top:' + ( p.y - 11 ) + 'px;width:22px;height:22px;border-radius:50%;background:' + color + ';border:4px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.55);z-index:2;';
+        frame.appendChild(dot);
+        if ( text ) {
+          var tag = document.createElement('span');
+          tag.textContent = text;
+          tag.style.cssText = 'position:absolute;left:' + p.x + 'px;top:' + ( p.y - 34 ) + 'px;transform:translateX(-50%);background:#fff;color:#1A2E1F;font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.4);white-space:nowrap;z-index:3;';
+          frame.appendChild(tag);
+        }
+      }
 
-      mapWrap.appendChild(frame);
+      if ( showStart ) addPin( points[0][0], points[0][1], '#2E5E3B', 'Départ' );
+      if ( endLabel && hasTrack ) addPin( points[points.length - 1][0], points[points.length - 1][1], '#D97706', endLabel );
+
+      wrap.appendChild(frame);
+      return wrap;
     }
 
     function loadPrintMap(callback) {
@@ -372,6 +398,42 @@
       if (isNaN(lat) || isNaN(lon)) { if (callback) callback(); return; }
       mapLoaded = true;
       var gpxUrl = mapWrap.dataset.gpx || '';
+
+      function render(points) {
+        var toLoad = 0, loaded = 0, done = false;
+        function finish() {
+          if ( done ) return;
+          done = true;
+          if ( callback ) callback();
+        }
+        setTimeout(finish, 5000);
+        function countTile() { toLoad++; }
+        function tileDone() {
+          loaded++;
+          if ( loaded >= toLoad ) finish();
+        }
+
+        if ( !points || points.length < 2 ) {
+          mapWrap.appendChild( buildSegment( [ [ lat, lon ] ], null, true, null, countTile, tileDone ) );
+        } else {
+          var fullZoom = fitZoom( bboxOf(points) );
+          if ( fullZoom >= TARGET_ZOOM ) {
+            mapWrap.appendChild( buildSegment( points, null, true, 'Arrivée', countTile, tileDone ) );
+          } else {
+            var mid = Math.floor( points.length / 2 );
+            var part1 = points.slice( 0, mid + 1 );
+            var part2 = points.slice( mid );
+            var seg1 = buildSegment( part1, 'Trace GPX — partie 1/2', true, 'Suite →', countTile, tileDone );
+            var seg2 = buildSegment( part2, 'Trace GPX — partie 2/2', false, 'Arrivée', countTile, tileDone );
+            seg2.style.pageBreakBefore = 'always';
+            seg2.style.breakBefore = 'page';
+            mapWrap.appendChild(seg1);
+            mapWrap.appendChild(seg2);
+          }
+        }
+
+        if ( toLoad === 0 ) finish();
+      }
 
       if ( gpxUrl ) {
         fetch(gpxUrl).then(function (r) { return r.text(); }).then(function (text) {
@@ -383,12 +445,12 @@
             var lo = parseFloat( nodes[i].getAttribute('lon') );
             if ( !isNaN(la) && !isNaN(lo) ) pts.push([ la, lo ]);
           }
-          buildPrintMap( lat, lon, pts.length > 1 ? pts : null, callback );
+          render( pts.length > 1 ? pts : null );
         }).catch(function () {
-          buildPrintMap( lat, lon, null, callback );
+          render(null);
         });
       } else {
-        buildPrintMap( lat, lon, null, callback );
+        render(null);
       }
     }
 
