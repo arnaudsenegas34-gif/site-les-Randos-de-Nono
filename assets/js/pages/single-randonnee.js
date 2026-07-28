@@ -240,11 +240,14 @@
     var mapWrap = document.getElementById('sr-print-map-wrap');
     var mapLoaded = false;
 
-    var TILE = 165;
-    var COLS = 5, ROWS = 5;
-    var HALF = ( COLS - 1 ) / 2;
+    /* Tuiles quasi à leur taille native (256px) pour un rendu net, et une
+       grille assez compacte pour tenir dans la largeur imprimable de la page
+       (~700px, cf. .sr-container : 820px max-width - 2×3rem de padding) sans
+       forcer le moteur d'impression à réduire toute la page à l'échelle. */
+    var TILE = 230;
+    var COLS = 3, ROWS = 3;
     var MAX_ZOOM = 18;
-    var TARGET_ZOOM = 15; /* en dessous, le tracé est jugé pas assez zoomé */
+    var TARGET_ZOOM = 14; /* en dessous, le tracé est jugé pas assez zoomé */
     var subdomains = [ 'a', 'b', 'c' ];
 
     function project(la, lo, zoom) {
@@ -291,9 +294,14 @@
       var centerLon = ( box.minLon + box.maxLon ) / 2;
       var zoom = hasTrack ? fitZoom(box) : TARGET_ZOOM;
 
+      /* Centrage continu en pixels (pas sur un index de tuile entier) : le
+         point/tracé reste exactement centré quelle que soit la taille de la
+         grille, sans risque de déborder d'un côté à cause d'un arrondi. */
+      var frameW = COLS * TILE;
+      var frameH = ROWS * TILE;
       var centerP = project( centerLat, centerLon, zoom );
-      var centerXTile = Math.floor( centerP.x );
-      var centerYTile = Math.floor( centerP.y );
+      var originX = centerP.x * TILE - frameW / 2;
+      var originY = centerP.y * TILE - frameH / 2;
 
       var wrap = document.createElement('div');
       wrap.style.cssText = 'margin-bottom:1.25rem;';
@@ -307,21 +315,24 @@
 
       var frame = document.createElement('div');
       frame.className = 'sr-print-map-frame';
-      frame.style.cssText = 'position:relative;display:inline-block;width:' + ( COLS * TILE ) + 'px;height:' + ( ROWS * TILE ) + 'px;';
+      frame.style.cssText = 'position:relative;display:inline-block;width:' + frameW + 'px;height:' + frameH + 'px;';
 
       var grid = document.createElement('div');
-      grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + COLS + ',' + TILE + 'px);grid-template-rows:repeat(' + ROWS + ',' + TILE + 'px);width:' + ( COLS * TILE ) + 'px;height:' + ( ROWS * TILE ) + 'px;overflow:hidden;';
+      grid.style.cssText = 'position:absolute;left:0;top:0;width:' + frameW + 'px;height:' + frameH + 'px;overflow:hidden;';
 
-      for ( var dy = -HALF; dy <= HALF; dy++ ) {
-        for ( var dx = -HALF; dx <= HALF; dx++ ) {
-          var tx = centerXTile + dx;
-          var ty = centerYTile + dy;
+      var txStart = Math.floor( originX / TILE );
+      var txEnd = Math.floor( ( originX + frameW ) / TILE );
+      var tyStart = Math.floor( originY / TILE );
+      var tyEnd = Math.floor( ( originY + frameH ) / TILE );
+
+      for ( var ty = tyStart; ty <= tyEnd; ty++ ) {
+        for ( var tx = txStart; tx <= txEnd; tx++ ) {
           var sub = subdomains[ Math.abs( tx + ty ) % subdomains.length ];
           var tileImg = document.createElement('img');
           tileImg.width = TILE;
           tileImg.height = TILE;
           tileImg.alt = '';
-          tileImg.style.cssText = 'display:block;width:' + TILE + 'px;height:' + TILE + 'px;';
+          tileImg.style.cssText = 'position:absolute;left:' + ( tx * TILE - originX ) + 'px;top:' + ( ty * TILE - originY ) + 'px;width:' + TILE + 'px;height:' + TILE + 'px;display:block;';
           countTile();
           tileImg.addEventListener('load', tileDone);
           tileImg.addEventListener('error', tileDone);
@@ -333,8 +344,8 @@
       function toLocalPx( la, lo ) {
         var p = project( la, lo, zoom );
         return {
-          x: ( p.x - ( centerXTile - HALF ) ) * TILE,
-          y: ( p.y - ( centerYTile - HALF ) ) * TILE
+          x: p.x * TILE - originX,
+          y: p.y * TILE - originY
         };
       }
 
