@@ -546,9 +546,9 @@
   margin-bottom: 1.75rem;
 }
 .sr-print-hint { font-size: 0.78rem; color: var(--gris); font-weight: 300; }
-.sr-print-map-wrap { display: none; }
+.sr-print-map-wrap { display: none; max-width: 100%; overflow: hidden; }
 .sr-print-map-wrap > div { text-align: center; }
-.sr-print-map-wrap .sr-print-map-frame { border-radius: 8px; overflow: hidden; }
+.sr-print-map-wrap .sr-print-map-frame { max-width: 100%; border-radius: 8px; overflow: hidden; }
 
 @media print {
   .site-header, .nav-mobile-drawer, .newsletter-band, .site-footer, .cookie-consent,
