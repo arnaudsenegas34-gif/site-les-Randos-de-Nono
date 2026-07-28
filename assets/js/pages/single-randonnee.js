@@ -447,8 +447,16 @@
       }
 
       if ( gpxUrl ) {
-        fetch(gpxUrl).then(function (r) { return r.text(); }).then(function (text) {
+        fetch(gpxUrl).then(function (r) {
+          if ( !r.ok ) throw new Error( 'HTTP ' + r.status + ' en récupérant le GPX' );
+          return r.text();
+        }).then(function (text) {
           var xml = new DOMParser().parseFromString(text, 'application/xml');
+          if ( xml.getElementsByTagName('parsererror').length ) {
+            console.warn( '[Fiche imprimable] Le fichier GPX n\'a pas pu être analysé (XML invalide) :', gpxUrl );
+            render(null);
+            return;
+          }
           var nodes = xml.getElementsByTagName('trkpt');
           var pts = [];
           for ( var i = 0; i < nodes.length; i++ ) {
@@ -456,11 +464,16 @@
             var lo = parseFloat( nodes[i].getAttribute('lon') );
             if ( !isNaN(la) && !isNaN(lo) ) pts.push([ la, lo ]);
           }
+          if ( pts.length < 2 ) {
+            console.warn( '[Fiche imprimable] Aucun point <trkpt> exploitable trouvé dans le GPX, le tracé ne sera pas affiché :', gpxUrl );
+          }
           render( pts.length > 1 ? pts : null );
-        }).catch(function () {
+        }).catch(function (err) {
+          console.warn( '[Fiche imprimable] Impossible de charger le GPX (réseau ou CORS), le tracé ne sera pas affiché :', gpxUrl, err );
           render(null);
         });
       } else {
+        console.info( '[Fiche imprimable] Aucune URL de GPX renseignée pour cette randonnée : seul le point de départ sera affiché.' );
         render(null);
       }
     }
