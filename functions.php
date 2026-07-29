@@ -50,6 +50,8 @@ function rando_nono_assets() {
     // inutile de charger Leaflet/Chart.js/modal.js sur les mentions légales, le 404, etc.
     $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
     $needs_leaflet = $needs_modal || is_singular( 'randonnee' );
+    // Le profil altimétrique (Chart.js) est aussi affiché sur la fiche complète d'une randonnée.
+    $needs_chart   = $needs_modal || is_singular( 'randonnee' );
     $main_deps     = array();
 
     // ── Leaflet (carte interactive) — hébergé localement dans assets/vendor/ ──
@@ -61,12 +63,14 @@ function rando_nono_assets() {
         wp_enqueue_script( 'leaflet-gpx', $theme_uri . '/assets/vendor/leaflet-gpx/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
     }
 
+    // ── Chart.js (profil altimétrique) — hébergé localement ──
+    if ( $needs_chart ) {
+        wp_enqueue_script( 'chartjs', $theme_uri . '/assets/vendor/chartjs/chart.umd.min.js', array(), '4.4.0', true );
+    }
+
     if ( $needs_modal ) {
         // ── CSS modal isolé ──
         wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/components/modal.css' ) );
-
-        // ── Chart.js (profil altimétrique) — hébergé localement ──
-        wp_enqueue_script( 'chartjs', $theme_uri . '/assets/vendor/chartjs/chart.umd.min.js', array(), '4.4.0', true );
 
         wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/components/modal.js' ), true );
         wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), rando_nono_asset_ver( '/assets/js/pages/randos.js' ), true );
@@ -99,7 +103,7 @@ function rando_nono_assets() {
         wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/single-randonnee.css' ) );
     }
     if ( is_singular( 'randonnee' ) ) {
-        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx' ), rando_nono_asset_ver( '/assets/js/pages/single-randonnee.js' ), true );
+        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/pages/single-randonnee.js' ), true );
 
         // ── Suivi GPS en direct (démarrer / suivre la randonnée depuis le téléphone) ──
         wp_enqueue_style( 'rando-nono-live-tracking', $theme_uri . '/assets/css/components/live-tracking.css', array( 'rando-nono-single' ), rando_nono_asset_ver( '/assets/css/components/live-tracking.css' ) );

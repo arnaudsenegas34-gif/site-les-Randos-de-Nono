@@ -183,6 +183,16 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     </div>
     <?php endif; ?>
 
+    <!-- PROFIL ALTIMÉTRIQUE (extrait du GPX) -->
+    <?php if ( $gpx_url ) : ?>
+    <div class="sr-altitude-section" id="sr-altitude-section" style="display:none;">
+      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'trending-up' ); ?> Profil altim&eacute;trique</h2>
+      <div class="sr-altitude-chart-wrap">
+        <canvas id="sr-altitude-chart"></canvas>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Barre de suivi live (affichée pendant la randonnée) -->
     <div class="sr-track-bar" id="sr-track-bar" hidden aria-live="polite">
       <div class="sr-track-stats">

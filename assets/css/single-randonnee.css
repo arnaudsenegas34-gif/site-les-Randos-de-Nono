@@ -210,6 +210,17 @@
   flex-wrap: wrap;
 }
 
+/* ══════════════════════ PROFIL ALTIMÉTRIQUE ══════════════════════ */
+.sr-altitude-section { margin-bottom: 2.5rem; }
+.sr-altitude-chart-wrap {
+  position: relative;
+  height: 220px;
+  background: var(--beige);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--ligne);
+}
+
 /* ══════════════════════ GALERIE PHOTOS ══════════════════════ */
 .sr-photos-section { margin-bottom: 2.5rem; }
 .sr-photos-grid {
@@ -527,6 +538,7 @@
   .sr-sac-list { grid-template-columns: 1fr; }
   .sr-gpx-bar { flex-direction: column; align-items: flex-start; }
   .sr-map { height: 240px; }
+  .sr-altitude-chart-wrap { height: 180px; }
   .sr-share-section { flex-direction: column; align-items: flex-start; }
   .sr-lightbox-prev { left: 0.5rem; }
   .sr-lightbox-next { right: 0.5rem; }
@@ -562,6 +574,8 @@
   }
   .sr-map { display: none !important; }
   .sr-print-map-wrap { display: block !important; margin-bottom: 1.5rem; }
+  .sr-altitude-section { page-break-inside: avoid; }
+  .sr-altitude-chart-wrap { height: 160px; border: none; background: var(--beige) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .sr-hero { height: auto; page-break-inside: avoid; }
   .sr-hero-img { position: static; height: 240px; }
   .sr-hero-overlay { position: static; background: none; padding: 0.75rem 0; }

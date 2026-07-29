@@ -65,6 +65,7 @@
             L.marker([start.lat, start.lng], { icon: startIcon }).bindTooltip('Départ', { permanent: false }).addTo(map);
           }
         }
+        buildAltitudeChart(e.target);
       })
       .on('error', function () {
         L.marker([lat, lon], { icon: startIcon }).addTo(map);
@@ -77,6 +78,64 @@
     setTimeout(function () { map.invalidateSize(); }, 300);
 
     window.srMap = map;
+  }
+
+  /* ── Profil altimétrique (Chart.js), à partir des points du GPX déjà chargé pour la carte ── */
+  function buildAltitudeChart(gpxLayer) {
+    var section = document.getElementById('sr-altitude-section');
+    var canvas = document.getElementById('sr-altitude-chart');
+    if (!section || !canvas || typeof Chart === 'undefined') return;
+
+    var points = [];
+    gpxLayer.getLayers().forEach(function (layer) {
+      if (layer.getLatLngs) {
+        var lls = layer.getLatLngs();
+        var flat = Array.isArray(lls[0]) ? lls[0] : lls;
+        flat.forEach(function (ll) {
+          if (ll.alt !== undefined) points.push({ alt: ll.alt, lat: ll.lat, lng: ll.lng });
+        });
+      }
+    });
+
+    if (points.length < 2) return;
+
+    var labels = [], alts = [], cumDist = 0;
+    for (var i = 0; i < points.length; i++) {
+      if (i > 0) {
+        var prev = points[i - 1], cur = points[i];
+        var dLat = (cur.lat - prev.lat) * Math.PI / 180;
+        var dLon = (cur.lng - prev.lng) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(prev.lat * Math.PI / 180) * Math.cos(cur.lat * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        cumDist += 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      }
+      if (i % Math.max(1, Math.floor(points.length / 80)) === 0) {
+        labels.push(cumDist.toFixed(1) + ' km');
+        alts.push(Math.round(points[i].alt));
+      }
+    }
+
+    section.style.display = '';
+
+    new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: alts, borderColor: '#D97706', backgroundColor: 'rgba(217,119,6,0.12)',
+          fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ctx.parsed.y + ' m'; } } } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#888' }, grid: { display: false } },
+          y: { ticks: { font: { size: 10 }, color: '#888', callback: function (v) { return v + ' m'; } }, grid: { color: 'rgba(0,0,0,0.06)' } }
+        }
+      }
+    });
   }
 
   /* ── Météo Open-Meteo ── */
