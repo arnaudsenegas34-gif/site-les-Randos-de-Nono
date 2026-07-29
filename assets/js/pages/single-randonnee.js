@@ -92,7 +92,8 @@
         var lls = layer.getLatLngs();
         var flat = Array.isArray(lls[0]) ? lls[0] : lls;
         flat.forEach(function (ll) {
-          if (ll.alt !== undefined) points.push({ alt: ll.alt, lat: ll.lat, lng: ll.lng });
+          var ele = (ll.meta && ll.meta.ele != null) ? ll.meta.ele : ll.alt;
+          if (ele !== undefined && ele !== null) points.push({ alt: ele, lat: ll.lat, lng: ll.lng });
         });
       }
     });
