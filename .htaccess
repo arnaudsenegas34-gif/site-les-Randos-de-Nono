@@ -19,3 +19,45 @@ RewriteRule . /index.php [L]
 # END WordPress
 
 ErrorDocument 404 /index.php
+
+# BEGIN Durcissement sécurité
+# Pas de listing de répertoire si un dossier n'a pas d'index.
+Options -Indexes
+
+# Bloque l'accès direct aux fichiers sensibles (config, dépôt git, éditeurs...).
+<FilesMatch "^(wp-config\.php|\.htaccess|\.htpasswd|readme\.html|license\.txt)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^\.(git|env)">
+  Require all denied
+</FilesMatch>
+
+# XML-RPC est déjà désactivé côté WordPress (filtre xmlrpc_enabled) ; on bloque
+# aussi l'accès au fichier lui-même en défense en profondeur.
+<Files "xmlrpc.php">
+  Require all denied
+</Files>
+
+# N'exécute pas de PHP dans le dossier des médias uploadés (empêche l'exécution
+# d'un script si un fichier malveillant y était un jour déposé).
+<IfModule mod_php.c>
+  <Directory "wp-content/uploads">
+    php_flag engine off
+  </Directory>
+</IfModule>
+<FilesMatch "\.(php|phtml|php\d)$">
+  <If "%{REQUEST_URI} =~ m#^/wp-content/uploads/#">
+    Require all denied
+  </If>
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=()"
+  Header always set Strict-Transport-Security "max-age=31536000"
+  Header unset X-Powered-By
+</IfModule>
+ServerSignature Off
+# END Durcissement sécurité

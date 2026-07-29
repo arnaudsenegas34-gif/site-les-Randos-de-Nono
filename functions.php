@@ -533,6 +533,20 @@ add_action( 'template_redirect', 'rando_nono_handle_contact_form' );
 remove_action( 'wp_head', 'wp_generator' );
 add_filter( 'xmlrpc_enabled', '__return_false' );
 
+/**
+ * En-têtes de sécurité HTTP de base, posés au niveau PHP (fonctionnent même si
+ * mod_headers n'est pas disponible côté serveur — les règles équivalentes du
+ * .htaccess servent de première ligne, celles-ci de filet de sécurité).
+ */
+function rando_nono_security_headers() {
+    if ( headers_sent() ) return;
+    header( 'X-Content-Type-Options: nosniff' );
+    header( 'X-Frame-Options: SAMEORIGIN' );
+    header( 'Referrer-Policy: strict-origin-when-cross-origin' );
+    header( 'Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=()' );
+}
+add_action( 'send_headers', 'rando_nono_security_headers' );
+
 // Retire la balise canonique par défaut de WordPress : le thème en génère déjà
 // une (voir rando_nono_seo_meta_tags) — deux balises canoniques dupliquaient
 // systématiquement le <head> de chaque page.
@@ -1449,10 +1463,21 @@ function rando_nono_newsletter_export() {
     header( 'Content-Type: text/csv; charset=utf-8' );
     header( 'Content-Disposition: attachment; filename=newsletter-randos-de-nono.csv' );
 
+    // Neutralise une éventuelle injection de formule si le fichier est ouvert
+    // dans Excel/Google Sheets (une valeur commençant par =, +, -, @ ou une
+    // tabulation peut sinon être interprétée comme une formule par le tableur).
+    $csv_safe = function( $value ) {
+        $value = (string) $value;
+        if ( preg_match( '/^[=+\-@\t]/', $value ) ) {
+            $value = "'" . $value;
+        }
+        return $value;
+    };
+
     $out = fopen( 'php://output', 'w' );
     fputcsv( $out, array( 'email', 'date_inscription' ) );
     foreach ( $subscribers as $sub ) {
-        fputcsv( $out, array( $sub->email, $sub->date_inscription ) );
+        fputcsv( $out, array( $csv_safe( $sub->email ), $csv_safe( $sub->date_inscription ) ) );
     }
     fclose( $out );
     exit;

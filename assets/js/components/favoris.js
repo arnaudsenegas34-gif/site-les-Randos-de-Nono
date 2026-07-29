@@ -61,7 +61,7 @@
   function esc(s) {
     var d = document.createElement('div');
     d.textContent = s || '';
-    return d.innerHTML;
+    return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function initFavorisPage() {
@@ -82,11 +82,11 @@
 
     grid.innerHTML = favRandos.map(function (r) {
       var img = r.thumb
-        ? '<img src="' + r.thumb + '" alt="' + esc(r.titre) + '" loading="lazy" decoding="async">'
+        ? '<img src="' + esc(r.thumb) + '" alt="' + esc(r.titre) + '" loading="lazy" decoding="async">'
         : '';
       var lieu = r.lieu ? '<span class="favoris-lieu">' + esc(r.lieu) + '</span>' : '';
       return (
-        '<a href="' + r.url + '" class="favoris-card">' +
+        '<a href="' + esc(r.url) + '" class="favoris-card">' +
           '<div class="favoris-img-wrap">' + img + '</div>' +
           '<div class="favoris-info">' +
             '<span class="favoris-title">' + esc(r.titre) + '</span>' +
