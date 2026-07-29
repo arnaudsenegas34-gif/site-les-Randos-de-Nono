@@ -402,6 +402,14 @@
       return wrap;
     }
 
+    function firstMatching( xml, localName ) {
+      /* getElementsByTagNameNS('*', …) trouve l'élément quel que soit le
+         préfixe de namespace utilisé par l'exporteur GPX (ex: <gpx:trkpt>),
+         contrairement à getElementsByTagName qui exige le nom exact. */
+      var nodes = xml.getElementsByTagNameNS( '*', localName );
+      return nodes.length ? nodes : xml.getElementsByTagName( localName );
+    }
+
     function loadPrintMap(callback) {
       if (mapLoaded || !mapWrap) { if (callback) callback(); return; }
       var lat = parseFloat(mapWrap.dataset.lat);
@@ -410,7 +418,7 @@
       mapLoaded = true;
       var gpxUrl = mapWrap.dataset.gpx || '';
 
-      function render(points) {
+      function render(points, gpxFailed) {
         var toLoad = 0, loaded = 0, done = false;
         function finish() {
           if ( done ) return;
@@ -425,7 +433,14 @@
         }
 
         if ( !points || points.length < 2 ) {
-          mapWrap.appendChild( buildSegment( [ [ lat, lon ] ], null, true, null, countTile, tileDone ) );
+          var seg = buildSegment( [ [ lat, lon ] ], null, true, null, countTile, tileDone );
+          if ( gpxFailed ) {
+            var warn = document.createElement('p');
+            warn.textContent = 'Trace GPX indisponible pour l\'impression (fichier introuvable ou illisible) — seul le point de départ est affiché.';
+            warn.style.cssText = 'font-size:0.75rem;color:#9a3b12;margin-top:0.4rem;';
+            seg.appendChild(warn);
+          }
+          mapWrap.appendChild( seg );
         } else {
           var fullZoom = fitZoom( bboxOf(points) );
           if ( fullZoom >= TARGET_ZOOM ) {
@@ -454,10 +469,11 @@
           var xml = new DOMParser().parseFromString(text, 'application/xml');
           if ( xml.getElementsByTagName('parsererror').length ) {
             console.warn( '[Fiche imprimable] Le fichier GPX n\'a pas pu être analysé (XML invalide) :', gpxUrl );
-            render(null);
+            render(null, true);
             return;
           }
-          var nodes = xml.getElementsByTagName('trkpt');
+          var nodes = firstMatching( xml, 'trkpt' );
+          if ( !nodes.length ) nodes = firstMatching( xml, 'rtept' ); /* GPX "route" sans track */
           var pts = [];
           for ( var i = 0; i < nodes.length; i++ ) {
             var la = parseFloat( nodes[i].getAttribute('lat') );
@@ -465,16 +481,16 @@
             if ( !isNaN(la) && !isNaN(lo) ) pts.push([ la, lo ]);
           }
           if ( pts.length < 2 ) {
-            console.warn( '[Fiche imprimable] Aucun point <trkpt> exploitable trouvé dans le GPX, le tracé ne sera pas affiché :', gpxUrl );
+            console.warn( '[Fiche imprimable] Aucun point <trkpt>/<rtept> exploitable trouvé dans le GPX, le tracé ne sera pas affiché :', gpxUrl );
           }
-          render( pts.length > 1 ? pts : null );
+          render( pts.length > 1 ? pts : null, pts.length < 2 );
         }).catch(function (err) {
           console.warn( '[Fiche imprimable] Impossible de charger le GPX (réseau ou CORS), le tracé ne sera pas affiché :', gpxUrl, err );
-          render(null);
+          render(null, true);
         });
       } else {
         console.info( '[Fiche imprimable] Aucune URL de GPX renseignée pour cette randonnée : seul le point de départ sera affiché.' );
-        render(null);
+        render(null, false);
       }
     }
 
