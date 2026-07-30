@@ -83,7 +83,7 @@ $thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-car
       <span class="meta-item"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $lieu ); ?></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $date_sortie ); ?></span>
     </div>
-    <a class="card-title" href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php the_title(); ?></a>
+    <h3 class="card-title"><a href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php the_title(); ?></a></h3>
     <div class="card-meta" style="margin-bottom:0.85rem">
       <span class="meta-item"><?php echo rando_nono_icon( 'ruler' ); ?> <?php echo esc_html( $distance ); ?></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'trending-up' ); ?> <?php echo esc_html( $denivele ); ?></span>

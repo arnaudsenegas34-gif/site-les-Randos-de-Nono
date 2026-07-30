@@ -158,6 +158,12 @@
   display: none !important;
 }
 
+/* ── Nom visible en permanence sur tactile : pas de hover pour révéler
+   l'overlay "+", donc les cartes seraient sinon anonymes ── */
+.matos-name {
+  display: none;
+}
+
 /* ══════════════════════════════════════════════
    MODAL DÉTAIL MATOS — centré fixe
 ══════════════════════════════════════════════ */
@@ -236,8 +242,8 @@
   top: 0.85rem;
   right: 0.85rem;
   z-index: 10;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: rgba(26, 46, 31, 0.6);
   border: 1px solid rgba(232, 223, 200, 0.25);
@@ -354,6 +360,25 @@
   .matos-card {
     grid-column: span 1 !important;
     grid-row: span 1 !important;
+  }
+
+  /* Pas de hover sur tactile : le nom reste illisible sans ça */
+  .matos-name {
+    display: block;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    padding: 0.25rem 0.35rem 0.2rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--sombre);
+    text-align: center;
+    background: linear-gradient(to top, rgba(250,248,243,0.95), rgba(250,248,243,0));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
   }
 
   .matos-panel {
