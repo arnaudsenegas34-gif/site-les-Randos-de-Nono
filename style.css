@@ -708,9 +708,17 @@ a.card-title { display: block; }
   transition: background .2s;
 }
 .newsletter-form button:hover { background: #c26a05; }
-.newsletter-msg { font-size: 0.9rem; font-weight: 500; padding: 0.7rem 1.1rem; border-radius: 5px; background: rgba(250,248,243,0.1); }
+.newsletter-msg { font-size: 0.9rem; font-weight: 500; padding: 0.7rem 1.1rem; border-radius: 5px; background: rgba(250,248,243,0.1); display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; }
 .newsletter-msg-ok { color: var(--blanc); }
 .newsletter-msg-error { color: #ffd7d7; }
+.newsletter-download-link {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--orange); color: #fff; text-decoration: none;
+  font-size: 0.82rem; font-weight: 700;
+  padding: 0.6rem 1.1rem; border-radius: 3px;
+  transition: background 0.2s, transform 0.15s;
+}
+.newsletter-download-link:hover { background: #b45e04; transform: translateY(-1px); }
 
 /* ══════════════════════ FOOTER ══════════════════════ */
 .site-footer { background: var(--sombre); padding: 2.25rem 3rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1.75rem; }

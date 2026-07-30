@@ -5,10 +5,13 @@ $rando_nono_nl_status = isset( $_GET['newsletter'] ) ? sanitize_key( $_GET['news
   <div class="newsletter-inner">
     <div class="newsletter-text">
       <h2 id="newsletter-heading" class="newsletter-title">Ne rate aucune rando</h2>
-      <p class="newsletter-sub">Reçois un e-mail à chaque nouvelle randonnée publiée, avec le récit et la trace GPX.</p>
+      <p class="newsletter-sub">Reçois un e-mail à chaque nouvelle randonnée publiée (récit + trace GPX), et repars tout de suite avec <strong>ma checklist PDF du sac à dos</strong>, offerte à l'inscription.</p>
     </div>
     <?php if ( 'ok' === $rando_nono_nl_status ) : ?>
-      <p class="newsletter-msg newsletter-msg-ok">Merci, ton inscription est confirmée !</p>
+      <p class="newsletter-msg newsletter-msg-ok">
+        Merci, ton inscription est confirmée !
+        <a href="<?php echo esc_url( get_template_directory_uri() . '/assets/downloads/checklist-sac-a-dos-randonnee.pdf' ); ?>" download class="newsletter-download-link">Télécharger ma checklist gratuite (PDF)</a>
+      </p>
     <?php elseif ( 'desabonne' === $rando_nono_nl_status ) : ?>
       <p class="newsletter-msg newsletter-msg-ok">Tu as bien été désabonné.</p>
     <?php elseif ( 'error' === $rando_nono_nl_status ) : ?>

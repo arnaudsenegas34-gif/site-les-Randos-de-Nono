@@ -1370,12 +1370,35 @@ function rando_nono_handle_newsletter_form() {
             'date_inscription' => current_time( 'mysql' ),
             'statut'           => 'actif',
         ) );
+        rando_nono_send_newsletter_welcome_email( $email );
     }
 
     wp_safe_redirect( add_query_arg( 'newsletter', 'ok', $redirect ) );
     exit;
 }
 add_action( 'template_redirect', 'rando_nono_handle_newsletter_form' );
+
+/**
+ * E-mail de bienvenue envoyé à chaque nouvel inscrit — contient le lien vers
+ * la checklist PDF offerte en échange de l'inscription (lead magnet).
+ */
+function rando_nono_send_newsletter_welcome_email( $email ) {
+    $checklist_url = get_template_directory_uri() . '/assets/downloads/checklist-sac-a-dos-randonnee.pdf';
+    $subject = 'Bienvenue — ta checklist du sac à dos est prête';
+    $message  = "Merci de t'être inscrit à la newsletter des Randos de Nono !\n\n";
+    $message .= "Comme promis, voici ta checklist gratuite à consulter ou imprimer avant chaque départ :\n";
+    $message .= $checklist_url . "\n\n";
+    $message .= "Tu recevras désormais un e-mail à chaque nouvelle randonnée publiée, avec le récit complet et la trace GPX.\n\n";
+    $message .= "Bonne rando !\n" . get_bloginfo( 'name' );
+
+    $domain  = wp_parse_url( home_url(), PHP_URL_HOST );
+    $headers = array( 'From: ' . get_bloginfo( 'name' ) . ' <newsletter@' . $domain . '>' );
+
+    $sent = wp_mail( $email, $subject, $message, $headers );
+    if ( ! $sent ) {
+        error_log( 'Rando Nono newsletter : échec de l\'e-mail de bienvenue pour ' . $email );
+    }
+}
 
 /**
  * Désabonnement en un clic, depuis le lien présent dans chaque e-mail envoyé.
