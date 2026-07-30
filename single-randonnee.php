@@ -25,12 +25,22 @@ $difficulte = $diff_terms && ! is_wp_error( $diff_terms ) ? strtolower( $diff_te
 $photos_urls = array();
 if ( $photos_raw ) {
     $ids = array_map( 'trim', explode( ',', $photos_raw ) );
+    $photo_index = 0;
     foreach ( $ids as $photo_id ) {
         $photo_id = intval( $photo_id );
-        $url = wp_get_attachment_image_url( $photo_id, 'large' );
-        if ( $url ) {
-            $alt = get_post_meta( $photo_id, '_wp_attachment_image_alt', true );
-            $photos_urls[] = array( 'url' => $url, 'alt' => $alt );
+        if ( ! wp_attachment_is_image( $photo_id ) ) continue;
+        $alt = get_post_meta( $photo_id, '_wp_attachment_image_alt', true );
+        if ( ! $alt ) $alt = get_the_title( $id ) . ' - photo ' . ( $photo_index + 1 );
+        $tag = wp_get_attachment_image( $photo_id, 'rando-gallery', false, array(
+            'class'      => 'sr-photo',
+            'alt'        => $alt,
+            'loading'    => 'lazy',
+            'decoding'   => 'async',
+            'data-index' => $photo_index,
+        ) );
+        if ( $tag ) {
+            $photos_urls[] = $tag;
+            $photo_index++;
         }
     }
 }
@@ -50,7 +60,12 @@ $linked_articles = get_posts( array(
     'order'          => 'DESC',
 ) );
 
-$thumb_large = get_the_post_thumbnail_url( $id, 'full' );
+$thumb_large_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-hero', array(
+    'class'         => 'sr-hero-img',
+    'alt'           => get_the_title( $id ),
+    'decoding'      => 'async',
+    'fetchpriority' => 'high',
+) ) : '';
 
 $diff_classes = array( 'facile' => 'diff-facile', 'moyen' => 'diff-moyen', 'difficile' => 'diff-difficile' );
 $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficulte ] : 'diff-moyen';
@@ -62,8 +77,8 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
 
 <!-- HERO -->
 <section class="sr-hero">
-  <?php if ( $thumb_large ) : ?>
-    <img class="sr-hero-img" src="<?php echo esc_url( $thumb_large ); ?>" alt="<?php the_title_attribute(); ?>" decoding="async" fetchpriority="high">
+  <?php if ( $thumb_large_tag ) : ?>
+    <?php echo $thumb_large_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
   <?php else : ?>
     <div class="sr-hero-img sr-hero-placeholder"></div>
   <?php endif; ?>
@@ -254,9 +269,8 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     <div class="sr-photos-section">
       <h2 class="sr-section-title">Photos</h2>
       <div class="sr-photos-grid">
-        <?php foreach ( $photos_urls as $i => $photo ) : ?>
-          <?php $alt_text = $photo['alt'] ? $photo['alt'] : get_the_title() . ' - photo ' . ( $i + 1 ); ?>
-          <img class="sr-photo" src="<?php echo esc_url( $photo['url'] ); ?>" alt="<?php echo esc_attr( $alt_text ); ?>" loading="lazy" decoding="async" data-index="<?php echo intval( $i ); ?>">
+        <?php foreach ( $photos_urls as $photo_tag ) : ?>
+          <?php echo $photo_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par wp_get_attachment_image(), déjà échappé par WordPress ?>
         <?php endforeach; ?>
       </div>
     </div>
@@ -311,8 +325,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
           <a href="<?php echo esc_url( get_permalink( $article ) ); ?>" class="sr-related-card">
             <?php if ( has_post_thumbnail( $article ) ) : ?>
             <div class="sr-related-img-wrap">
-              <img src="<?php echo esc_url( get_the_post_thumbnail_url( $article, 'medium' ) ); ?>"
-                   alt="<?php echo esc_attr( get_the_title( $article ) ); ?>" loading="lazy" decoding="async">
+              <?php echo get_the_post_thumbnail( $article, 'rando-card', array( 'alt' => get_the_title( $article ), 'loading' => 'lazy', 'decoding' => 'async' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
             </div>
             <?php endif; ?>
             <div class="sr-related-info">
@@ -454,8 +467,7 @@ if ( ! empty( $related_randos ) ) :
       <a href="<?php echo esc_url( get_permalink( $related ) ); ?>" class="sr-related-card">
         <?php if ( has_post_thumbnail( $related ) ) : ?>
         <div class="sr-related-img-wrap">
-          <img src="<?php echo esc_url( get_the_post_thumbnail_url( $related, 'medium' ) ); ?>"
-               alt="<?php echo esc_attr( get_the_title( $related ) ); ?>" loading="lazy" decoding="async">
+          <?php echo get_the_post_thumbnail( $related, 'rando-card', array( 'alt' => get_the_title( $related ), 'loading' => 'lazy', 'decoding' => 'async' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
         </div>
         <?php endif; ?>
         <div class="sr-related-info">

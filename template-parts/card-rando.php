@@ -33,7 +33,11 @@ if ( $photos_raw ) {
 $sac_items = $sac_raw ? array_filter( array_map( 'trim', explode( "\n", $sac_raw ) ) ) : array();
 $conseils_items = $conseils_raw ? array_filter( array_map( 'trim', explode( "\n", $conseils_raw ) ) ) : array();
 
-$thumb = get_the_post_thumbnail_url( $id, 'medium' );
+$thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-card', array(
+    'class'   => 'card-photo',
+    'loading' => 'lazy',
+    'decoding' => 'async',
+) ) : '';
 ?>
 
 <div class="rando-card"
@@ -58,10 +62,13 @@ $thumb = get_the_post_thumbnail_url( $id, 'medium' );
      data-conseils='<?php echo esc_attr( wp_json_encode( $conseils_items ) ); ?>'
 >
   <div class="card-photo-wrap">
-    <?php if ( $thumb ) : ?>
-      <img class="card-photo" src="<?php echo esc_url( $thumb ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy" decoding="async">
+    <?php if ( $thumb_tag ) : ?>
+      <?php echo $thumb_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
     <?php else : ?>
-      <img class="card-photo card-photo-placeholder" src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/placeholder-rando.jpg' ); ?>" alt="Photo à venir — <?php the_title_attribute(); ?>" loading="lazy" decoding="async">
+      <picture>
+        <source type="image/webp" srcset="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/placeholder-rando-400.webp' ); ?>">
+        <img class="card-photo card-photo-placeholder" src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/placeholder-rando-400.jpg' ); ?>" alt="Photo à venir — <?php the_title_attribute(); ?>" loading="lazy" decoding="async">
+      </picture>
     <?php endif; ?>
     <div class="card-badges">
       <span class="badge badge-diff-<?php echo esc_attr( $difficulte ); ?>"><?php echo esc_html( ucfirst( $difficulte ) ); ?></span>

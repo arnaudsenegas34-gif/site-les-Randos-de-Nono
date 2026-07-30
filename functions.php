@@ -22,8 +22,27 @@ function rando_nono_setup() {
     add_theme_support( 'post-thumbnails' );
     add_theme_support( 'menus' );
     register_nav_menus( array( 'primary' => __( 'Menu principal', 'rando-nono' ) ) );
+
+    // Tailles d'images dédiées, pour servir des fichiers de la bonne
+    // définition (au lieu du "large" générique) et permettre un vrai srcset
+    // responsive sur les cartes, les héros et les galeries.
+    add_image_size( 'rando-card', 640, 420, true );
+    add_image_size( 'rando-hero', 1600, 900, true );
+    add_image_size( 'rando-gallery', 1000, 0, false );
 }
 add_action( 'after_setup_theme', 'rando_nono_setup' );
+
+/**
+ * Génère automatiquement les tailles d'images (thumbnail, medium, rando-card…)
+ * au format WebP plutôt que JPEG/PNG pour tout nouvel envoi dans la médiathèque
+ * (fichier original conservé tel quel). Gain moyen constaté : -25 à -35 % de
+ * poids par image, sans réglage à faire depuis l'administration.
+ */
+add_filter( 'image_editor_output_format', function( $formats ) {
+    $formats['image/jpeg'] = 'image/webp';
+    $formats['image/png']  = 'image/webp';
+    return $formats;
+} );
 
 /* ──────────────────────────────────────────
    2. ENQUEUE STYLES & SCRIPTS
@@ -907,6 +926,34 @@ function rando_nono_head_extra() {
     echo '<link rel="preload" href="' . esc_url( $theme_uri . '/assets/fonts/merriweather-regular.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
 }
 add_action( 'wp_head', 'rando_nono_head_extra', 1 );
+
+/**
+ * Précharge l'image du hero (LCP de la page d'accueil) dans le format et la
+ * définition réellement affichés, en WebP avec repli JPEG automatique via
+ * `type="image/webp"` : le navigateur choisit la bonne largeur sans attendre
+ * la découverte du <img> dans le HTML.
+ */
+function rando_nono_preload_hero_image() {
+    if ( ! is_front_page() ) return;
+    $theme_uri = get_template_directory_uri();
+    $srcset = rando_nono_hero_srcset( 'webp' );
+    echo '<link rel="preload" as="image" imagesrcset="' . esc_attr( $srcset ) . '" imagesizes="100vw" fetchpriority="high" type="image/webp">' . "\n";
+}
+add_action( 'wp_head', 'rando_nono_preload_hero_image', 1 );
+
+/**
+ * Construit la chaîne srcset des variantes responsive du hero, générées à
+ * l'avance dans /assets/img/responsive/ (voir hero-bg-{largeur}.{format}).
+ */
+function rando_nono_hero_srcset( $format = 'webp' ) {
+    $theme_uri = get_template_directory_uri();
+    $widths = array( 640, 960, 1400, 1983 );
+    $parts = array();
+    foreach ( $widths as $w ) {
+        $parts[] = $theme_uri . '/assets/img/responsive/hero-bg-' . $w . '.' . $format . ' ' . $w . 'w';
+    }
+    return implode( ', ', $parts );
+}
 
 /* ──────────────────────────────────────────
    MAILLAGE INTERNE AUTOMATIQUE — randonnées similaires

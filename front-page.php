@@ -4,7 +4,14 @@
 
 <!-- ════════ HERO ════════ -->
 <section class="hero" id="hero">
-  <div class="hero-bg-layer" id="hero-bg-layer" style="background-image:url('<?php echo esc_url( get_template_directory_uri() . '/assets/img/hero-bg.jpg' ); ?>')"></div>
+  <picture class="hero-bg-layer" id="hero-bg-layer">
+    <source type="image/webp" srcset="<?php echo esc_attr( rando_nono_hero_srcset( 'webp' ) ); ?>" sizes="100vw">
+    <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/hero-bg-1983.jpg' ); ?>"
+         srcset="<?php echo esc_attr( rando_nono_hero_srcset( 'jpg' ) ); ?>"
+         sizes="100vw"
+         alt="Sentier de randonnée dans la garrigue de l'Hérault"
+         fetchpriority="high" decoding="async">
+  </picture>
   <div class="hero-inner">
     <p class="hero-eyebrow">Hérault · Languedoc · et d'autres</p>
     <h1>Les Randos de <span style="color:var(--beige)">Nono</span></h1>
@@ -47,7 +54,12 @@ if ( ! $featured_query->have_posts() ) {
     $f_gpx       = get_post_meta( $fid, 'rando_gpx_url', true );
     $f_maps      = get_post_meta( $fid, 'rando_maps_url', true );
     $f_recit     = wp_strip_all_tags( get_the_content() );
-    $f_thumb     = get_the_post_thumbnail_url( $fid, 'large' );
+    $f_thumb     = has_post_thumbnail( $fid ) ? get_the_post_thumbnail( $fid, 'rando-hero', array(
+        'alt'           => get_the_title( $fid ),
+        'decoding'      => 'async',
+        'fetchpriority' => 'high',
+        'style'         => 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0',
+    ) ) : '';
     // Difficulté
     $f_diff_terms = get_the_terms( $fid, 'difficulte' );
     $f_diff = $f_diff_terms && ! is_wp_error( $f_diff_terms ) ? strtolower( $f_diff_terms[0]->name ) : 'moyen';
@@ -75,9 +87,12 @@ if ( ! $featured_query->have_posts() ) {
         <div class="derniere-img-wrap">
           <span class="derniere-badge">Nouveau</span>
           <?php if ( $f_thumb ) : ?>
-            <img src="<?php echo esc_url( $f_thumb ); ?>" alt="<?php the_title_attribute(); ?>" decoding="async" fetchpriority="high">
+            <?php echo $f_thumb; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
           <?php else : ?>
-            <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/placeholder-rando.jpg' ); ?>" alt="Photo à venir" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" decoding="async" fetchpriority="high">
+            <picture>
+              <source type="image/webp" srcset="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/placeholder-rando-800.webp' ); ?>">
+              <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/placeholder-rando-800.jpg' ); ?>" alt="Photo à venir" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" decoding="async" fetchpriority="high">
+            </picture>
           <?php endif; ?>
         </div>
         <div class="derniere-content">
@@ -209,6 +224,7 @@ endif;
             $m_cat_slug  = $m_cats && ! is_wp_error( $m_cats ) ? $m_cats[0]->slug : '';
             $m_thumb      = get_the_post_thumbnail_url( $m_id, 'medium' );
             $m_thumb_lg   = get_the_post_thumbnail_url( $m_id, 'large' );
+            $m_thumb_tag  = has_post_thumbnail( $m_id ) ? get_the_post_thumbnail( $m_id, 'rando-card', array( 'loading' => 'lazy', 'decoding' => 'async' ) ) : '';
             $m_desc       = wp_strip_all_tags( get_the_content() );
             $m_largeur    = get_post_meta( $m_id, 'matos_largeur_cm', true );
             $m_hauteur    = get_post_meta( $m_id, 'matos_hauteur_cm', true );
@@ -229,8 +245,8 @@ endif;
                  tabindex="0"
                  aria-label="Voir le détail de <?php the_title_attribute(); ?>">
               <div class="matos-img">
-                <?php if ( $m_thumb ) : ?>
-                  <img src="<?php echo esc_url( $m_thumb ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy" decoding="async">
+                <?php if ( $m_thumb_tag ) : ?>
+                  <?php echo $m_thumb_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
                 <?php else : ?>
                   <?php echo rando_nono_icon( 'backpack', 'icon-svg-lg' ); ?>
                 <?php endif; ?>
