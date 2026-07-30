@@ -42,6 +42,33 @@
   }
 
   /* ══════════════════════════════════════════════
+     RÉVÉLATION AU SCROLL — titres de section et grands blocs
+     Même principe que .rando-card/.matos-card (voir randos.js),
+     étendu ici aux en-têtes de section pour que chaque page (accueil,
+     archive, fiche rando, 404…) profite du même effet de fondu.
+  ══════════════════════════════════════════════ */
+  const revealTargets = document.querySelectorAll(
+    '.section-eyebrow, .section-title, .section-sub, .divider, ' +
+    '.derniere-card, .apropos-visual, .stat-block, .matos-filters, ' +
+    '.archive-filters, .newsletter-inner'
+  );
+  if (revealTargets.length) {
+    if (prefersReducedMotion) {
+      revealTargets.forEach(el => el.classList.add('is-revealed'));
+    } else {
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      revealTargets.forEach(el => revealObserver.observe(el));
+    }
+  }
+
+  /* ══════════════════════════════════════════════
      COMPTEURS ANIMÉS — STATISTIQUES
   ══════════════════════════════════════════════ */
   function animateCounters() {
