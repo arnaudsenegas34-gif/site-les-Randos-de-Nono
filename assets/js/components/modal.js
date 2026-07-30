@@ -318,14 +318,19 @@
 
     function _goToSlide(i) { currentSlide = i; _updateSlideUI(); }
 
-    if (btnPrev) btnPrev.addEventListener('click', function () {
+    function _prevSlide() {
       currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
       _updateSlideUI();
-    });
-    if (btnNext) btnNext.addEventListener('click', function () {
+    }
+    function _nextSlide() {
       currentSlide = (currentSlide + 1) % totalSlides;
       _updateSlideUI();
-    });
+    }
+
+    if (btnPrev) btnPrev.addEventListener('click', _prevSlide);
+    if (btnNext) btnNext.addEventListener('click', _nextSlide);
+
+    _initSwipe(slideshow, _prevSlide, _nextSlide);
 
     overlay.querySelectorAll('.modal-tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
@@ -445,6 +450,29 @@
       var d = document.createElement('div');
       d.textContent = s;
       return d.innerHTML;
+    }
+
+    /* ── Navigation tactile (swipe gauche/droite) ── */
+    function _initSwipe(el, onSwipePrev, onSwipeNext) {
+      if (!el) return;
+      var startX = 0, startY = 0, tracking = false;
+      var THRESHOLD = 40;
+
+      el.addEventListener('touchstart', function (e) {
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        tracking = true;
+      }, { passive: true });
+
+      el.addEventListener('touchend', function (e) {
+        if (!tracking) return;
+        tracking = false;
+        var dx = e.changedTouches[0].clientX - startX;
+        var dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        if (dx > 0) onSwipePrev(); else onSwipeNext();
+      }, { passive: true });
     }
 
     window.RandoModal = { open: open, close: close };

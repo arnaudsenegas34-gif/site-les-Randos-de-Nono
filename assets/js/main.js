@@ -104,6 +104,13 @@
   const mobileDrawer = document.getElementById('nav-mobile-drawer');
 
   if (menuToggle && mobileDrawer) {
+    const closeMenu = () => {
+      mobileDrawer.classList.remove('open');
+      menuToggle.textContent = '☰';
+      menuToggle.setAttribute('aria-label', 'Ouvrir le menu');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    };
+
     menuToggle.addEventListener('click', () => {
       const isOpen = mobileDrawer.classList.toggle('open');
       menuToggle.textContent = isOpen ? '✕' : '☰';
@@ -111,12 +118,22 @@
       menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
     mobileDrawer.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileDrawer.classList.remove('open');
-        menuToggle.textContent = '☰';
-        menuToggle.setAttribute('aria-expanded', 'false');
-      });
+      link.addEventListener('click', closeMenu);
     });
+
+    // Navigation tactile : swipe vers le haut pour refermer le menu
+    let drawerStartY = 0, drawerTracking = false;
+    mobileDrawer.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      drawerStartY = e.touches[0].clientY;
+      drawerTracking = true;
+    }, { passive: true });
+    mobileDrawer.addEventListener('touchend', (e) => {
+      if (!drawerTracking) return;
+      drawerTracking = false;
+      const dy = e.changedTouches[0].clientY - drawerStartY;
+      if (dy < -40) closeMenu();
+    }, { passive: true });
   }
 
   /* ══════════════════════════════════════════════

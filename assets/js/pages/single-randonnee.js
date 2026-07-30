@@ -263,6 +263,33 @@
       if (e.key === 'ArrowLeft') { current = (current - 1 + urls.length) % urls.length; show(); }
       if (e.key === 'ArrowRight') { current = (current + 1) % urls.length; show(); }
     });
+
+    /* ── Navigation tactile : swipe gauche/droite = photo suivante/précédente, swipe bas = fermer ── */
+    (function () {
+      var startX = 0, startY = 0, tracking = false;
+      var THRESHOLD = 40;
+
+      lightbox.addEventListener('touchstart', function (e) {
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        tracking = true;
+      }, { passive: true });
+
+      lightbox.addEventListener('touchend', function (e) {
+        if (!tracking) return;
+        tracking = false;
+        var dx = e.changedTouches[0].clientX - startX;
+        var dy = e.changedTouches[0].clientY - startY;
+
+        if (Math.abs(dy) > Math.abs(dx) && dy > 60) { hide(); return; }
+        if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+
+        if (dx > 0) { current = (current - 1 + urls.length) % urls.length; }
+        else { current = (current + 1) % urls.length; }
+        show();
+      }, { passive: true });
+    })();
   }
 
   /* ── Partage social ── */
