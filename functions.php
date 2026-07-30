@@ -928,6 +928,22 @@ function rando_nono_head_extra() {
 add_action( 'wp_head', 'rando_nono_head_extra', 1 );
 
 /**
+ * Préconnexion aux services externes (carte OSM, météo) sur les pages qui les
+ * chargent réellement (mêmes conditions que l'enqueue de Leaflet/modal.js dans
+ * rando_nono_assets()) — la négociation DNS/TLS est faite en avance pendant que
+ * la page se charge, au lieu d'attendre que le script JS déclenche la requête.
+ */
+function rando_nono_resource_hints() {
+    $needs_modal    = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
+    $needs_external = $needs_modal || is_singular( 'randonnee' );
+    if ( ! $needs_external ) return;
+
+    echo '<link rel="preconnect" href="https://tile.openstreetmap.org">' . "\n";
+    echo '<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>' . "\n";
+}
+add_action( 'wp_head', 'rando_nono_resource_hints', 1 );
+
+/**
  * Précharge l'image du hero (LCP de la page d'accueil) dans le format et la
  * définition réellement affichés, en WebP avec repli JPEG automatique via
  * `type="image/webp"` : le navigateur choisit la bonne largeur sans attendre
