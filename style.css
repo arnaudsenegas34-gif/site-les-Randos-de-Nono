@@ -265,12 +265,11 @@ section.site-section { padding: 5.5rem 3rem; background: var(--blanc); }
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.badge-diff-facile { color: #2f6b3a; }
-.badge-diff-facile::before { background: #4CAF50; }
-.badge-diff-moyen { color: #9a5408; }
-.badge-diff-moyen::before { background: var(--orange); }
-.badge-diff-difficile { color: #9a2c1d; }
-.badge-diff-difficile::before { background: #c0392b; }
+.badge-diff-facile, .badge-diff-moyen, .badge-diff-difficile { color: #fff; }
+.badge-diff-facile::before, .badge-diff-moyen::before, .badge-diff-difficile::before { display: none; }
+.badge-diff-facile { background: linear-gradient(135deg, #4CAF50, #2f6b3a); }
+.badge-diff-moyen { background: linear-gradient(135deg, #f0a238, var(--orange)); }
+.badge-diff-difficile { background: linear-gradient(135deg, #e0584a, #9a2c1d); }
 .badge-gpx { background: rgba(26,46,31,0.7); color: var(--beige); backdrop-filter: blur(3px); }
 .badge-gpx::before { display: none; }
 
@@ -411,6 +410,25 @@ a.card-title { display: block; }
 .meteo-day.today .temp-max { color: #fff; }
 .meteo-day.today .temp-min { color: rgba(255,255,255,0.7); }
 .meteo-loading { font-size: 0.8rem; color: var(--gris); font-style: italic; padding: 1rem 0; }
+
+/* Squelette animé affiché pendant le chargement de la météo (Open-Meteo). */
+.meteo-skeleton { display: flex; flex-direction: column; gap: 0.9rem; padding: 0.4rem 0 0.6rem; }
+.meteo-skel-block {
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--ligne) 25%, rgba(46,94,59,0.06) 37%, var(--ligne) 63%);
+  background-size: 400% 100%;
+  animation: meteo-shimmer 1.4s ease infinite;
+}
+.meteo-skel-now { height: 60px; }
+.meteo-skel-row { display: flex; gap: 0.5rem; }
+.meteo-skel-row .meteo-skel-block { flex: 1; height: 46px; }
+@keyframes meteo-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meteo-skel-block { animation: none; }
+}
 
 /* ══════════════════════ DERNIÈRE RANDONNÉE ══════════════════════ */
 .derniere-card { display: grid; grid-template-columns: 1.1fr 1fr; background: var(--beige); border-radius: 6px; overflow: hidden; }

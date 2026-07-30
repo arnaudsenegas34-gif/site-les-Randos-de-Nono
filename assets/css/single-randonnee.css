@@ -87,12 +87,11 @@
   height: 7px;
   border-radius: 50%;
 }
-.sr-diff-facile { color: #2f6b3a; }
-.sr-diff-facile::before { background: #4CAF50; }
-.sr-diff-moyen { color: #9a5408; }
-.sr-diff-moyen::before { background: var(--orange); }
-.sr-diff-difficile { color: #9a2c1d; }
-.sr-diff-difficile::before { background: #c0392b; }
+.sr-diff-facile, .sr-diff-moyen, .sr-diff-difficile { color: #fff; }
+.sr-diff-facile::before, .sr-diff-moyen::before, .sr-diff-difficile::before { display: none; }
+.sr-diff-facile { background: linear-gradient(135deg, #4CAF50, #2f6b3a); }
+.sr-diff-moyen { background: linear-gradient(135deg, #f0a238, var(--orange)); }
+.sr-diff-difficile { background: linear-gradient(135deg, #e0584a, #9a2c1d); }
 
 /* ══════════════════════ CONTAINER ══════════════════════ */
 .sr-section {
@@ -579,7 +578,11 @@
   .sr-hero { height: auto; page-break-inside: avoid; }
   .sr-hero-img { position: static; height: 240px; }
   .sr-hero-overlay { position: static; background: none; padding: 0.75rem 0; }
-  .sr-hero-title, .sr-hero-lieu, .sr-hero-badge { color: var(--sombre) !important; }
+  .sr-hero-title, .sr-hero-lieu { color: var(--sombre) !important; }
+  /* Le badge a maintenant un fond dégradé coloré (voir .sr-diff-*) : en
+     impression noir & blanc, les fonds ne sont pas toujours conservés par le
+     navigateur, on retombe donc sur un simple encadré pour rester lisible. */
+  .sr-hero-badge { background: none !important; color: var(--sombre) !important; border: 1px solid var(--sombre); }
   .sr-meta-grid { page-break-inside: avoid; }
   .sr-sac-section, .sr-conseils-section { page-break-inside: avoid; }
   body { background: #fff; }

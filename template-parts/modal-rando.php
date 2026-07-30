@@ -97,7 +97,13 @@
         <!-- Onglet Météo -->
         <div class="tab-panel" data-panel="meteo" role="tabpanel">
           <div id="rando-modal-meteo">
-            <p class="meteo-loading">Chargement de la météo…</p>
+            <div class="meteo-skeleton">
+              <div class="meteo-skel-block meteo-skel-now"></div>
+              <div class="meteo-skel-row">
+                <div class="meteo-skel-block"></div><div class="meteo-skel-block"></div>
+                <div class="meteo-skel-block"></div><div class="meteo-skel-block"></div>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -266,8 +266,14 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     <?php if ( $lat && $lon ) : ?>
     <div class="sr-meteo-section">
       <h2 class="sr-section-title"><?php echo rando_nono_icon( 'thermometer' ); ?> M&eacute;t&eacute;o en temps r&eacute;el</h2>
-      <div id="sr-meteo" data-lat="<?php echo esc_attr( $lat ); ?>" data-lon="<?php echo esc_attr( $lon ); ?>" data-lieu="<?php echo esc_attr( $lieu ); ?>">
-        <p class="meteo-loading">Chargement de la m&eacute;t&eacute;o&hellip;</p>
+      <div id="sr-meteo" data-lat="<?php echo esc_attr( $lat ); ?>" data-lon="<?php echo esc_attr( $lon ); ?>" data-lieu="<?php echo esc_attr( $lieu ); ?>" aria-busy="true" aria-label="Chargement de la m&eacute;t&eacute;o">
+        <div class="meteo-skeleton">
+          <div class="meteo-skel-block meteo-skel-now"></div>
+          <div class="meteo-skel-row">
+            <div class="meteo-skel-block"></div><div class="meteo-skel-block"></div>
+            <div class="meteo-skel-block"></div><div class="meteo-skel-block"></div>
+          </div>
+        </div>
       </div>
     </div>
     <?php endif; ?>

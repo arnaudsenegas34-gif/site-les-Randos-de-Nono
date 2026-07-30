@@ -111,7 +111,14 @@
 
       var meteoEl = document.getElementById('rando-modal-meteo');
       if (meteoEl) {
-        meteoEl.innerHTML = '<p class="meteo-loading">Chargement de la météo…</p>';
+        meteoEl.innerHTML =
+          '<div class="meteo-skeleton">' +
+            '<div class="meteo-skel-block meteo-skel-now"></div>' +
+            '<div class="meteo-skel-row">' +
+              '<div class="meteo-skel-block"></div><div class="meteo-skel-block"></div>' +
+              '<div class="meteo-skel-block"></div><div class="meteo-skel-block"></div>' +
+            '</div>' +
+          '</div>';
         if (d.lat && d.lon) {
           _fetchMeteo(parseFloat(d.lat), parseFloat(d.lon), d.lieu || '', meteoEl);
         } else {
@@ -248,7 +255,7 @@
         data: {
           labels: labels,
           datasets: [{
-            data: alts, borderColor: '#D97706', backgroundColor: 'rgba(217,119,6,0.12)',
+            data: alts, borderColor: '#D97706', backgroundColor: _altGradient,
             fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2
           }]
         },
@@ -425,6 +432,14 @@
     }
     function _parseJson(s) {
       try { return JSON.parse(s || '[]'); } catch (e) { return []; }
+    }
+    function _altGradient(context) {
+      var chart = context.chart, chartArea = chart.chartArea;
+      if (!chartArea) return null;
+      var gradient = chart.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      gradient.addColorStop(0, 'rgba(217,119,6,0.35)');
+      gradient.addColorStop(1, 'rgba(217,119,6,0)');
+      return gradient;
     }
     function _esc(s) {
       var d = document.createElement('div');

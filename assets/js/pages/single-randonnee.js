@@ -124,7 +124,7 @@
       data: {
         labels: labels,
         datasets: [{
-          data: alts, borderColor: '#D97706', backgroundColor: 'rgba(217,119,6,0.12)',
+          data: alts, borderColor: '#D97706', backgroundColor: altGradient,
           fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2
         }]
       },
@@ -569,6 +569,15 @@
     var d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
+  }
+
+  function altGradient(context) {
+    var chart = context.chart, chartArea = chart.chartArea;
+    if (!chartArea) return null;
+    var gradient = chart.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    gradient.addColorStop(0, 'rgba(217,119,6,0.35)');
+    gradient.addColorStop(1, 'rgba(217,119,6,0)');
+    return gradient;
   }
 
   if (document.readyState === 'loading') {
