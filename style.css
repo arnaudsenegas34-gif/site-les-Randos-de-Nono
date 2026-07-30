@@ -637,13 +637,17 @@ a.card-title { display: block; }
 .newsletter-msg-error { color: #ffd7d7; }
 
 /* ══════════════════════ FOOTER ══════════════════════ */
-.site-footer { background: var(--sombre); padding: 2.25rem 3rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.site-footer { background: var(--sombre); padding: 2.25rem 3rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1.75rem; }
 .site-footer .logo { font-family: 'Abril Fatface', serif; color: var(--beige); font-size: 1.05rem; }
 .site-footer .logo span { color: var(--orange); }
 .site-footer p, .site-footer a { font-size: 0.73rem; color: rgba(232,223,200,0.45); font-weight: 300; }
 .site-footer a:hover { color: rgba(232,223,200,0.75); }
-.site-footer .social-instagram { display: inline-flex; color: rgba(232,223,200,0.45); transition: color .2s; }
+.site-footer .social-instagram { display: inline-flex; color: rgba(232,223,200,0.45); transition: color .2s; margin-top: 0.5rem; }
 .site-footer .social-instagram:hover { color: var(--orange); }
+.footer-col { display: flex; flex-direction: column; gap: 0.4rem; }
+.footer-legal { align-items: flex-end; }
+.footer-nav { display: flex; flex-direction: column; flex-wrap: wrap; gap: 0.5rem; max-height: 6.5rem; }
+.footer-nav a { text-transform: uppercase; letter-spacing: 0.03em; }
 
 /* ══════════════════════ ARCHIVE RANDONNÉES (filtres + pagination) ══════════════════════ */
 .archive-filters {
@@ -713,7 +717,9 @@ a.card-title { display: block; }
   .nav-buttons { display: none; }
   .site-search-wrap { display: none; }
   .menu-toggle { display: block; }
-  .site-footer { flex-direction: column; text-align: center; padding: 1.75rem; }
+  .site-footer { flex-direction: column; align-items: center; text-align: center; padding: 1.75rem; }
+  .footer-col { align-items: center; }
+  .footer-nav { flex-direction: row; justify-content: center; max-height: none; gap: 0.9rem 1.2rem; }
   .newsletter-band { padding: 1.75rem; }
   .newsletter-inner { flex-direction: column; text-align: center; }
   .newsletter-form { justify-content: center; width: 100%; }
