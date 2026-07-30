@@ -211,6 +211,29 @@ button { font-family: inherit; }
   text-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
 
+/* ══════════════════════ PREUVE SOCIALE ══════════════════════ */
+.trust-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 2.5rem;
+  padding: 1.1rem 2rem;
+  background: var(--beige);
+  color: var(--sombre);
+  font-size: 0.82rem;
+  text-align: center;
+}
+.trust-item { display: inline-flex; align-items: center; gap: 0.5rem; }
+.trust-stars { color: var(--orange); letter-spacing: 0.05em; }
+.trust-instagram {
+  color: var(--vert);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.2s;
+}
+.trust-instagram:hover { color: var(--orange); }
+
 .btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
   background: var(--orange); color: #fff;
@@ -522,6 +545,13 @@ a.card-title { display: block; }
 /* ══════════════════════ À PROPOS ══════════════════════ */
 #apropos { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
 #apropos p { color: var(--gris); font-weight: 300; font-size: 0.92rem; line-height: 1.8; margin-bottom: 0.9rem; }
+.apropos-author { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.4rem; }
+.apropos-photo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid var(--orange); }
+.apropos-photo-placeholder { display: flex; align-items: center; justify-content: center; background: var(--vert); color: var(--beige); }
+.apropos-photo-placeholder svg { width: 28px; height: 28px; }
+.apropos-author-info { display: flex; flex-direction: column; }
+.apropos-author-name { font-family: 'Abril Fatface', serif; color: var(--vert); font-size: 1.1rem; }
+.apropos-author-role { font-size: 0.72rem; color: var(--gris); text-transform: uppercase; letter-spacing: 0.06em; }
 .apropos-visual { background: var(--beige); border-radius: 6px; padding: 1.75rem; display: flex; flex-direction: column; gap: 1.1rem; }
 .apropos-stat { display: flex; align-items: center; gap: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid rgba(46,94,59,0.12); }
 .apropos-stat:last-child { border-bottom: none; padding-bottom: 0; }

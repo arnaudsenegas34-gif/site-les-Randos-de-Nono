@@ -1573,6 +1573,20 @@ function rando_nono_get_avis_stats( $rando_id ) {
     );
 }
 
+/**
+ * Moyenne et nombre total d'avis publiés, toutes randonnées confondues —
+ * utilisé pour la preuve sociale affichée en page d'accueil.
+ */
+function rando_nono_get_avis_stats_global() {
+    global $wpdb;
+    $table = rando_nono_avis_table_name();
+    $row   = $wpdb->get_row( "SELECT COUNT(*) as total, AVG(note) as moyenne FROM $table WHERE statut = 'publie'" );
+    return array(
+        'total'   => $row ? (int) $row->total : 0,
+        'moyenne' => ( $row && $row->total > 0 ) ? round( (float) $row->moyenne, 1 ) : 0,
+    );
+}
+
 function rando_nono_get_avis_list( $rando_id ) {
     global $wpdb;
     $table = rando_nono_avis_table_name();

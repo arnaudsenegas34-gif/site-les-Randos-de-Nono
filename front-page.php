@@ -21,7 +21,27 @@
 
 <?php
 $randos_count = wp_count_posts( 'randonnee' )->publish;
+$global_avis  = rando_nono_get_avis_stats_global();
+?>
 
+<!-- ════════ PREUVE SOCIALE ════════ -->
+<section class="trust-bar" aria-label="Confiance">
+  <?php if ( $global_avis['total'] > 0 ) : ?>
+    <div class="trust-item">
+      <span class="trust-stars" aria-hidden="true"><?php echo str_repeat( '★', (int) round( $global_avis['moyenne'] ) ) . str_repeat( '☆', 5 - (int) round( $global_avis['moyenne'] ) ); ?></span>
+      <span><strong><?php echo esc_html( number_format_i18n( $global_avis['moyenne'], 1 ) ); ?>/5</strong> sur <?php echo esc_html( $global_avis['total'] ); ?> avis de randonneurs</span>
+    </div>
+  <?php endif; ?>
+  <div class="trust-item">
+    <span><strong><?php echo esc_html( $randos_count ); ?></strong> randonnées documentées avec trace GPX</span>
+  </div>
+  <a class="trust-item trust-instagram" href="https://www.instagram.com/a._.sng?igsh=MWpyYWVyazh6NWJ6dw==" target="_blank" rel="noopener noreferrer">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.048 1.79.218 2.428.465a4.9 4.9 0 0 1 1.771 1.153 4.9 4.9 0 0 1 1.153 1.771c.247.637.417 1.363.465 2.428.05 1.066.06 1.405.06 4.122s-.01 3.056-.06 4.122c-.048 1.065-.218 1.79-.465 2.428a4.9 4.9 0 0 1-1.153 1.771 4.9 4.9 0 0 1-1.771 1.153c-.637.247-1.363.417-2.428.465-1.066.05-1.405.06-4.122.06s-3.056-.01-4.122-.06c-1.065-.048-1.79-.218-2.428-.465a4.9 4.9 0 0 1-1.771-1.153 4.9 4.9 0 0 1-1.153-1.771c-.247-.637-.417-1.363-.465-2.428C2.01 15.056 2 14.717 2 12s.01-3.056.06-4.122c.048-1.065.218-1.79.465-2.428a4.9 4.9 0 0 1 1.153-1.771A4.9 4.9 0 0 1 5.45 2.525c.637-.247 1.363-.417 2.428-.465C8.944 2.01 9.283 2 12 2zm0 1.802c-2.67 0-2.986.01-4.04.058-.976.045-1.505.207-1.858.344-.467.182-.8.399-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.858-.048 1.054-.058 1.37-.058 4.04s.01 2.986.058 4.04c.045.976.207 1.505.344 1.858.182.467.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.858.344 1.054.048 1.37.058 4.04.058s2.986-.01 4.04-.058c.976-.045 1.505-.207 1.858-.344.467-.182.8-.399 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.858.048-1.054.058-1.37.058-4.04s-.01-2.986-.058-4.04c-.045-.976-.207-1.505-.344-1.858a3.09 3.09 0 0 0-.748-1.15 3.09 3.09 0 0 0-1.15-.748c-.353-.137-.882-.3-1.858-.344-1.054-.048-1.37-.058-4.04-.058zm0 3.063a5.135 5.135 0 1 1 0 10.27 5.135 5.135 0 0 1 0-10.27zm0 1.802a3.333 3.333 0 1 0 0 6.666 3.333 3.333 0 0 0 0-6.666zm5.338-1.802a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/></svg>
+    Suivi sur Instagram
+  </a>
+</section>
+
+<?php
 // Rando à la une (cochée) sinon la plus récente
 $featured_query = new WP_Query( array(
     'post_type'      => 'randonnee',
@@ -354,6 +374,23 @@ $show_projet = $projet_actif && $projet_titre;
 ?>
 <section id="apropos" class="site-section">
   <div>
+    <?php
+    // Dépose une photo à /assets/img/apropos-photo.jpg pour l'afficher ici —
+    // à défaut, une icône de substitution est affichée automatiquement.
+    $apropos_photo_file = get_template_directory() . '/assets/img/apropos-photo.jpg';
+    $apropos_photo_uri  = get_template_directory_uri() . '/assets/img/apropos-photo.jpg';
+    ?>
+    <div class="apropos-author">
+      <?php if ( file_exists( $apropos_photo_file ) ) : ?>
+        <img class="apropos-photo" src="<?php echo esc_url( $apropos_photo_uri ); ?>" alt="Arnaud, auteur des Randos de Nono" loading="lazy" decoding="async">
+      <?php else : ?>
+        <span class="apropos-photo apropos-photo-placeholder" aria-hidden="true"><?php echo rando_nono_icon( 'mountain' ); ?></span>
+      <?php endif; ?>
+      <div class="apropos-author-info">
+        <span class="apropos-author-name">Arnaud</span>
+        <span class="apropos-author-role">Auteur — Les Randos de Nono</span>
+      </div>
+    </div>
     <div class="section-eyebrow">Qui suis-je</div>
     <h2 class="section-title">Passionné de montagne & de sentiers</h2>
     <div class="divider"></div>
