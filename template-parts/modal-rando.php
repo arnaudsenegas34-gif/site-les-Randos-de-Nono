@@ -79,7 +79,7 @@
           </div>
           <p class="recit-text" id="rando-modal-recit"></p>
           <!-- Lien vers la fiche complète -->
-          <a id="rando-modal-page-link" href="#" class="btn btn-outline" style="width:100%;justify-content:center;border-color:var(--vert);color:var(--vert);margin-bottom:0.75rem">
+          <a id="rando-modal-page-link" href="#" class="btn btn-outline" style="width:100%;justify-content:center;border-color:var(--accent);color:var(--accent);margin-bottom:0.75rem">
             📄 Voir la fiche complète
           </a>
         </div>
