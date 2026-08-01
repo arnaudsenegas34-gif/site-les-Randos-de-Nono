@@ -6,6 +6,13 @@
 (function () {
   'use strict';
 
+  function isDarkTheme() {
+    var t = document.documentElement.getAttribute('data-theme');
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
   function init() {
     var overlay = document.getElementById('rando-modal-overlay');
     if (!overlay) return;
@@ -250,6 +257,10 @@
       wrap.style.display = 'block';
       if (_altChart) { _altChart.destroy(); _altChart = null; }
 
+      var dark = isDarkTheme();
+      var tickColor = dark ? '#A6AC9C' : '#888';
+      var gridColor = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
       _altChart = new Chart(canvas, {
         type: 'line',
         data: {
@@ -263,8 +274,8 @@
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ctx.parsed.y + ' m'; } } } },
           scales: {
-            x: { ticks: { maxTicksLimit: 6, font: { size: 10 }, color: '#888' }, grid: { display: false } },
-            y: { ticks: { font: { size: 10 }, color: '#888', callback: function(v) { return v + ' m'; } }, grid: { color: 'rgba(0,0,0,0.06)' } }
+            x: { ticks: { maxTicksLimit: 6, font: { size: 10 }, color: tickColor }, grid: { display: false } },
+            y: { ticks: { font: { size: 10 }, color: tickColor, callback: function(v) { return v + ' m'; } }, grid: { color: gridColor } }
           }
         }
       });

@@ -125,6 +125,38 @@
   }
 
   /* ══════════════════════════════════════════════
+     MODE SOMBRE — bascule + persistance (localStorage)
+     Au chargement, le thème choisi est déjà appliqué par le script
+     inline dans <head> (évite le flash). Ici on ne gère que le clic.
+  ══════════════════════════════════════════════ */
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    const THEME_KEY = 'rando-nono-theme';
+    const prefersDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function currentTheme() {
+      const explicit = document.documentElement.getAttribute('data-theme');
+      if (explicit === 'dark' || explicit === 'light') return explicit;
+      return prefersDarkQuery.matches ? 'dark' : 'light';
+    }
+
+    function updateToggleLabel(theme) {
+      const label = theme === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre';
+      themeToggle.setAttribute('aria-label', label);
+      themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    }
+
+    updateToggleLabel(currentTheme());
+
+    themeToggle.addEventListener('click', () => {
+      const next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      updateToggleLabel(next);
+    });
+  }
+
+  /* ══════════════════════════════════════════════
      MENU HAMBURGER MOBILE
   ══════════════════════════════════════════════ */
   const menuToggle   = document.getElementById('menu-toggle');
