@@ -125,6 +125,65 @@
   }
 
   /* ══════════════════════════════════════════════
+     MODE SOMBRE — l'automatique (réglage du téléphone) reste
+     prioritaire. Un clic sur le bouton force un thème, mais dès que
+     le téléphone change à nouveau de réglage clair/sombre, ce choix
+     manuel est abandonné et l'automatique reprend la main.
+     Au chargement, le thème est déjà appliqué par le script inline
+     dans <head> (évite le flash) avec la même règle de priorité.
+  ══════════════════════════════════════════════ */
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    const THEME_KEY = 'rando-nono-theme';
+    const THEME_SYS_KEY = 'rando-nono-theme-sys';
+    const prefersDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function systemTheme() {
+      return prefersDarkQuery.matches ? 'dark' : 'light';
+    }
+
+    function currentTheme() {
+      const explicit = document.documentElement.getAttribute('data-theme');
+      if (explicit === 'dark' || explicit === 'light') return explicit;
+      return systemTheme();
+    }
+
+    function updateToggleLabel(theme) {
+      const label = theme === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre';
+      themeToggle.setAttribute('aria-label', label);
+      themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    }
+
+    updateToggleLabel(currentTheme());
+
+    themeToggle.addEventListener('click', () => {
+      const next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem(THEME_KEY, next);
+        localStorage.setItem(THEME_SYS_KEY, systemTheme());
+      } catch (e) {}
+      updateToggleLabel(next);
+    });
+
+    // Dès que le réglage clair/sombre du téléphone change, l'automatique
+    // reprend la priorité : on efface le choix manuel éventuel.
+    function followSystemChange() {
+      document.documentElement.removeAttribute('data-theme');
+      try {
+        localStorage.removeItem(THEME_KEY);
+        localStorage.removeItem(THEME_SYS_KEY);
+      } catch (e) {}
+      updateToggleLabel(currentTheme());
+    }
+    if (prefersDarkQuery.addEventListener) {
+      prefersDarkQuery.addEventListener('change', followSystemChange);
+    } else if (prefersDarkQuery.addListener) {
+      prefersDarkQuery.addListener(followSystemChange);
+    }
+  }
+
+  /* ══════════════════════════════════════════════
      MENU HAMBURGER MOBILE
   ══════════════════════════════════════════════ */
   const menuToggle   = document.getElementById('menu-toggle');

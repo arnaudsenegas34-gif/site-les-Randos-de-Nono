@@ -16,7 +16,7 @@ rando_nono_breadcrumb();
 
     <div class="error-404-actions">
       <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="btn">Retour à l'accueil</a>
-      <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="btn btn-outline" style="border-color:var(--vert);color:var(--vert)">Voir les randonnées</a>
+      <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="btn btn-outline" style="border-color:var(--accent);color:var(--accent)">Voir les randonnées</a>
     </div>
 
     <?php

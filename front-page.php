@@ -149,7 +149,7 @@ if ( ! $featured_query->have_posts() ) {
               data-conseils='<?php echo esc_attr( wp_json_encode( array_values( $f_conseils ) ) ); ?>'
             >Voir la randonnée</a>
             <?php if ( $f_gpx ) : ?>
-              <a class="btn btn-outline" style="border-color:var(--vert);color:var(--vert)" href="<?php echo esc_url( $f_gpx ); ?>" download><?php echo rando_nono_icon( 'download' ); ?> GPX</a>
+              <a class="btn btn-outline" style="border-color:var(--accent);color:var(--accent)" href="<?php echo esc_url( $f_gpx ); ?>" download><?php echo rando_nono_icon( 'download' ); ?> GPX</a>
             <?php endif; ?>
           </div>
         </div>
@@ -201,7 +201,7 @@ endif;
 </section>
 
 <!-- ════════ MATOS DE NONO ════════ -->
-<section id="matos" class="site-section" style="background:var(--beige)">
+<section id="matos" class="site-section" style="background:var(--surface)">
   <div class="section-wave section-wave-top">
     <svg viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0,30 C300,60 900,0 1200,30 L1200,0 L0,0 Z" fill="#FAF8F3"></path></svg>
   </div>

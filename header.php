@@ -3,6 +3,21 @@
 <head>
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function () {
+  try {
+    var saved    = localStorage.getItem( 'rando-nono-theme' );
+    var savedSys = localStorage.getItem( 'rando-nono-theme-sys' );
+    var sysNow   = window.matchMedia( '(prefers-color-scheme: dark)' ).matches ? 'dark' : 'light';
+    if ( ( saved === 'dark' || saved === 'light' ) && savedSys === sysNow ) {
+      document.documentElement.setAttribute( 'data-theme', saved );
+    } else {
+      localStorage.removeItem( 'rando-nono-theme' );
+      localStorage.removeItem( 'rando-nono-theme-sys' );
+    }
+  } catch ( e ) {}
+})();
+</script>
 <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
@@ -56,6 +71,11 @@
       <button type="submit" aria-label="Rechercher"><?php echo rando_nono_icon( 'search' ); ?></button>
     </form>
   </div>
+
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activer le mode sombre" aria-pressed="false">
+    <?php echo rando_nono_icon( 'sun', 'theme-toggle-icon theme-toggle-icon-sun' ); ?>
+    <?php echo rando_nono_icon( 'moon', 'theme-toggle-icon theme-toggle-icon-moon' ); ?>
+  </button>
 
   <button class="menu-toggle" id="menu-toggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="nav-mobile-drawer">☰</button>
 </header>

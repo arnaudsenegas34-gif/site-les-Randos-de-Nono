@@ -7,7 +7,7 @@
   z-index: 1000;
   max-width: 640px;
   margin: 0 auto;
-  background: var(--blanc);
+  background: var(--bg);
   border: 1.5px solid var(--ligne);
   border-radius: 6px;
   box-shadow: 0 8px 24px rgba(26, 46, 31, 0.15);
@@ -25,10 +25,10 @@
   font-family: 'Merriweather', serif;
   font-size: 0.85rem;
   line-height: 1.5;
-  color: var(--sombre);
+  color: var(--text);
   margin: 0;
 }
-.cookie-consent p a { text-decoration: underline; color: var(--vert); }
+.cookie-consent p a { text-decoration: underline; color: var(--accent); }
 
 .cookie-consent-actions {
   display: flex;
