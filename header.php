@@ -6,9 +6,14 @@
 <script>
 (function () {
   try {
-    var saved = localStorage.getItem( 'rando-nono-theme' );
-    if ( saved === 'dark' || saved === 'light' ) {
+    var saved    = localStorage.getItem( 'rando-nono-theme' );
+    var savedSys = localStorage.getItem( 'rando-nono-theme-sys' );
+    var sysNow   = window.matchMedia( '(prefers-color-scheme: dark)' ).matches ? 'dark' : 'light';
+    if ( ( saved === 'dark' || saved === 'light' ) && savedSys === sysNow ) {
       document.documentElement.setAttribute( 'data-theme', saved );
+    } else {
+      localStorage.removeItem( 'rando-nono-theme' );
+      localStorage.removeItem( 'rando-nono-theme-sys' );
     }
   } catch ( e ) {}
 })();

@@ -125,19 +125,27 @@
   }
 
   /* ══════════════════════════════════════════════
-     MODE SOMBRE — bascule + persistance (localStorage)
-     Au chargement, le thème choisi est déjà appliqué par le script
-     inline dans <head> (évite le flash). Ici on ne gère que le clic.
+     MODE SOMBRE — l'automatique (réglage du téléphone) reste
+     prioritaire. Un clic sur le bouton force un thème, mais dès que
+     le téléphone change à nouveau de réglage clair/sombre, ce choix
+     manuel est abandonné et l'automatique reprend la main.
+     Au chargement, le thème est déjà appliqué par le script inline
+     dans <head> (évite le flash) avec la même règle de priorité.
   ══════════════════════════════════════════════ */
   const themeToggle = document.getElementById('theme-toggle');
   if (themeToggle) {
     const THEME_KEY = 'rando-nono-theme';
+    const THEME_SYS_KEY = 'rando-nono-theme-sys';
     const prefersDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    function systemTheme() {
+      return prefersDarkQuery.matches ? 'dark' : 'light';
+    }
 
     function currentTheme() {
       const explicit = document.documentElement.getAttribute('data-theme');
       if (explicit === 'dark' || explicit === 'light') return explicit;
-      return prefersDarkQuery.matches ? 'dark' : 'light';
+      return systemTheme();
     }
 
     function updateToggleLabel(theme) {
@@ -151,23 +159,27 @@
     themeToggle.addEventListener('click', () => {
       const next = currentTheme() === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      try {
+        localStorage.setItem(THEME_KEY, next);
+        localStorage.setItem(THEME_SYS_KEY, systemTheme());
+      } catch (e) {}
       updateToggleLabel(next);
     });
 
-    // Tant que l'utilisateur n'a jamais choisi manuellement, le thème
-    // suit le réglage clair/sombre du téléphone en direct : le CSS
-    // (@media prefers-color-scheme) bascule déjà les couleurs tout seul,
-    // on ne fait ici que garder le libellé du bouton synchronisé.
-    var systemChangeHandler = function () {
-      if (!document.documentElement.getAttribute('data-theme')) {
-        updateToggleLabel(currentTheme());
-      }
-    };
+    // Dès que le réglage clair/sombre du téléphone change, l'automatique
+    // reprend la priorité : on efface le choix manuel éventuel.
+    function followSystemChange() {
+      document.documentElement.removeAttribute('data-theme');
+      try {
+        localStorage.removeItem(THEME_KEY);
+        localStorage.removeItem(THEME_SYS_KEY);
+      } catch (e) {}
+      updateToggleLabel(currentTheme());
+    }
     if (prefersDarkQuery.addEventListener) {
-      prefersDarkQuery.addEventListener('change', systemChangeHandler);
+      prefersDarkQuery.addEventListener('change', followSystemChange);
     } else if (prefersDarkQuery.addListener) {
-      prefersDarkQuery.addListener(systemChangeHandler);
+      prefersDarkQuery.addListener(followSystemChange);
     }
   }
 
