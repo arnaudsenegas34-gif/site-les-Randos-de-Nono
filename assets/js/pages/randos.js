@@ -31,6 +31,26 @@
       });
     }
 
+    /* ── Préchargement de la fiche au survol de la carte ──
+       La page (carte, graphique d'altitude, météo) est plus lourde qu'une
+       ouverture de popup instantanée : on la précharge dès le survol pour
+       que le clic donne l'impression d'une navigation immédiate. */
+    const prefetched = new Set();
+    document.querySelectorAll('.rando-card').forEach(card => {
+      const link = card.querySelector('.card-title-link');
+      if (!link) return;
+      const prefetch = () => {
+        if (prefetched.has(link.href)) return;
+        prefetched.add(link.href);
+        const hint = document.createElement('link');
+        hint.rel = 'prefetch';
+        hint.href = link.href;
+        document.head.appendChild(hint);
+      };
+      card.addEventListener('mouseenter', prefetch, { once: true });
+      card.addEventListener('touchstart', prefetch, { once: true, passive: true });
+    });
+
     /* ── Filtre par catégorie — Matos de Nono ── */
     const matosFilters = document.getElementById('matos-filters');
     if (matosFilters) {
