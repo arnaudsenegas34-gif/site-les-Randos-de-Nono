@@ -69,11 +69,9 @@
       var badge = document.getElementById('rando-modal-diff-badge');
       if (badge) {
         var diff = d.difficulte || 'moyen';
+        var diffKey = ['facile', 'moyen', 'difficile'].indexOf(diff) !== -1 ? diff : 'moyen';
         badge.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
-        var textColors = { facile: '#2f6b3a', moyen: '#9a5408', difficile: '#9a2c1d' };
-        var dotColors  = { facile: '#4CAF50', moyen: '#D97706', difficile: '#c0392b' };
-        badge.style.color = textColors[diff] || textColors.moyen;
-        badge.style.setProperty('--dot-color', dotColors[diff] || dotColors.moyen);
+        badge.className = 'info-diff-badge badge-diff-' + diffKey;
       }
 
       var gpxLink = document.getElementById('rando-modal-gpx-link');

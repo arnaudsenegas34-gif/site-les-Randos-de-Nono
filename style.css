@@ -409,6 +409,8 @@ section.site-section { padding: 5.5rem 3rem; background: var(--bg); }
 .badge-diff-difficile { background: linear-gradient(135deg, #e0584a, #9a2c1d); }
 .badge-gpx { background: rgba(26,46,31,0.7); color: var(--beige); backdrop-filter: blur(3px); }
 .badge-gpx::before { display: none; }
+/* Ces variantes n'affichent pas le point (::before masqué) : padding symétrique pour centrer le texte */
+.badge-diff-facile, .badge-diff-moyen, .badge-diff-difficile, .badge-gpx { padding: 0.32rem 0.7rem; }
 
 .card-fav-btn {
   position: absolute;
@@ -496,14 +498,12 @@ a.card-title { display: block; }
 .info-card .ic-label { font-size: 0.6rem; color: var(--gris); letter-spacing: 0.08em; text-transform: uppercase; }
 .info-card .ic-value { font-family: 'Abril Fatface', serif; color: var(--accent); font-size: 1.1rem; margin-top: 0.12rem; }
 .info-diff-badge {
-  display: inline-flex; align-items: center; gap: 0.4rem;
+  display: inline-flex; align-items: center;
   font-size: 0.68rem; font-weight: 700;
-  padding: 0.3rem 0.7rem 0.3rem 0.55rem;
+  padding: 0.32rem 0.7rem;
   border-radius: 20px;
   margin-bottom: 0.9rem;
-  background: var(--surface);
 }
-.info-diff-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-color, var(--orange)); }
 .recit-text { font-size: 0.86rem; line-height: 1.85; color: var(--gris); font-weight: 300; font-style: italic; }
 
 .sac-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.7rem; }
