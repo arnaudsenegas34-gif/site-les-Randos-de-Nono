@@ -63,40 +63,18 @@ if ( ! $featured_query->have_posts() ) {
 <?php if ( $featured_query->have_posts() ) :
     $featured_query->the_post();
     $fid         = get_the_ID();
-    $f_titre     = get_the_title();
     $f_lieu      = get_post_meta( $fid, 'rando_lieu', true );
-    $f_lat       = get_post_meta( $fid, 'rando_lat', true );
-    $f_lon       = get_post_meta( $fid, 'rando_lon', true );
     $f_dist      = get_post_meta( $fid, 'rando_distance', true );
     $f_deniv     = get_post_meta( $fid, 'rando_denivele', true );
     $f_duree     = get_post_meta( $fid, 'rando_duree', true );
     $f_date      = get_post_meta( $fid, 'rando_date', true );
     $f_gpx       = get_post_meta( $fid, 'rando_gpx_url', true );
-    $f_maps      = get_post_meta( $fid, 'rando_maps_url', true );
-    $f_recit     = wp_strip_all_tags( get_the_content() );
     $f_thumb     = has_post_thumbnail( $fid ) ? get_the_post_thumbnail( $fid, 'rando-hero', array(
         'alt'           => get_the_title( $fid ),
         'decoding'      => 'async',
         'fetchpriority' => 'high',
         'style'         => 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0',
     ) ) : '';
-    // Difficulté
-    $f_diff_terms = get_the_terms( $fid, 'difficulte' );
-    $f_diff = $f_diff_terms && ! is_wp_error( $f_diff_terms ) ? strtolower( $f_diff_terms[0]->name ) : 'moyen';
-    // Photos
-    $f_photos_raw = get_post_meta( $fid, 'rando_photos', true );
-    $f_photos_urls = array();
-    if ( $f_photos_raw ) {
-        foreach ( array_map( 'trim', explode( ',', $f_photos_raw ) ) as $pid ) {
-            $url = wp_get_attachment_image_url( $pid, 'large' );
-            if ( $url ) $f_photos_urls[] = $url;
-        }
-    }
-    // Sac & conseils
-    $f_sac_raw = get_post_meta( $fid, 'rando_sac', true );
-    $f_sac = $f_sac_raw ? array_filter( array_map( 'trim', explode( "\n", $f_sac_raw ) ) ) : array();
-    $f_conseils_raw = get_post_meta( $fid, 'rando_conseils', true );
-    $f_conseils = $f_conseils_raw ? array_filter( array_map( 'trim', explode( "\n", $f_conseils_raw ) ) ) : array();
     ?>
     <section id="derniere-rando" class="site-section">
       <div class="section-eyebrow">À l'instant</div>
@@ -127,27 +105,7 @@ if ( ! $featured_query->have_posts() ) {
           </div>
 
           <div class="derniere-actions">
-            <a class="btn js-open-modal-featured"
-              href="<?php echo esc_url( get_permalink( $fid ) ); ?>"
-              data-id="<?php echo esc_attr( $fid ); ?>"
-              data-url="<?php echo esc_url( get_permalink( $fid ) ); ?>"
-              data-slug="<?php echo esc_attr( get_post_field( 'post_name', $fid ) ); ?>"
-              data-titre="<?php echo esc_attr( $f_titre ); ?>"
-              data-lieu="<?php echo esc_attr( $f_lieu ); ?>"
-              data-lat="<?php echo esc_attr( $f_lat ); ?>"
-              data-lon="<?php echo esc_attr( $f_lon ); ?>"
-              data-distance="<?php echo esc_attr( $f_dist ); ?>"
-              data-denivele="<?php echo esc_attr( $f_deniv ); ?>"
-              data-duree="<?php echo esc_attr( $f_duree ); ?>"
-              data-date="<?php echo esc_attr( $f_date ); ?>"
-              data-difficulte="<?php echo esc_attr( $f_diff ); ?>"
-              data-maps="<?php echo esc_attr( $f_maps ); ?>"
-              data-gpx="<?php echo esc_attr( $f_gpx ); ?>"
-              data-photos='<?php echo esc_attr( wp_json_encode( $f_photos_urls ) ); ?>'
-              data-recit="<?php echo esc_attr( $f_recit ); ?>"
-              data-sac='<?php echo esc_attr( wp_json_encode( array_values( $f_sac ) ) ); ?>'
-              data-conseils='<?php echo esc_attr( wp_json_encode( array_values( $f_conseils ) ) ); ?>'
-            >Voir la randonnée</a>
+            <a class="btn" href="<?php echo esc_url( get_permalink( $fid ) ); ?>">Voir la randonnée</a>
             <?php if ( $f_gpx ) : ?>
               <a class="btn btn-outline" style="border-color:var(--accent);color:var(--accent)" href="<?php echo esc_url( $f_gpx ); ?>" download><?php echo rando_nono_icon( 'download' ); ?> GPX</a>
             <?php endif; ?>
@@ -426,7 +384,5 @@ $show_projet = $projet_actif && $projet_titre;
 </section>
 
 </main>
-
-<?php get_template_part( 'template-parts/modal', 'rando' ); ?>
 
 <?php get_footer(); ?>

@@ -145,6 +145,4 @@ if ( $map_query->have_posts() ) {
 
 </main>
 
-<?php get_template_part( 'template-parts/modal', 'rando' ); ?>
-
 <?php get_footer(); ?>

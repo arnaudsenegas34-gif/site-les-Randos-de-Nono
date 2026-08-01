@@ -1,7 +1,6 @@
 /**
  * main.js — Les Randos de Nono
  * Script principal : parallaxe hero, compteurs stats, menu mobile, transition de page.
- * La logique modale est dans components/modal.js
  * La logique randonnées est dans pages/randos.js
  */
 
@@ -207,7 +206,6 @@
 
   /* ══════════════════════════════════════════════
      TRANSITION DE PAGE
-     — jamais pendant l'ouverture du modal
      — jamais sur les ancres (#)
      — un seul setTimeout actif à la fois
   ══════════════════════════════════════════════ */
@@ -215,10 +213,6 @@
     let pageExitTimer = null;
 
     document.addEventListener('click', (e) => {
-      // Ne pas déclencher si le modal est ouvert
-      const overlay = document.getElementById('rando-modal-overlay');
-      if (overlay && overlay.classList.contains('is-open')) return;
-
       const link = e.target.closest('a[href]');
       if (!link) return;
 

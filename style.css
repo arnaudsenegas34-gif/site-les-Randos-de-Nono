@@ -371,6 +371,7 @@ section.site-section { padding: 5.5rem 3rem; background: var(--bg); }
 }
 
 .rando-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -383,6 +384,11 @@ section.site-section { padding: 5.5rem 3rem; background: var(--bg); }
   opacity: 0;
   transform: translateY(18px);
 }
+/* Rend toute la carte cliquable (lien natif <a>, pas de JS) tout en gardant
+   les boutons favori et GPX au-dessus, cliquables indépendamment
+   (.card-fav-btn a déjà z-index:2 plus bas dans ce fichier). */
+.card-title-link::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+.card-actions a[download] { position: relative; z-index: 2; }
 .rando-card.is-visible { animation: card-fade-in 0.6s cubic-bezier(.2,.8,.2,1) forwards; }
 @keyframes card-fade-in {
   to { opacity: 1; transform: translateY(0); }
@@ -448,76 +454,6 @@ a.card-title { display: block; }
 
 .see-more-wrap { text-align: center; margin-top: 2.75rem; }
 .rando-hidden { display: none; }
-
-/* ══════════════════════ MODAL RANDO ══════════════════════
-   L'overlay, le centrage et le conteneur .rando-modal sont
-   dans assets/css/components/modal.css (chargé séparément).
-   Ce fichier ne contient que le style du contenu intérieur.
-══════════════════════════════════════════════════════════ */
-
-.modal-left { position: relative; background: var(--sombre); overflow: hidden; }
-.slide-title-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 10; background: linear-gradient(to bottom, rgba(26,46,31,0.9), transparent); padding: 1.5rem 1.5rem 2.5rem; }
-.slide-title-bar h2 { font-size: 1.5rem; color: var(--beige); line-height: 1.2; margin-bottom: 0.35rem; }
-.slide-title-bar .slide-lieu { font-size: 0.7rem; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 300; }
-
-.slideshow { position: absolute; inset: 0; }
-.slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; background: linear-gradient(135deg, var(--sombre), #2E5E3B); opacity: 0; transition: opacity 0.5s ease; }
-.slide.active { opacity: 1; }
-.slide img { width: 100%; height: 100%; object-fit: cover; }
-
-.slide-bottom { position: absolute; bottom: 0; left: 0; right: 0; z-index: 10; background: linear-gradient(to top, rgba(26,46,31,0.9), transparent); padding: 2.25rem 1.5rem 1.1rem; display: flex; align-items: center; justify-content: space-between; }
-.slide-dots { display: flex; gap: 6px; flex-wrap: wrap; max-width: 65%; }
-.slide-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(232,223,200,0.3); cursor: pointer; transition: all 0.2s; border: none; padding: 0; }
-.slide-dot.active { background: var(--orange); transform: scale(1.4); }
-.slide-counter { font-size: 0.7rem; color: rgba(232,223,200,0.5); font-weight: 300; }
-
-.slide-arrow { position: absolute; top: 50%; z-index: 11; transform: translateY(-50%); background: rgba(232,223,200,0.12); border: 1px solid rgba(232,223,200,0.2); color: var(--beige); width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-.slide-arrow:hover { background: rgba(217,119,6,0.5); }
-.slide-arrow.prev { left: 0.75rem; }
-.slide-arrow.next { right: 0.75rem; }
-
-.modal-right { background: var(--bg); display: flex; flex-direction: column; overflow-y: auto; min-height: 0; }
-.modal-close { position: absolute; top: 1rem; right: 1rem; z-index: 20; background: rgba(26,46,31,0.6); border: 1px solid rgba(232,223,200,0.2); color: var(--beige); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; }
-.modal-close:hover { background: rgba(217,119,6,0.7); }
-
-.modal-gpx-bar { display: flex; gap: 0.5rem; align-items: center; padding: 0.8rem 1.2rem; background: var(--sombre); flex-shrink: 0; }
-.modal-gpx-bar .gpx-meta { font-size: 0.68rem; color: rgba(232,223,200,0.55); flex: 1; }
-.modal-gpx-bar .gpx-meta strong { color: var(--beige); font-weight: 700; }
-
-.modal-tabs { display: flex; border-bottom: 1px solid var(--ligne); flex-shrink: 0; }
-.modal-tab { flex: 1; padding: 0.85rem 0.5rem; text-align: center; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gris); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; }
-.modal-tab.active { color: var(--accent); border-bottom-color: var(--orange); }
-.modal-tab:hover:not(.active) { color: var(--text); }
-
-.modal-tab-content { flex: 1; overflow-y: auto; padding: 1.2rem; }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin-bottom: 1.2rem; }
-.info-card { background: var(--surface); border-radius: 4px; padding: 0.7rem 0.85rem; }
-.info-card .ic-label { font-size: 0.6rem; color: var(--gris); letter-spacing: 0.08em; text-transform: uppercase; }
-.info-card .ic-value { font-family: 'Abril Fatface', serif; color: var(--accent); font-size: 1.1rem; margin-top: 0.12rem; }
-.info-diff-badge {
-  display: inline-flex; align-items: center;
-  font-size: 0.68rem; font-weight: 700;
-  padding: 0.32rem 0.7rem;
-  border-radius: 20px;
-  margin-bottom: 0.9rem;
-}
-.recit-text { font-size: 0.86rem; line-height: 1.85; color: var(--gris); font-weight: 300; font-style: italic; }
-
-.sac-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.7rem; }
-.sac-list li { font-size: 0.78rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.4rem; }
-.sac-list li::before { content: '▸'; color: var(--orange); font-size: 0.62rem; }
-
-.map-container { border-radius: 6px; overflow: hidden; height: 220px; margin-bottom: 0.8rem; border: 1px solid var(--ligne); }
-.map-container iframe { width: 100%; height: 100%; border: none; }
-
-.altitude-chart-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gris); margin-bottom: 0.5rem; }
-.altitude-chart-wrap { background: var(--surface); border-radius: 6px; padding: 0.8rem; }
-.rando-modal .leaflet-wrap { z-index: 0; }
-.rando-modal .leaflet-pane { z-index: 1 !important; }
-.rando-modal .leaflet-top, .rando-modal .leaflet-bottom { z-index: 2 !important; }
 
 .meteo-now { background: var(--sombre); border-radius: 4px; padding: 1.15rem; display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1rem; color: var(--beige); }
 .meteo-now .big-icon { font-size: 2.6rem; }
@@ -862,8 +798,6 @@ a.card-title { display: block; }
   section.site-section { padding: 3.5rem 1.5rem; }
   .hero { min-height: 70vh; }
   .hero-inner { padding: 0 1.5rem 2.5rem; }
-  /* Les règles responsive du modal (.rando-modal-overlay, .rando-modal)
-     sont dans assets/css/components/modal.css */
   #apropos { grid-template-columns: 1fr; }
   .site-header { padding: 0 1.25rem; }
   .nav-links { display: none; }

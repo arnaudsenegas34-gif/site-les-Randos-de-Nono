@@ -75,6 +75,4 @@ $rando_nono_search_total = $rando_nono_search_randos->found_posts + $rando_nono_
 </section>
 </main>
 
-<?php get_template_part( 'template-parts/modal', 'rando' ); ?>
-
 <?php get_footer(); ?>

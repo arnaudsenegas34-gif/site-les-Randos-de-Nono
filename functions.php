@@ -65,12 +65,15 @@ function rando_nono_assets() {
     // ── Style principal ──
     wp_enqueue_style( 'rando-nono-style', get_stylesheet_uri(), array( 'rando-nono-fonts' ), rando_nono_asset_ver( '/style.css' ) );
 
-    // La modale (carte + profil altimétrique) n'existe que sur l'accueil et l'archive des randonnées :
-    // inutile de charger Leaflet/Chart.js/modal.js sur les mentions légales, le 404, etc.
-    $needs_modal   = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
-    $needs_leaflet = $needs_modal || is_singular( 'randonnee' );
-    // Le profil altimétrique (Chart.js) est aussi affiché sur la fiche complète d'une randonnée.
-    $needs_chart   = $needs_modal || is_singular( 'randonnee' );
+    // La carte interactive n'existe plus que sur la fiche complète d'une randonnée
+    // et sur la carte d'ensemble de l'archive : inutile de charger Leaflet sur
+    // l'accueil, les mentions légales, le 404, etc.
+    $needs_leaflet = is_singular( 'randonnee' ) || is_post_type_archive( 'randonnee' );
+    // Le profil altimétrique (Chart.js) n'est affiché que sur la fiche complète d'une randonnée.
+    $needs_chart   = is_singular( 'randonnee' );
+    // La grille de cartes (animations au scroll, filtre Matos, "voir plus") vit
+    // sur l'accueil, l'archive et les résultats de recherche.
+    $needs_randos_js = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
     $main_deps     = array();
 
     // ── Leaflet (carte interactive) — hébergé localement dans assets/vendor/ ──
@@ -87,20 +90,8 @@ function rando_nono_assets() {
         wp_enqueue_script( 'chartjs', $theme_uri . '/assets/vendor/chartjs/chart.umd.min.js', array(), '4.4.0', true );
     }
 
-    if ( $needs_modal ) {
-        // ── CSS modal isolé ──
-        wp_enqueue_style( 'rando-nono-modal', $theme_uri . '/assets/css/components/modal.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/components/modal.css' ) );
-
-        wp_enqueue_script( 'rando-nono-modal', $theme_uri . '/assets/js/components/modal.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/components/modal.js' ), true );
-        wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array( 'rando-nono-modal' ), rando_nono_asset_ver( '/assets/js/pages/randos.js' ), true );
-
-        // Données PHP → JS (URLs dynamiques)
-        wp_localize_script( 'rando-nono-modal', 'randoNono', array(
-            'placeholderUrl' => $theme_uri . '/assets/img/placeholder-rando.jpg',
-            'themeUri'       => $theme_uri,
-        ) );
-
-        $main_deps[] = 'rando-nono-modal';
+    if ( $needs_randos_js ) {
+        wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array(), rando_nono_asset_ver( '/assets/js/pages/randos.js' ), true );
         $main_deps[] = 'rando-nono-randos';
     }
 
@@ -929,17 +920,21 @@ add_action( 'wp_head', 'rando_nono_head_extra', 1 );
 
 /**
  * Préconnexion aux services externes (carte OSM, météo) sur les pages qui les
- * chargent réellement (mêmes conditions que l'enqueue de Leaflet/modal.js dans
+ * chargent réellement (mêmes conditions que l'enqueue de Leaflet/Chart.js dans
  * rando_nono_assets()) — la négociation DNS/TLS est faite en avance pendant que
  * la page se charge, au lieu d'attendre que le script JS déclenche la requête.
  */
 function rando_nono_resource_hints() {
-    $needs_modal    = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
-    $needs_external = $needs_modal || is_singular( 'randonnee' );
-    if ( ! $needs_external ) return;
+    $needs_map     = is_singular( 'randonnee' ) || is_post_type_archive( 'randonnee' );
+    $needs_weather = is_singular( 'randonnee' );
+    if ( ! $needs_map && ! $needs_weather ) return;
 
-    echo '<link rel="preconnect" href="https://tile.openstreetmap.org">' . "\n";
-    echo '<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>' . "\n";
+    if ( $needs_map ) {
+        echo '<link rel="preconnect" href="https://tile.openstreetmap.org">' . "\n";
+    }
+    if ( $needs_weather ) {
+        echo '<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>' . "\n";
+    }
 }
 add_action( 'wp_head', 'rando_nono_resource_hints', 1 );
 
