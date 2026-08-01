@@ -272,6 +272,7 @@ endif;
                 <?php endif; ?>
                 <div class="matos-img-overlay"><span>+</span></div>
               </div>
+              <span class="matos-name"><?php the_title(); ?></span>
             </div>
             <?php
         endwhile;
