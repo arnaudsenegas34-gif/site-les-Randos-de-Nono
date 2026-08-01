@@ -154,6 +154,21 @@
       try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
       updateToggleLabel(next);
     });
+
+    // Tant que l'utilisateur n'a jamais choisi manuellement, le thème
+    // suit le réglage clair/sombre du téléphone en direct : le CSS
+    // (@media prefers-color-scheme) bascule déjà les couleurs tout seul,
+    // on ne fait ici que garder le libellé du bouton synchronisé.
+    var systemChangeHandler = function () {
+      if (!document.documentElement.getAttribute('data-theme')) {
+        updateToggleLabel(currentTheme());
+      }
+    };
+    if (prefersDarkQuery.addEventListener) {
+      prefersDarkQuery.addEventListener('change', systemChangeHandler);
+    } else if (prefersDarkQuery.addListener) {
+      prefersDarkQuery.addListener(systemChangeHandler);
+    }
   }
 
   /* ══════════════════════════════════════════════
