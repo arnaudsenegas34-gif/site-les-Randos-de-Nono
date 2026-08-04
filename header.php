@@ -3,7 +3,7 @@
 <head>
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>
+<script<?php if ( ! is_admin() ) : ?> nonce="<?php echo esc_attr( rando_nono_csp_nonce() ); ?>"<?php endif; ?>>
 (function () {
   try {
     var saved    = localStorage.getItem( 'rando-nono-theme' );

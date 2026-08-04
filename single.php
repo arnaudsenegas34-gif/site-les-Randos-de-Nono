@@ -32,8 +32,11 @@ if ( $rando_id ) {
 
 <main class="simple-page" id="main-content">
   <article>
-    <?php if ( has_post_thumbnail() ) : ?>
-      <img src="<?php echo esc_url( get_the_post_thumbnail_url( $id, 'large' ) ); ?>" alt="<?php the_title_attribute(); ?>" style="width:100%;border-radius:8px;margin-bottom:1.5rem" decoding="async" fetchpriority="high">
+    <?php
+    $article_thumb = has_post_thumbnail() ? wp_get_attachment_image_src( get_post_thumbnail_id( $id ), 'large' ) : false;
+    ?>
+    <?php if ( $article_thumb ) : ?>
+      <img src="<?php echo esc_url( $article_thumb[0] ); ?>" width="<?php echo esc_attr( $article_thumb[1] ); ?>" height="<?php echo esc_attr( $article_thumb[2] ); ?>" alt="<?php the_title_attribute(); ?>" style="width:100%;height:auto;border-radius:8px;margin-bottom:1.5rem" decoding="async" fetchpriority="high">
     <?php endif; ?>
     <h1><?php the_title(); ?></h1>
     <p style="font-size:0.8rem;color:var(--gris);margin-top:-0.3rem"><?php echo esc_html( get_the_date( 'j F Y' ) ); ?></p>
