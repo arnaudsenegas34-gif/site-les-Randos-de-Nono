@@ -236,6 +236,15 @@
       document.body.classList.add('page-exit');
       pageExitTimer = setTimeout(() => { window.location.href = href; }, 190);
     });
+
+    // Retour arrière mobile (flèche / balayage) : le navigateur restaure
+    // souvent la page depuis le bfcache avec le DOM tel qu'il était à la
+    // sortie, donc encore avec "page-exit" (opacité 0) → écran blanc tant
+    // qu'on ne rechargeait pas manuellement. On l'enlève à chaque affichage.
+    window.addEventListener('pageshow', () => {
+      if (pageExitTimer) { clearTimeout(pageExitTimer); pageExitTimer = null; }
+      document.body.classList.remove('page-exit');
+    });
   }
 
 })();
