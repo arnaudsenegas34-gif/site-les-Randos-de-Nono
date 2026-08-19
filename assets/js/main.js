@@ -244,6 +244,19 @@
     window.addEventListener('pageshow', () => {
       if (pageExitTimer) { clearTimeout(pageExitTimer); pageExitTimer = null; }
       document.body.classList.remove('page-exit');
+
+      // Même souci pour le menu mobile : s'il était resté ouvert au moment
+      // de quitter la page (lien du menu cliqué, ou sortie sans le refermer),
+      // le bfcache le restaure ouvert par-dessus le contenu. On le referme
+      // systématiquement pour repartir d'un état propre.
+      if (mobileDrawer && mobileDrawer.classList.contains('open')) {
+        mobileDrawer.classList.remove('open');
+        if (menuToggle) {
+          menuToggle.textContent = '☰';
+          menuToggle.setAttribute('aria-label', 'Ouvrir le menu');
+          menuToggle.setAttribute('aria-expanded', 'false');
+        }
+      }
     });
   }
 

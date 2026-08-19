@@ -151,6 +151,8 @@
   }
 
   /* ── Météo Open-Meteo ── */
+  var meteoPageshowBound = false;
+
   function initMeteo() {
     var container = document.getElementById('sr-meteo');
     if (!container) return;
@@ -161,6 +163,18 @@
     if (isNaN(lat) || isNaN(lon)) {
       container.innerHTML = '<p class="meteo-loading">Coordonnées manquantes.</p>';
       return;
+    }
+
+    // Retour arrière mobile : la page peut être restaurée depuis le bfcache
+    // après un long moment (météo "en temps réel" annoncée sur le site) —
+    // on relance un appel à chaque affichage restauré pour ne pas laisser
+    // des données périmées. Écouteur posé une seule fois (sinon chaque
+    // relance ajouterait un nouveau listener, qui en ajouterait d'autres…).
+    if (!meteoPageshowBound) {
+      meteoPageshowBound = true;
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) initMeteo();
+      });
     }
 
     fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weathercode&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe/Paris&forecast_days=7')
@@ -273,6 +287,13 @@
       if (e.key === 'Escape') hide();
       if (e.key === 'ArrowLeft') { current = (current - 1 + urls.length) % urls.length; show(); }
       if (e.key === 'ArrowRight') { current = (current + 1) % urls.length; show(); }
+    });
+
+    // Retour arrière mobile : si la lightbox était ouverte (scroll verrouillé)
+    // au moment de quitter la page, le bfcache la restaure ouverte par-dessus
+    // un fond bloqué. On la referme systématiquement au retour.
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted && lightbox.getAttribute('aria-hidden') === 'false') hide();
     });
   }
 

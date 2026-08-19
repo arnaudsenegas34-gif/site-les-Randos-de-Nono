@@ -43,12 +43,19 @@
     btn.setAttribute('aria-label', active ? 'Retirer des favoris' : 'Ajouter aux favoris');
   }
 
-  function initButtons() {
-    var buttons = document.querySelectorAll('.js-favori-btn');
-    buttons.forEach(function (btn) {
+  function syncButtons() {
+    document.querySelectorAll('.js-favori-btn').forEach(function (btn) {
       var id = parseInt(btn.dataset.id, 10);
       if (!id) return;
       updateBtnState(btn, isFavori(id));
+    });
+  }
+
+  function initButtons() {
+    syncButtons();
+    document.querySelectorAll('.js-favori-btn').forEach(function (btn) {
+      var id = parseInt(btn.dataset.id, 10);
+      if (!id) return;
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -107,4 +114,16 @@
   } else {
     init();
   }
+
+  // Retour arrière mobile : si la page est restaurée depuis le bfcache, elle
+  // garde l'état des favoris (cœurs, grille /favoris/) tel qu'il était à la
+  // sortie. Si un favori a été ajouté/retiré depuis une autre page entre
+  // temps, ce retour affiche alors des données périmées. On resynchronise
+  // avec le localStorage à chaque affichage restauré — sans ré-attacher les
+  // écouteurs de clic (déjà en place), pour ne pas les dupliquer.
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    syncButtons();
+    initFavorisPage();
+  });
 })();

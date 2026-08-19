@@ -195,6 +195,16 @@
       if (el) el.textContent = value;
     }
 
+    /* ──────────────────────────────────────────
+       RETOUR ARRIÈRE MOBILE
+       Si le panel était ouvert (scroll verrouillé) au moment de quitter la
+       page, le bfcache restaure cet état tel quel au retour : panel affiché
+       par-dessus un fond qui ne défile plus. On le referme systématiquement.
+    ────────────────────────────────────────── */
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted && panelOverlay.classList.contains('is-open')) closePanel();
+    });
+
   });
 
 })();
