@@ -72,8 +72,11 @@ function rando_nono_assets() {
     // Le profil altimétrique (Chart.js) n'est affiché que sur la fiche complète d'une randonnée.
     $needs_chart   = is_singular( 'randonnee' );
     // La grille de cartes (animations au scroll, filtre Matos, "voir plus") vit
-    // sur l'accueil, l'archive et les résultats de recherche.
-    $needs_randos_js = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search();
+    // sur l'accueil, l'archive, les résultats de recherche et les pages
+    // "Article — Guide de randos" (elles réutilisent .rando-card, qui reste
+    // invisible tant que ce script n'ajoute pas .is-visible au scroll).
+    $needs_randos_js = is_front_page() || is_post_type_archive( 'randonnee' ) || is_search()
+        || is_page_template( 'page-article-guide.php' );
     $main_deps     = array();
 
     // ── Leaflet (carte interactive) — hébergé localement dans assets/vendor/ ──
