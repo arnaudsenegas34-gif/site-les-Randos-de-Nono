@@ -513,6 +513,11 @@ function rando_nono_handle_contact_form() {
         exit;
     }
 
+    if ( ! rando_nono_throttle_submission( 'contact' ) ) {
+        wp_safe_redirect( add_query_arg( 'contact', 'error', $redirect ) );
+        exit;
+    }
+
     // Piège à robots : ce champ caché doit rester vide.
     if ( ! empty( $_POST['site_web'] ) ) {
         wp_safe_redirect( add_query_arg( 'contact', 'ok', $redirect ) );
@@ -556,9 +561,54 @@ function rando_nono_security_headers() {
     header( 'X-Content-Type-Options: nosniff' );
     header( 'X-Frame-Options: SAMEORIGIN' );
     header( 'Referrer-Policy: strict-origin-when-cross-origin' );
-    header( 'Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=()' );
+    header( 'Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(), browsing-topics=()' );
+    header( 'Cross-Origin-Opener-Policy: same-origin' );
+    // Doit rester identique à la CSP posée par mod_headers dans .htaccess
+    // (celle-ci ne sert que de filet de sécurité si mod_headers est absent :
+    // avec "Header set", la valeur du .htaccess écrase celle-ci côté navigateur).
+    header( "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" );
 }
 add_action( 'send_headers', 'rando_nono_security_headers' );
+
+/**
+ * Durcissement WordPress standard, sans dépendre de wp-config.php (souvent
+ * hors dépôt) : désactive l'éditeur de fichiers thème/plugin dans l'admin
+ * (réduit ce qu'un compte admin compromis peut modifier), masque quel
+ * identifiant est en cause dans un échec de connexion (évite l'énumération
+ * de comptes), et retire l'endpoint REST /wp/v2/users pour les visiteurs
+ * non connectés (évite d'exposer le nom d'utilisateur de l'admin).
+ */
+if ( ! defined( 'DISALLOW_FILE_EDIT' ) ) {
+    define( 'DISALLOW_FILE_EDIT', true );
+}
+
+add_filter( 'login_errors', function() {
+    return 'Identifiants incorrects.';
+} );
+
+add_filter( 'rest_endpoints', function( $endpoints ) {
+    if ( is_user_logged_in() ) return $endpoints;
+    unset( $endpoints['/wp/v2/users'] );
+    unset( $endpoints['/wp/v2/users/(?P<id>[\d]+)'] );
+    return $endpoints;
+} );
+
+/**
+ * Anti-flood minimal sur les formulaires publics (contact, newsletter, avis) :
+ * refuse une nouvelle soumission du même formulaire depuis la même IP avant
+ * $seconds, en complément du nonce et du champ piège à robots déjà en place
+ * sur chacun. Ralentit un script de spam basique sans CAPTCHA ni dépendance
+ * externe ; best-effort (REMOTE_ADDR peut être partagé derrière un proxy),
+ * mais sans coût pour un visiteur normal qui ne soumet pas deux fois de suite.
+ */
+function rando_nono_throttle_submission( $form_key, $seconds = 20 ) {
+    $ip = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '';
+    if ( ! $ip ) return true;
+    $key = 'rando_nono_throttle_' . $form_key . '_' . md5( $ip );
+    if ( get_transient( $key ) ) return false;
+    set_transient( $key, 1, $seconds );
+    return true;
+}
 
 // Retire la balise canonique par défaut de WordPress : le thème en génère déjà
 // une (voir rando_nono_seo_meta_tags) — deux balises canoniques dupliquaient
@@ -1091,13 +1141,28 @@ add_action( 'wp_head', 'rando_nono_head_extra', 1 );
 function rando_nono_resource_hints() {
     $needs_map     = is_singular( 'randonnee' ) || is_post_type_archive( 'randonnee' );
     $needs_weather = is_singular( 'randonnee' );
-    if ( ! $needs_map && ! $needs_weather ) return;
+    $ga_id         = rando_nono_ga_valid_id();
+    $fb_id         = rando_nono_fb_valid_id();
 
     if ( $needs_map ) {
         echo '<link rel="preconnect" href="https://tile.openstreetmap.org">' . "\n";
+        echo '<link rel="dns-prefetch" href="https://tile.openstreetmap.org">' . "\n";
     }
     if ( $needs_weather ) {
         echo '<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>' . "\n";
+        echo '<link rel="dns-prefetch" href="https://api.open-meteo.com">' . "\n";
+    }
+    // GA4/pixel Facebook ne se chargent qu'après consentement (voir
+    // rando_nono_ga_assets()), mais la préconnexion peut démarrer plus tôt
+    // sans rien télécharger : elle ne fait qu'accélérer la négociation
+    // DNS/TLS si le visiteur accepte les cookies.
+    if ( $ga_id ) {
+        echo '<link rel="preconnect" href="https://www.googletagmanager.com">' . "\n";
+        echo '<link rel="dns-prefetch" href="https://www.googletagmanager.com">' . "\n";
+    }
+    if ( $fb_id ) {
+        echo '<link rel="preconnect" href="https://connect.facebook.net">' . "\n";
+        echo '<link rel="dns-prefetch" href="https://connect.facebook.net">' . "\n";
     }
 }
 add_action( 'wp_head', 'rando_nono_resource_hints', 1 );
@@ -1166,10 +1231,22 @@ function rando_nono_haversine_km( $lat1, $lon1, $lat2, $lon2 ) {
  * Retourne jusqu'à $limit randonnées similaires à $post_id : priorité à la
  * proximité géographique, puis à la même difficulté, puis à une durée
  * comparable. Alimente automatiquement le maillage interne de chaque fiche.
+ * Le résultat (juste les ID, moins lourd à stocker qu'une liste de WP_Post)
+ * est mis en cache : ce calcul relit tout le post type à chaque appel, coûteux
+ * à répéter à chaque visite d'une fiche randonnée. Pas d'invalidation ciblée
+ * (le classement d'UNE fiche peut changer quand N'IMPORTE QUELLE autre est
+ * modifiée) : une expiration de quelques heures suffit, un léger retard sur
+ * une suggestion "similaire" n'étant pas gênant pour l'utilisateur.
  *
  * @return WP_Post[]
  */
 function rando_nono_get_related_randos( $post_id, $limit = 4 ) {
+    $cache_key = 'rando_nono_related_' . $post_id . '_' . $limit;
+    $cached_ids = get_transient( $cache_key );
+    if ( false !== $cached_ids ) {
+        return array_filter( array_map( 'get_post', $cached_ids ) );
+    }
+
     $lat        = (float) get_post_meta( $post_id, 'rando_lat', true );
     $lon        = (float) get_post_meta( $post_id, 'rando_lon', true );
     $minutes    = rando_nono_duree_to_minutes( get_post_meta( $post_id, 'rando_duree', true ) );
@@ -1207,8 +1284,80 @@ function rando_nono_get_related_randos( $post_id, $limit = 4 ) {
     usort( $scored, function( $a, $b ) { return $a['score'] <=> $b['score']; } );
     $scored = array_slice( $scored, 0, $limit );
 
-    return array_map( function( $item ) { return get_post( $item['id'] ); }, $scored );
+    $ids = wp_list_pluck( $scored, 'id' );
+    set_transient( $cache_key, $ids, 12 * HOUR_IN_SECONDS );
+
+    return array_map( 'get_post', $ids );
 }
+
+/**
+ * Tronque un texte libre ("12 km", "+380 m"...) à sa première valeur
+ * numérique. Utilisé par les statistiques d'accueil ci-dessous.
+ */
+function rando_nono_extract_number( $text ) {
+    if ( ! $text ) return 0;
+    preg_match( '/-?[\d]+(?:[.,]\d+)?/', $text, $matches );
+    if ( empty( $matches ) ) return 0;
+    return (float) str_replace( ',', '.', $matches[0] );
+}
+
+/**
+ * Statistiques agrégées de l'accueil (km, dénivelé, régions parcourues),
+ * calculées à partir de toutes les randonnées publiées. Mises en cache — la
+ * page d'accueil est la plus visitée du site, inutile de relire tout le post
+ * type et ses meta à chaque affichage — et invalidées dès qu'une randonnée
+ * est publiée, modifiée ou supprimée, pour que "X randonnées documentées"
+ * reflète immédiatement une action dans l'admin plutôt qu'une fenêtre de
+ * cache aveugle.
+ */
+function rando_nono_get_homepage_stats() {
+    $cached = get_transient( 'rando_nono_homepage_stats' );
+    if ( false !== $cached ) return $cached;
+
+    $regions         = array();
+    $total_km        = 0;
+    $total_deniv_pos = 0;
+    $total_deniv_neg = 0;
+
+    $stats_query = new WP_Query( array( 'post_type' => 'randonnee', 'posts_per_page' => -1, 'no_found_rows' => true ) );
+    if ( $stats_query->have_posts() ) {
+        while ( $stats_query->have_posts() ) {
+            $stats_query->the_post();
+            $sid = get_the_ID();
+
+            $lieu_rando = get_post_meta( $sid, 'rando_lieu', true );
+            if ( $lieu_rando ) {
+                $parts  = explode( ',', $lieu_rando );
+                $region = trim( end( $parts ) );
+                if ( $region ) $regions[ strtolower( $region ) ] = true;
+            }
+
+            $total_km        += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_distance', true ) ) );
+            $total_deniv_pos += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_denivele', true ) ) );
+            $total_deniv_neg += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_denivele_neg', true ) ) );
+        }
+        wp_reset_postdata();
+    }
+
+    $stats = array(
+        'total_km'      => $total_km,
+        'deniv_pos'     => $total_deniv_pos,
+        'deniv_neg'     => $total_deniv_neg,
+        'regions_count' => count( $regions ),
+    );
+    set_transient( 'rando_nono_homepage_stats', $stats, DAY_IN_SECONDS );
+    return $stats;
+}
+
+function rando_nono_bust_homepage_stats_cache() {
+    delete_transient( 'rando_nono_homepage_stats' );
+}
+add_action( 'save_post_randonnee', 'rando_nono_bust_homepage_stats_cache' );
+add_action( 'before_delete_post', function( $post_id ) {
+    if ( 'randonnee' === get_post_type( $post_id ) ) {
+        rando_nono_bust_homepage_stats_cache();
+    }
+} );
 
 /**
  * Favicon — généré à partir de l'image hero, recadré en carré.
@@ -1521,6 +1670,11 @@ function rando_nono_handle_newsletter_form() {
         exit;
     }
 
+    if ( ! rando_nono_throttle_submission( 'newsletter' ) ) {
+        wp_safe_redirect( add_query_arg( 'newsletter', 'error', $redirect ) );
+        exit;
+    }
+
     // Piège à robots.
     if ( ! empty( $_POST['site_web_nl'] ) ) {
         wp_safe_redirect( add_query_arg( 'newsletter', 'ok', $redirect ) );
@@ -1773,16 +1927,24 @@ function rando_nono_get_avis_stats( $rando_id ) {
 
 /**
  * Moyenne et nombre total d'avis publiés, toutes randonnées confondues —
- * utilisé pour la preuve sociale affichée en page d'accueil.
+ * utilisé pour la preuve sociale affichée en page d'accueil. Mis en cache
+ * (l'accueil est la page la plus visitée du site : évite de recalculer cette
+ * agrégation SQL à chaque chargement) et invalidé dès qu'un avis est
+ * approuvé ou supprimé (voir rando_nono_avis_approve/delete plus bas).
  */
 function rando_nono_get_avis_stats_global() {
+    $cached = get_transient( 'rando_nono_avis_stats_global' );
+    if ( false !== $cached ) return $cached;
+
     global $wpdb;
     $table = rando_nono_avis_table_name();
     $row   = $wpdb->get_row( "SELECT COUNT(*) as total, AVG(note) as moyenne FROM $table WHERE statut = 'publie'" );
-    return array(
+    $stats = array(
         'total'   => $row ? (int) $row->total : 0,
         'moyenne' => ( $row && $row->total > 0 ) ? round( (float) $row->moyenne, 1 ) : 0,
     );
+    set_transient( 'rando_nono_avis_stats_global', $stats, DAY_IN_SECONDS );
+    return $stats;
 }
 
 function rando_nono_get_avis_list( $rando_id ) {
@@ -1802,6 +1964,11 @@ function rando_nono_handle_avis_form() {
     $redirect = get_permalink( $post_id ) . '#avis';
 
     if ( ! isset( $_POST['rando_nono_avis_nonce'] ) || ! wp_verify_nonce( $_POST['rando_nono_avis_nonce'], 'rando_nono_avis_form_' . $post_id ) ) {
+        wp_safe_redirect( add_query_arg( 'avis', 'error', $redirect ) );
+        exit;
+    }
+
+    if ( ! rando_nono_throttle_submission( 'avis' ) ) {
         wp_safe_redirect( add_query_arg( 'avis', 'error', $redirect ) );
         exit;
     }
@@ -1900,6 +2067,7 @@ function rando_nono_avis_approve() {
     check_admin_referer( 'rando_nono_avis_action_' . $id );
     global $wpdb;
     $wpdb->update( rando_nono_avis_table_name(), array( 'statut' => 'publie' ), array( 'id' => $id ) );
+    delete_transient( 'rando_nono_avis_stats_global' );
     wp_safe_redirect( admin_url( 'admin.php?page=rando-nono-avis' ) );
     exit;
 }
@@ -1911,6 +2079,7 @@ function rando_nono_avis_delete() {
     check_admin_referer( 'rando_nono_avis_action_' . $id );
     global $wpdb;
     $wpdb->delete( rando_nono_avis_table_name(), array( 'id' => $id ) );
+    delete_transient( 'rando_nono_avis_stats_global' );
     wp_safe_redirect( admin_url( 'admin.php?page=rando-nono-avis' ) );
     exit;
 }

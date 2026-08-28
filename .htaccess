@@ -55,9 +55,22 @@ Options -Indexes
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
-  Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=()"
+  Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), browsing-topics=()"
   Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
   Header unset X-Powered-By
+
+  # Content-Security-Policy — liste blanche des seuls services externes
+  # réellement appelés par le thème (voir rando_nono_assets() et les scripts
+  # dans assets/js/) : tuiles OpenStreetMap, météo Open-Meteo, et Google
+  # Analytics / pixel Facebook, chargés uniquement si configurés depuis
+  # l'admin et seulement après consentement (voir rando_nono_ga_assets()).
+  # 'unsafe-inline' reste nécessaire en l'absence d'étape de build (pas de
+  # nonce ni de hash à régénérer à chaque modification du thème) ; en
+  # contrepartie, object-src/base-uri/form-action/frame-ancestors sont
+  # verrouillés. Dupliquée en PHP (rando_nono_security_headers) comme filet
+  # de sécurité si mod_headers est indisponible — garder les deux synchronisées.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 </IfModule>
 ServerSignature Off
 # END Durcissement sécurité

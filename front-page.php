@@ -246,43 +246,13 @@ endif;
 
 <!-- ════════ STATISTIQUES (unique section verte, unique emplacement des stats) ════════ -->
 <?php
-/**
- * Calcul dynamique de toutes les statistiques à partir des randonnées publiées.
- * Les champs distance/dénivelé sont du texte libre ("12 km", "+380 m"),
- * on en extrait donc la valeur numérique avec une regex tolérante.
- */
-function rando_nono_extract_number( $text ) {
-    if ( ! $text ) return 0;
-    preg_match( '/-?[\d]+(?:[.,]\d+)?/', $text, $matches );
-    if ( empty( $matches ) ) return 0;
-    return (float) str_replace( ',', '.', $matches[0] );
-}
-
-$regions = array();
-$total_km = 0;
-$total_deniv_pos = 0;
-$total_deniv_neg = 0;
-
-$stats_query = new WP_Query( array( 'post_type' => 'randonnee', 'posts_per_page' => -1 ) );
-if ( $stats_query->have_posts() ) {
-    while ( $stats_query->have_posts() ) {
-        $stats_query->the_post();
-        $sid = get_the_ID();
-
-        $lieu_rando = get_post_meta( $sid, 'rando_lieu', true );
-        if ( $lieu_rando ) {
-            $parts = explode( ',', $lieu_rando );
-            $region = trim( end( $parts ) );
-            if ( $region ) $regions[ strtolower( $region ) ] = true;
-        }
-
-        $total_km += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_distance', true ) ) );
-        $total_deniv_pos += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_denivele', true ) ) );
-        $total_deniv_neg += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_denivele_neg', true ) ) );
-    }
-    wp_reset_postdata();
-}
-$regions_count = count( $regions );
+// Calcul (mis en cache) de toutes les statistiques à partir des randonnées
+// publiées — voir rando_nono_get_homepage_stats() dans functions.php.
+$rando_nono_stats = rando_nono_get_homepage_stats();
+$total_km         = $rando_nono_stats['total_km'];
+$total_deniv_pos  = $rando_nono_stats['deniv_pos'];
+$total_deniv_neg  = $rando_nono_stats['deniv_neg'];
+$regions_count    = $rando_nono_stats['regions_count'];
 ?>
 <section id="statistiques" class="site-section">
   <div class="section-wave section-wave-top">

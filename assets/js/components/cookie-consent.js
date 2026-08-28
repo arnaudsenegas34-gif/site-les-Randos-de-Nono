@@ -17,7 +17,10 @@
   }
 
   function setCookie( name, value ) {
-    document.cookie = name + '=' + value + '; max-age=' + COOKIE_MAX_AGE + '; path=/; SameSite=Lax';
+    // "Secure" seulement en HTTPS : en local (http://localhost) l'ajouter
+    // empêcherait le navigateur d'accepter le cookie.
+    var secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = name + '=' + value + '; max-age=' + COOKIE_MAX_AGE + '; path=/; SameSite=Lax' + secure;
   }
 
   function getStoredConsent() {

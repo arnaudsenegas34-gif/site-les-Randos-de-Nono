@@ -753,9 +753,12 @@ a.card-title { display: block; }
 .site-footer { background: var(--sombre); padding: 2.25rem 3rem; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1.75rem; }
 .site-footer .logo { font-family: 'Abril Fatface', serif; color: var(--beige); font-size: 1.05rem; }
 .site-footer .logo span { color: var(--orange); }
-.site-footer p, .site-footer a { font-size: 0.73rem; color: rgba(232,223,200,0.45); font-weight: 300; }
-.site-footer a:hover { color: rgba(232,223,200,0.75); }
-.site-footer .social-instagram { display: inline-flex; color: rgba(232,223,200,0.45); transition: color .2s; margin-top: 0.5rem; }
+/* Opacité 0.62 (et non 0.45) : sous ce seuil, ce texte clair sur fond
+   --sombre tombe sous le ratio de contraste 4.5:1 requis par le WCAG AA
+   pour du texte de cette taille (0.73rem). */
+.site-footer p, .site-footer a { font-size: 0.73rem; color: rgba(232,223,200,0.62); font-weight: 300; }
+.site-footer a:hover { color: rgba(232,223,200,0.85); }
+.site-footer .social-instagram { display: inline-flex; color: rgba(232,223,200,0.62); transition: color .2s; margin-top: 0.5rem; }
 .site-footer .social-instagram:hover { color: var(--orange); }
 .footer-col { display: flex; flex-direction: column; gap: 0.4rem; }
 .footer-legal { align-items: flex-end; }
