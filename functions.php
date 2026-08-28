@@ -918,6 +918,21 @@ add_action( 'wp_head', 'rando_nono_schema_jsonld', 3 );
  * template et le schema.org (ItemList) pour rester synchronisée.
  */
 function rando_nono_article_guide_query( $page_id ) {
+    // Sélection manuelle (cases cochées dans la métabox) : si au moins une
+    // rando est cochée, on affiche exactement celles-ci, dans l'ordre où
+    // elles sont cochées — les filtres difficulté/lieu sont ignorés.
+    $manuel = get_post_meta( $page_id, 'article_guide_manuel', true );
+    $ids    = $manuel ? array_filter( array_map( 'absint', explode( ',', $manuel ) ) ) : array();
+
+    if ( $ids ) {
+        return new WP_Query( array(
+            'post_type'      => 'randonnee',
+            'post__in'       => $ids,
+            'orderby'        => 'post__in',
+            'posts_per_page' => count( $ids ),
+        ) );
+    }
+
     $difficulte = get_post_meta( $page_id, 'article_guide_difficulte', true );
     $lieu       = get_post_meta( $page_id, 'article_guide_lieu', true );
     $nombre     = (int) get_post_meta( $page_id, 'article_guide_nombre', true );
@@ -959,8 +974,25 @@ function rando_nono_article_guide_callback( $post ) {
     $difficulte = get_post_meta( $post->ID, 'article_guide_difficulte', true );
     $lieu       = get_post_meta( $post->ID, 'article_guide_lieu', true );
     $nombre     = get_post_meta( $post->ID, 'article_guide_nombre', true ) ?: '6';
+    $manuel     = get_post_meta( $post->ID, 'article_guide_manuel', true );
+    $manuel_ids = $manuel ? array_filter( array_map( 'absint', explode( ',', $manuel ) ) ) : array();
 
-    echo '<p>Le texte de cette page (ci-dessus) reste entièrement libre. En dessous, une sélection de randonnées s\'affiche automatiquement, sans avoir à les choisir une par une.</p>';
+    echo '<p>Le texte de cette page (ci-dessus) reste entièrement libre. En dessous, une sélection de randonnées s\'affiche automatiquement : soit celles que tu coches toi-même ci-dessous, soit — si tu ne coches rien — celles qui correspondent aux filtres difficulté/lieu.</p>';
+
+    echo '<p><strong>1. Choisir mes randos moi-même (prioritaire si des cases sont cochées)</strong></p>';
+    $all_randos = get_posts( array( 'post_type' => 'randonnee', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => 'title', 'order' => 'ASC' ) );
+    if ( $all_randos ) {
+        echo '<div style="max-height:220px;overflow-y:auto;border:1px solid #dcdcd4;padding:0.75rem;background:#fff">';
+        foreach ( $all_randos as $r ) {
+            $lieu_r = get_post_meta( $r->ID, 'rando_lieu', true );
+            echo '<label style="display:block;margin-bottom:0.4rem"><input type="checkbox" name="article_guide_manuel[]" value="' . esc_attr( $r->ID ) . '" ' . checked( in_array( $r->ID, $manuel_ids, true ), true, false ) . ' /> ' . esc_html( get_the_title( $r ) ) . ( $lieu_r ? ' <span style="color:#6B6B5E">— ' . esc_html( $lieu_r ) . '</span>' : '' ) . '</label>';
+        }
+        echo '</div>';
+    } else {
+        echo '<p style="color:#6B6B5E">Aucune randonnée publiée pour le moment.</p>';
+    }
+
+    echo '<p style="margin-top:1.25rem"><strong>2. Ou laisser le site choisir automatiquement (si rien n\'est coché ci-dessus)</strong></p>';
     echo '<table class="form-table">';
 
     echo '<tr><th><label for="article_guide_eyebrow">Petit texte au-dessus du titre</label></th><td><input type="text" style="width:100%" id="article_guide_eyebrow" name="article_guide_eyebrow" value="' . esc_attr( $eyebrow ) . '" placeholder="Ex: Guide, Sélection, Coups de cœur..." /></td></tr>';
@@ -992,6 +1024,9 @@ function rando_nono_article_guide_save( $post_id ) {
     update_post_meta( $post_id, 'article_guide_difficulte', sanitize_key( $_POST['article_guide_difficulte'] ?? '' ) );
     update_post_meta( $post_id, 'article_guide_lieu', sanitize_text_field( wp_unslash( $_POST['article_guide_lieu'] ?? '' ) ) );
     update_post_meta( $post_id, 'article_guide_nombre', absint( $_POST['article_guide_nombre'] ?? 6 ) ?: 6 );
+
+    $manuel_ids = isset( $_POST['article_guide_manuel'] ) ? array_filter( array_map( 'absint', (array) $_POST['article_guide_manuel'] ) ) : array();
+    update_post_meta( $post_id, 'article_guide_manuel', implode( ',', $manuel_ids ) );
 }
 add_action( 'save_post_page', 'rando_nono_article_guide_save' );
 
