@@ -712,8 +712,15 @@ function rando_nono_seo_meta_tags() {
 
     $is_public = (bool) get_option( 'blog_public' );
 
+    // Résultats de recherche interne et page Favoris (liste personnelle stockée
+    // en localStorage, identique pour tout le monde côté serveur) : aucune valeur
+    // pour un moteur de recherche, on évite le contenu pauvre/dupliqué dans l'index.
+    $is_noindex = is_search() || is_page( 'favoris' );
+
     echo "\n" . '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
-    if ( $is_public ) {
+    if ( $is_noindex ) {
+        echo '<meta name="robots" content="noindex, follow">' . "\n";
+    } elseif ( $is_public ) {
         echo '<meta name="robots" content="index, follow, max-image-preview:large">' . "\n";
     }
     echo '<meta name="author" content="Arnaud — ' . esc_attr( get_bloginfo( 'name' ) ) . '">' . "\n";
