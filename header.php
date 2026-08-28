@@ -33,12 +33,18 @@
   $rando_nono_is_archive = is_post_type_archive( 'randonnee' ) || is_singular( 'randonnee' );
   $rando_nono_is_favoris = is_page( 'favoris' );
   $rando_nono_is_contact = is_page( 'contact' );
+  // "Guides & Sélections" couvre aussi les pages Article/Guide, le blog et
+  // les catégories/étiquettes — pour que le lien reste actif partout où on
+  // navigue depuis ce hub.
+  $rando_nono_is_guides  = is_page( 'guides' ) || 'page-article-guide.php' === get_page_template_slug()
+      || is_singular( 'post' ) || is_home() || is_category() || is_tag();
 
   // Source unique des liens de nav — utilisée par .nav-buttons (desktop)
   // ET .nav-mobile-drawer, pour qu'ils ne puissent plus diverger.
   $rando_nono_nav_items = array(
       array( 'key' => 'accueil',        'href' => home_url( '/' ),                             'label' => 'Accueil',            'current' => $rando_nono_is_home ),
       array( 'key' => 'randos-archive', 'href' => get_post_type_archive_link( 'randonnee' ),    'label' => 'Toutes les randos',  'current' => $rando_nono_is_archive ),
+      array( 'key' => 'guides',         'href' => home_url( '/guides/' ),                       'label' => 'Guides & Sélections','current' => $rando_nono_is_guides ),
       array( 'key' => 'matos',          'href' => home_url( '/' ) . '#matos',                   'label' => 'Matos de Nono',      'current' => false ),
       array( 'key' => 'statistiques',   'href' => home_url( '/' ) . '#statistiques',            'label' => 'Statistiques',       'current' => false ),
       array( 'key' => 'apropos',        'href' => home_url( '/' ) . '#apropos',                 'label' => 'À propos',           'current' => false ),
