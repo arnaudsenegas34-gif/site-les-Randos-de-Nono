@@ -74,7 +74,8 @@
         }
         buildAltitudeChart(e.target);
       })
-      .on('error', function () {
+      .on('error', function (e) {
+        console.warn('[Randonnée] Impossible de charger la trace GPX (réseau, CORS ou Content-Security-Policy) :', gpxUrl, e);
         L.marker([lat, lon], { icon: startIcon }).addTo(map);
       })
       .addTo(map);

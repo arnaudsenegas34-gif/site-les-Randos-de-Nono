@@ -182,6 +182,31 @@ function rando_nono_register_rest_meta() {
 }
 add_action( 'init', 'rando_nono_register_rest_meta' );
 
+/**
+ * Autorise l'upload de fichiers .gpx dans la médiathèque : WordPress ne les
+ * reconnaît pas par défaut (absents de la liste blanche des extensions
+ * autorisées), ce qui fait échouer l'ajout d'une trace en tant que média
+ * malgré le champ "URL du fichier GPX (upload média)" ci-dessus.
+ */
+add_filter( 'upload_mimes', function( $mimes ) {
+    $mimes['gpx'] = 'application/gpx+xml';
+    return $mimes;
+} );
+
+/**
+ * Sans ce filtre, la détection réelle du type de fichier (fileinfo) ne
+ * reconnaît pas un GPX — un simple XML — comme correspondant à l'extension
+ * .gpx, et wp_handle_upload rejette quand même le fichier malgré le filtre
+ * upload_mimes ci-dessus.
+ */
+add_filter( 'wp_check_filetype_and_ext', function( $data, $file, $filename, $mimes ) {
+    if ( ! $data['ext'] && preg_match( '/\.gpx$/i', $filename ) ) {
+        $data['ext']  = 'gpx';
+        $data['type'] = 'application/gpx+xml';
+    }
+    return $data;
+}, 10, 4 );
+
 /* ──────────────────────────────────────────
    3bis. RÉGLAGE "PROCHAIN PROJET" — paramétrable depuis l'admin, sans coder
    ────────────────────────────────────────── */
