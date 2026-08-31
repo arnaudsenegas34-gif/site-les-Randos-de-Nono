@@ -62,15 +62,17 @@ Options -Indexes
 
   # Content-Security-Policy — liste blanche des seuls services externes
   # réellement appelés par le thème (voir rando_nono_assets() et les scripts
-  # dans assets/js/) : tuiles OpenStreetMap, météo Open-Meteo, et Google
-  # Analytics / pixel Facebook, chargés uniquement si configurés depuis
-  # l'admin et seulement après consentement (voir rando_nono_ga_assets()).
+  # dans assets/js/) : tuiles OpenStreetMap, météo Open-Meteo, export GPX
+  # Suunto app/Sports-Tracker (champ "URL du fichier GPX" des randonnées,
+  # utilisé par Leaflet-GPX et la fiche imprimable), et Google Analytics /
+  # pixel Facebook, chargés uniquement si configurés depuis l'admin et
+  # seulement après consentement (voir rando_nono_ga_assets()).
   # 'unsafe-inline' reste nécessaire en l'absence d'étape de build (pas de
   # nonce ni de hash à régénérer à chaque modification du thème) ; en
   # contrepartie, object-src/base-uri/form-action/frame-ancestors sont
   # verrouillés. Dupliquée en PHP (rando_nono_security_headers) comme filet
   # de sécurité si mod_headers est indisponible — garder les deux synchronisées.
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://api.sports-tracker.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 </IfModule>
 ServerSignature Off
 # END Durcissement sécurité

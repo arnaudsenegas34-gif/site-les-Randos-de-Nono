@@ -591,7 +591,11 @@ function rando_nono_security_headers() {
     // Doit rester identique à la CSP posée par mod_headers dans .htaccess
     // (celle-ci ne sert que de filet de sécurité si mod_headers est absent :
     // avec "Header set", la valeur du .htaccess écrase celle-ci côté navigateur).
-    header( "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" );
+    // connect-src inclut api.sports-tracker.com : c'est le domaine réel de
+    // l'export GPX de l'app Suunto utilisé dans le champ "URL du fichier GPX"
+    // des randonnées (ex: .../apiserver/v2/routes/export/...?format=gpx-route),
+    // appelé par Leaflet-GPX (carte + profil altimétrique) et par la fiche imprimable.
+    header( "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://api.sports-tracker.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" );
 }
 add_action( 'send_headers', 'rando_nono_security_headers' );
 
