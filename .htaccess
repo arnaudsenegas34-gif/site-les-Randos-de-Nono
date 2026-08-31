@@ -435,6 +435,18 @@ Options -Indexes
   Require all denied
 </FilesMatch>
 
+# Bloque les journaux, dumps et sauvegardes qui peuvent traîner à la racine
+# après un transfert FTP ou un export manuel (jamais nécessaires en accès direct).
+<FilesMatch "\.(sql|sql\.gz|log|bak|backup|old|swp|swo|orig)$">
+  Require all denied
+</FilesMatch>
+<Files "error_log">
+  Require all denied
+</Files>
+<Files "debug.log">
+  Require all denied
+</Files>
+
 # XML-RPC est déjà désactivé côté WordPress (filtre xmlrpc_enabled) ; on bloque
 # aussi l'accès au fichier lui-même en défense en profondeur.
 <Files "xmlrpc.php">
@@ -457,9 +469,13 @@ Options -Indexes
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
+  # W3TC (bloc plus haut dans ce fichier) pose sa propre valeur, plus
+  # permissive ("no-referrer-when-downgrade") : on la retire explicitement
+  # avant de reposer la nôtre, pour ne plus dépendre de l'ordre des blocs.
+  Header always unset Referrer-Policy
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=(), payment=(), browsing-topics=()"
-  Header always set Strict-Transport-Security "max-age=31536000"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
   Header always set Cross-Origin-Opener-Policy "same-origin"
   Header unset X-Powered-By
 
@@ -480,10 +496,26 @@ Options -Indexes
 ServerSignature Off
 # END Durcissement sécurité
 
+# BEGIN Anti-hotlink images
+# Empêche un autre site d'afficher directement les photos de ce site dans ses
+# propres pages (vol de bande passante). %{HTTP_HOST} s'adapte automatiquement
+# au domaine réel, sans avoir à l'écrire en dur ici. Laisse passer les accès
+# sans Referer (lecteurs RSS, la plupart des aperçus de réseaux sociaux, accès
+# direct à l'image) pour ne rien casser côté légitime.
+<IfModule mod_rewrite.c>
+  RewriteCond %{HTTP_REFERER} !^$
+  RewriteCond %{HTTP_REFERER} !^https?://([^/]+\.)?%{HTTP_HOST}/ [NC]
+  RewriteRule \.(jpe?g|png|webp|gif|svg)$ - [F,NC]
+</IfModule>
+# END Anti-hotlink images
+
 # BEGIN Cache navigateur
 # Les fichiers versionnés par date de modification (voir rando_nono_asset_ver()
 # dans functions.php) peuvent être mis en cache longtemps sans risque : toute
 # modification change l'URL, forçant un rechargement.
+# Redondant avec le bloc W3TC Browser Cache tant que le plugin est actif (il
+# couvre déjà ces types de fichiers) — conservé comme filet de secours si
+# W3 Total Cache est un jour désactivé.
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType image/jpeg "access plus 1 year"
@@ -507,6 +539,8 @@ ServerSignature Off
 # END Cache navigateur
 
 # BEGIN Compression
+# Redondant avec le mod_deflate du bloc W3TC Browser Cache tant que le plugin
+# est actif — conservé comme filet de secours si W3 Total Cache est désactivé.
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml image/svg+xml
 </IfModule>

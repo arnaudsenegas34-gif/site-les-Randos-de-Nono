@@ -34,9 +34,14 @@ l'aveugle avec la version du dépôt, au risque de désactiver son cache.
 
 Ordre des blocs figé par une contrainte technique (pas cosmétique) : Force
 HTTPS → W3TC Browser Cache → W3TC Page Cache core → WordPress → Durcissement
-sécurité → Cache navigateur (thème) → Compression (thème). Le cache W3TC doit
-être évalué avant le routeur WordPress, sinon les pages ne sont jamais
-servies depuis le cache disque.
+sécurité → Anti-hotlink images (thème) → Cache navigateur (thème) →
+Compression (thème). Le cache W3TC doit être évalué avant le routeur
+WordPress, sinon les pages ne sont jamais servies depuis le cache disque.
+
+Le bloc W3TC Browser Cache pose sa propre valeur de `Referrer-Policy`, plus
+permissive que celle voulue ici — le bloc Durcissement sécurité la retire
+explicitement (`Header always unset`) avant de reposer la sienne, pour ne pas
+dépendre de l'ordre des blocs si celui-ci change un jour.
 
 La CSP (Content-Security-Policy) est déclarée à **deux endroits qui doivent
 rester identiques** : dans `.htaccess` (mod_headers, prioritaire si le module
