@@ -916,19 +916,7 @@ function rando_nono_seo_meta_tags() {
         $description = rando_nono_meta_description_trim( get_bloginfo( 'description' ) ?: get_bloginfo( 'name' ) );
     }
 
-    $is_public = (bool) get_option( 'blog_public' );
-
-    // Résultats de recherche interne et page Favoris (liste personnelle stockée
-    // en localStorage, identique pour tout le monde côté serveur) : aucune valeur
-    // pour un moteur de recherche, on évite le contenu pauvre/dupliqué dans l'index.
-    $is_noindex = is_search() || is_page( 'favoris' );
-
     echo "\n" . '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
-    if ( $is_noindex ) {
-        echo '<meta name="robots" content="noindex, follow">' . "\n";
-    } elseif ( $is_public ) {
-        echo '<meta name="robots" content="index, follow, max-image-preview:large">' . "\n";
-    }
     echo '<meta name="author" content="Arnaud — ' . esc_attr( get_bloginfo( 'name' ) ) . '">' . "\n";
     if ( $keywords ) {
         echo '<meta name="keywords" content="' . esc_attr( $keywords ) . '">' . "\n";
@@ -950,6 +938,36 @@ function rando_nono_seo_meta_tags() {
     echo '<link rel="canonical" href="' . esc_url( $url ) . '">' . "\n";
 }
 add_action( 'wp_head', 'rando_nono_seo_meta_tags', 1 );
+
+/**
+ * Directives robots — une seule balise, via le filtre prévu par WordPress.
+ *
+ * Le thème écrivait sa propre <meta name="robots"> en plus de celle que
+ * WordPress émet déjà : la page en sortait deux, avec des contenus
+ * différents. Passer par `wp_robots` laisse WordPress en produire une seule,
+ * cohérente, à laquelle on ajoute simplement nos règles.
+ *
+ * Recherche interne et page Favoris (liste personnelle en localStorage,
+ * identique pour tout le monde côté serveur) : aucune valeur pour un moteur,
+ * on évite le contenu pauvre dans l'index.
+ */
+function rando_nono_robots( $robots ) {
+    if ( is_search() || is_page( 'favoris' ) ) {
+        $robots['noindex'] = true;
+        $robots['follow']  = true;
+        unset( $robots['index'] );
+        return $robots;
+    }
+
+    if ( get_option( 'blog_public' ) ) {
+        $robots['index']                 = true;
+        $robots['follow']                = true;
+        $robots['max-image-preview']     = 'large';
+    }
+
+    return $robots;
+}
+add_filter( 'wp_robots', 'rando_nono_robots' );
 
 /* ──────────────────────────────────────────
    7bis. SCHEMA.ORG JSON-LD — données structurées pour Google
