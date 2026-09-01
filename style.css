@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 4.0
+Version: 4.1
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -164,7 +164,7 @@ button { font-family: inherit; }
   background: var(--bg);
   border-bottom: 1px solid transparent;
   display: flex; align-items: center; justify-content: space-between;
-  padding-block: 0;
+  padding: 0 3rem;
   padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2));
   height: 68px;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
@@ -389,7 +389,7 @@ button { font-family: inherit; }
 .hero-inner {
   position: relative; z-index: 2;
   width: 100%;
-  padding-block: 0 4rem;
+  padding: 0 3rem 4rem;
   padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2));
 }
 .hero-eyebrow {
@@ -423,7 +423,7 @@ button { font-family: inherit; }
   align-items: center;
   justify-content: center;
   gap: 0.5rem 2.5rem;
-  padding-block: 1.1rem;
+  padding: 1.1rem 3rem;
   padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2));
   border-bottom: 1px solid var(--ligne);
   background: var(--surface);
@@ -471,7 +471,7 @@ select:focus-visible {
 }
 
 /* ══════════════════════ SECTIONS GÉNÉRIQUES ══════════════════════ */
-section.site-section { padding-block: 5.5rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); background: var(--bg); }
+section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); background: var(--bg); }
 .section-eyebrow { display: flex; align-items: center; gap: 0.7rem; font-size: 0.7rem; font-weight: 300; color: var(--orange); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.6rem; }
 .section-title { font-size: clamp(1.7rem, 2.8vw, 2.3rem); color: var(--accent); text-wrap: balance; margin-bottom: 0.85rem; }
 .section-sub { font-size: 0.93rem; color: var(--gris); font-weight: 300; font-style: italic; max-width: 56ch; margin-bottom: 3rem; }
@@ -543,9 +543,9 @@ section.site-section { padding-block: 5.5rem; padding-inline: max(var(--gutter),
 /* Ratio fixe plutôt qu'une hauteur en pixels : les photos gardent le même
    cadrage quelle que soit la largeur de colonne, donc les titres des cartes
    d'une même rangée restent alignés. */
-.card-photo { width: 100%; aspect-ratio: 16 / 10; height: auto; object-fit: cover; display: block; transition: transform 0.7s var(--ease-out); }
+.card-photo { width: 100%; height: auto; max-height: 250px; aspect-ratio: 16 / 10; object-fit: cover; display: block; transition: transform 0.7s var(--ease-out); }
 .rando-card:hover .card-photo { transform: scale(1.055); }
-.card-photo-placeholder { width: 100%; aspect-ratio: 16 / 10; height: auto; background: linear-gradient(135deg, var(--vert), #3d7a4e); display: flex; align-items: center; justify-content: center; font-size: 2.8rem; color: rgba(232,223,200,0.3); }
+.card-photo-placeholder { width: 100%; height: auto; max-height: 250px; aspect-ratio: 16 / 10; background: linear-gradient(135deg, var(--vert), #3d7a4e); display: flex; align-items: center; justify-content: center; font-size: 2.8rem; color: rgba(232,223,200,0.3); }
 /* Voile haut discret : les pastilles et le cœur restent lisibles même sur
    une photo de ciel surexposé, sans assombrir la photo entière. */
 .card-photo-wrap::before {
@@ -791,7 +791,7 @@ a.card-title { display: block; }
   flex-direction: column;
 }
 .favoris-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-3), var(--hairline); }
-.favoris-img-wrap { aspect-ratio: 16 / 10; overflow: hidden; background: linear-gradient(135deg, var(--vert), #3d7a4e); }
+.favoris-img-wrap { height: 170px; overflow: hidden; background: linear-gradient(135deg, var(--vert), #3d7a4e); }
 .favoris-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.7s var(--ease-out); }
 .favoris-card:hover .favoris-img-wrap img { transform: scale(1.055); }
 .favoris-info { padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
@@ -853,7 +853,7 @@ a.card-title { display: block; }
 /* ══════════════════════ FIL D'ARIANE (breadcrumb) ══════════════════════ */
 .breadcrumb {
   display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
-  padding-block: 0.85rem;
+  padding: 0.85rem 3rem;
   padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2));
   background: var(--bg);
   border-bottom: 1px solid var(--ligne);
@@ -867,7 +867,7 @@ a.card-title { display: block; }
 .breadcrumb-sep { opacity: 0.4; font-size: 0.65rem; }
 .breadcrumb-current { color: var(--text); font-weight: 400; }
 @media (max-width: 900px) {
-  .breadcrumb { padding-block: 0.75rem; }
+  .breadcrumb { padding: 0.75rem 1.25rem; }
 }
 
 /* ══════════════════════ PAGE 404 ══════════════════════ */
@@ -897,7 +897,7 @@ a.card-title { display: block; }
 .error-404-card-meta { font-size: 0.68rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.3rem; }
 
 /* ══════════════════════ NEWSLETTER (bandeau au-dessus du footer) ══════════════════════ */
-.newsletter-band { background: var(--vert-section); padding-block: 2.75rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); }
+.newsletter-band { background: var(--vert-section); padding: 2.75rem 3rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); }
 .newsletter-inner { display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; max-width: 1100px; margin: 0 auto; }
 .newsletter-title { font-size: 1.4rem; color: var(--blanc); margin-bottom: 0.3rem; }
 .newsletter-sub { font-size: 0.85rem; color: rgba(250,248,243,0.75); font-weight: 300; max-width: 32em; }
@@ -946,7 +946,7 @@ a.card-title { display: block; }
 .newsletter-download-link:hover { background: #b45e04; transform: translateY(-2px); box-shadow: 0 8px 18px -6px rgba(0,0,0,0.4); }
 
 /* ══════════════════════ FOOTER ══════════════════════ */
-.site-footer { background: var(--sombre); padding-block: 2.75rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1.75rem; }
+.site-footer { background: var(--sombre); padding: 2.75rem 3rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1.75rem; }
 .site-footer .logo { font-family: 'Abril Fatface', serif; color: var(--beige); font-size: 1.05rem; }
 .site-footer .logo span { color: var(--orange); }
 /* Opacité 0.62 (et non 0.45) : sous ce seuil, ce texte clair sur fond
@@ -1029,15 +1029,15 @@ a.card-title { display: block; }
 /* ══════════════════════ RESPONSIVE ══════════════════════ */
 @media (max-width: 900px) {
   :root { --gutter: 1.5rem; }
-  section.site-section { padding-block: 3.5rem; }
+  section.site-section { padding: 3.5rem 1.5rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); }
   .hero { min-height: 70vh; }
-  .hero-inner { padding-block: 0 2.5rem; }
+  .hero-inner { padding: 0 1.5rem 2.5rem; }
   #apropos { grid-template-columns: 1fr; }
   .site-header { --gutter: 1.25rem; }
-  .site-footer { flex-direction: column; align-items: center; text-align: center; padding-block: 1.75rem; }
+  .site-footer { flex-direction: column; align-items: center; text-align: center; padding: 1.75rem; }
   .footer-col { align-items: center; }
   .footer-nav { flex-direction: row; justify-content: center; max-height: none; gap: 0.9rem 1.2rem; }
-  .newsletter-band { padding-block: 2rem; }
+  .newsletter-band { padding: 2rem 1.5rem; }
   .newsletter-inner { flex-direction: column; text-align: center; }
   .newsletter-form { justify-content: center; width: 100%; }
   .newsletter-form input[type="email"] { flex: 1; min-width: 0; }

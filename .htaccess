@@ -497,16 +497,24 @@ ServerSignature Off
 # END Durcissement sécurité
 
 # BEGIN Anti-hotlink images
-# Empêche un autre site d'afficher directement les photos de ce site dans ses
-# propres pages (vol de bande passante). %{HTTP_HOST} s'adapte automatiquement
-# au domaine réel, sans avoir à l'écrire en dur ici. Laisse passer les accès
-# sans Referer (lecteurs RSS, la plupart des aperçus de réseaux sociaux, accès
-# direct à l'image) pour ne rien casser côté légitime.
-<IfModule mod_rewrite.c>
-  RewriteCond %{HTTP_REFERER} !^$
-  RewriteCond %{HTTP_REFERER} !^https?://([^/]+\.)?%{HTTP_HOST}/ [NC]
-  RewriteRule \.(jpe?g|png|webp|gif|svg)$ - [F,NC]
-</IfModule>
+# RETIRÉ le 01/09/2026 — cette protection renvoyait 403 sur TOUTES les images
+# du site (hero, cartes, matos, médiathèque), pas seulement sur les vols.
+#
+# La règle était :
+#   RewriteCond %{HTTP_REFERER} !^https?://([^/]+\.)?%{HTTP_HOST}/ [NC]
+#
+# Erreur : dans un RewriteCond, le motif (partie droite) est une expression
+# régulière — les variables serveur comme %{HTTP_HOST} n'y sont PAS
+# remplacées. Apache cherchait donc le texte littéral « %{HTTP_HOST} », que
+# jamais aucun referer ne contient : la condition était toujours vraie et la
+# règle [F] s'appliquait à chaque image chargée depuis une page du site.
+# Symptôme caractéristique : l'image s'affiche si on ouvre son URL
+# directement (pas de Referer), mais pas dans la page.
+#
+# Pour rétablir une protection anti-hotlink un jour, il faut passer le
+# domaine par la partie GAUCHE (TestString), la seule où les variables sont
+# développées, et le rappeler par une référence arrière \1 dans le motif.
+# À ne remettre qu'après avoir vérifié le site image par image.
 # END Anti-hotlink images
 
 # BEGIN Cache navigateur
