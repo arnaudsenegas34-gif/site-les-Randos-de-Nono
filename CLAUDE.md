@@ -88,6 +88,40 @@ rester identiques** : dans `.htaccess` (mod_headers, prioritaire si le module
 est actif) et dans `rando_nono_security_headers()` de `functions.php` (filet
 de secours si mod_headers est indisponible).
 
+## Polices — provenance et fabrication des fichiers
+
+Les 5 `.woff2` de `assets/fonts/` sont **fabriqués**, pas téléchargés tels
+quels. Ne pas les remplacer par un fichier récupéré au hasard.
+
+Origine : paquet npm `@fontsource/merriweather` (fichiers
+`merriweather-latin-<300|400|700>-<normal|italic>.woff2`), puis réduits au
+jeu de caractères déclaré dans `assets/css/fonts.css` :
+
+```
+pyftsubset <source>.woff2 \
+  --unicodes="U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,\
+U+02DC,U+2000-206F,U+20AC,U+FEFF,U+FFFD" \
+  --flavor=woff2 --output-file=assets/fonts/<nom>.woff2
+```
+
+Le `unicode-range` de `fonts.css` doit rester identique à ce `--unicodes` :
+il ne réduit pas le fichier, il dit seulement au navigateur quand le
+télécharger. Les deux doivent bouger ensemble.
+
+**Panne corrigée le 01/09/2026** : les 4 fichiers Light/Regular/Light-Italic/
+Italic étaient **strictement identiques** (même MD5) — quatre copies de
+« Merriweather Light 18pt *Italic* ». Tout le texte courant du site
+s'affichait donc en italique, sauf le gras (seul vrai fichier droit), ce qui
+donnait un mélange incohérent que personne n'avait identifié comme un bug.
+Vérification rapide après toute mise à jour des polices :
+
+```
+md5sum assets/fonts/merriweather-*.woff2   # 5 empreintes DISTINCTES
+python3 -c "from fontTools.ttLib import TTFont; \
+  print(TTFont('assets/fonts/merriweather-regular.woff2')['post'].italicAngle)"
+# doit valoir 0.0 pour light/regular/bold, ≈ -7.8 pour les italiques
+```
+
 ## Traces GPX — source externe, pas la médiathèque WordPress
 
 Nono récupère ses traces depuis l'app **Suunto** ; le champ "URL du fichier
