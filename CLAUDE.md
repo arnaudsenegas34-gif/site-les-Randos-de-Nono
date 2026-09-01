@@ -43,6 +43,46 @@ permissive que celle voulue ici — le bloc Durcissement sécurité la retire
 explicitement (`Header always unset`) avant de reposer la sienne, pour ne pas
 dépendre de l'ordre des blocs si celui-ci change un jour.
 
+### Anti-hotlink : panne du 01/09/2026, ne pas refaire
+
+Un bloc « Anti-hotlink images » a renvoyé **403 sur toutes les images du
+site** (hero, cartes, matos, médiathèque) jusqu'à sa suppression. La règle
+fautive :
+
+```apache
+RewriteCond %{HTTP_REFERER} !^https?://([^/]+\.)?%{HTTP_HOST}/ [NC]
+```
+
+Dans un `RewriteCond`, **la partie droite est une expression régulière : les
+variables serveur n'y sont pas développées**. Apache cherchait le texte
+littéral `%{HTTP_HOST}`, qu'aucun referer ne contient — condition toujours
+vraie, donc `[F]` sur chaque image chargée depuis une page.
+
+Signature à reconnaître : **l'image s'affiche si on ouvre son URL
+directement** (pas de Referer) mais jamais dans la page. Devant ce symptôme,
+regarder `.htaccess` avant de suspecter le thème ou le CSS.
+
+Le domaine ne peut passer que par la partie GAUCHE (TestString), seule où les
+variables sont développées, puis être rappelé par une référence arrière dans
+le motif. Aucune protection anti-hotlink n'est en place aujourd'hui : ne pas
+en remettre sans vérifier le site image par image derrière.
+
+## CSS : toujours un filet sous une propriété moderne
+
+Le site tourne sur un mutualisé avec W3 Total Cache (minification possible)
+et des navigateurs anciens. Toute propriété récente doit être précédée d'une
+déclaration classique équivalente, pour que sa perte dégrade au lieu de
+casser :
+
+- `padding-inline: max(...)` est systématiquement précédé du raccourci
+  `padding` correspondant.
+- `aspect-ratio` sur une image doit s'accompagner d'un `max-height` : sans
+  lui, la propriété perdue rend la main à la hauteur naturelle et une photo
+  en portrait étire la carte sur toute la page.
+- **Ne jamais faire d'`aspect-ratio` l'unique source de hauteur d'un
+  conteneur dont l'enfant est en `height: 100%`** : s'il saute, le conteneur
+  tombe à 0 et l'image disparaît. Hauteur fixe dans ce cas.
+
 La CSP (Content-Security-Policy) est déclarée à **deux endroits qui doivent
 rester identiques** : dans `.htaccess` (mod_headers, prioritaire si le module
 est actif) et dans `rando_nono_security_headers()` de `functions.php` (filet
