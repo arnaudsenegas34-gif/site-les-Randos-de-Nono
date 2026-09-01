@@ -37,10 +37,18 @@ add_action( 'after_setup_theme', 'rando_nono_setup' );
  * au format WebP plutôt que JPEG/PNG pour tout nouvel envoi dans la médiathèque
  * (fichier original conservé tel quel). Gain moyen constaté : -25 à -35 % de
  * poids par image, sans réglage à faire depuis l'administration.
+ *
+ * Ne force WebP que si la bibliothèque d'images du serveur (GD/Imagick) sait
+ * réellement l'encoder — sinon la génération des tailles échoue en silence
+ * et certaines photos (souvent les plus récentes) n'apparaissent plus nulle
+ * part sur le site. Fréquent sur les hébergements mutualisés bas de gamme
+ * (GD compilé sans le support WebP).
  */
 add_filter( 'image_editor_output_format', function( $formats ) {
-    $formats['image/jpeg'] = 'image/webp';
-    $formats['image/png']  = 'image/webp';
+    if ( wp_image_editor_supports( array( 'mime_type' => 'image/webp' ) ) ) {
+        $formats['image/jpeg'] = 'image/webp';
+        $formats['image/png']  = 'image/webp';
+    }
     return $formats;
 } );
 
@@ -152,16 +160,6 @@ function rando_nono_register_cpt() {
 
     register_taxonomy( 'difficulte', 'randonnee', array(
         'labels'       => array( 'name' => 'Difficulté', 'singular_name' => 'Difficulté' ),
-        'public'       => true,
-        'hierarchical' => true,
-        'show_in_rest' => true,
-    ) );
-
-    // Hierarchical uniquement pour obtenir des cases à cocher dans l'admin
-    // (comme les catégories) plutôt qu'un champ de tags en texte libre —
-    // il n'y a pas de hiérarchie parent/enfant réelle entre ces termes.
-    register_taxonomy( 'caracteristique', 'randonnee', array(
-        'labels'       => array( 'name' => 'Caractéristiques', 'singular_name' => 'Caractéristique' ),
         'public'       => true,
         'hierarchical' => true,
         'show_in_rest' => true,
@@ -571,19 +569,6 @@ function rando_nono_register_page_autocreate( $slug, $title ) {
 rando_nono_register_page_autocreate( 'mentions-legales', 'Mentions légales' );
 rando_nono_register_page_autocreate( 'contact', 'Contact' );
 rando_nono_register_page_autocreate( 'favoris', 'Mes randos à faire' );
-
-/**
- * Termes par défaut de la taxonomie "Caractéristiques" — créés une fois pour
- * que les cases "En famille" / "Avec chien" soient prêtes à cocher sur une
- * randonnée sans que Nono ait à créer les termes lui-même au préalable.
- */
-rando_nono_run_once_daily( 'rando_nono_caracteristique_terms_checked', function() {
-    foreach ( array( 'En famille' => 'en-famille', 'Avec chien' => 'avec-chien' ) as $nom => $slug ) {
-        if ( ! term_exists( $slug, 'caracteristique' ) ) {
-            wp_insert_term( $nom, 'caracteristique', array( 'slug' => $slug ) );
-        }
-    }
-} );
 
 function rando_nono_handle_contact_form() {
     if ( ! is_page( 'contact' ) || ! isset( $_POST['rando_nono_contact_submit'] ) ) return;
