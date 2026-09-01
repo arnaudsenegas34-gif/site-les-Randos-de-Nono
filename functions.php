@@ -156,6 +156,16 @@ function rando_nono_register_cpt() {
         'hierarchical' => true,
         'show_in_rest' => true,
     ) );
+
+    // Hierarchical uniquement pour obtenir des cases à cocher dans l'admin
+    // (comme les catégories) plutôt qu'un champ de tags en texte libre —
+    // il n'y a pas de hiérarchie parent/enfant réelle entre ces termes.
+    register_taxonomy( 'caracteristique', 'randonnee', array(
+        'labels'       => array( 'name' => 'Caractéristiques', 'singular_name' => 'Caractéristique' ),
+        'public'       => true,
+        'hierarchical' => true,
+        'show_in_rest' => true,
+    ) );
 }
 add_action( 'init', 'rando_nono_register_cpt' );
 
@@ -309,6 +319,40 @@ function rando_nono_details_callback( $post ) {
         echo '<td><input type="text" style="width:100%" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" /></td></tr>';
     }
     echo '</table>';
+
+    echo '<p id="rando-nono-effort-suggestion" style="margin-top:0.75rem;padding:0.6rem 0.8rem;background:#F4F2E8;border-left:3px solid #2E5E3B;font-size:13px;color:#3A3A32"></p>';
+    ?>
+    <script>
+    ( function () {
+        // Suggestion indicative (distance + dénivelé/100, façon indice d'effort) —
+        // n'écrit jamais la case à cocher "Difficulté" toute seule, c'est toujours
+        // Nono qui tranche : le terrain (technicité, exposition...) compte aussi,
+        // pas seulement les chiffres.
+        var distanceEl = document.getElementById( 'rando_distance' );
+        var deniveleEl = document.getElementById( 'rando_denivele' );
+        var out        = document.getElementById( 'rando-nono-effort-suggestion' );
+        if ( ! distanceEl || ! deniveleEl || ! out ) return;
+
+        function extractNumber( text ) {
+            var m = ( text || '' ).match( /-?[\d]+(?:[.,]\d+)?/ );
+            return m ? parseFloat( m[0].replace( ',', '.' ) ) : 0;
+        }
+
+        function update() {
+            var distance = extractNumber( distanceEl.value );
+            var denivele = Math.abs( extractNumber( deniveleEl.value ) );
+            if ( ! distance && ! denivele ) { out.textContent = ''; return; }
+            var score  = distance + denivele / 100;
+            var niveau = score < 8 ? 'Facile' : ( score < 16 ? 'Moyen' : 'Difficile' );
+            out.textContent = 'Suggestion d\'après distance + dénivelé (indicatif, score ' + score.toFixed( 1 ) + ') : ' + niveau + ' — coche la difficulté qui te semble juste dans le bloc à droite.';
+        }
+
+        distanceEl.addEventListener( 'input', update );
+        deniveleEl.addEventListener( 'input', update );
+        update();
+    } )();
+    </script>
+    <?php
 }
 
 function rando_nono_conseils_callback( $post ) {
@@ -527,6 +571,19 @@ function rando_nono_register_page_autocreate( $slug, $title ) {
 rando_nono_register_page_autocreate( 'mentions-legales', 'Mentions légales' );
 rando_nono_register_page_autocreate( 'contact', 'Contact' );
 rando_nono_register_page_autocreate( 'favoris', 'Mes randos à faire' );
+
+/**
+ * Termes par défaut de la taxonomie "Caractéristiques" — créés une fois pour
+ * que les cases "En famille" / "Avec chien" soient prêtes à cocher sur une
+ * randonnée sans que Nono ait à créer les termes lui-même au préalable.
+ */
+rando_nono_run_once_daily( 'rando_nono_caracteristique_terms_checked', function() {
+    foreach ( array( 'En famille' => 'en-famille', 'Avec chien' => 'avec-chien' ) as $nom => $slug ) {
+        if ( ! term_exists( $slug, 'caracteristique' ) ) {
+            wp_insert_term( $nom, 'caracteristique', array( 'slug' => $slug ) );
+        }
+    }
+} );
 
 function rando_nono_handle_contact_form() {
     if ( ! is_page( 'contact' ) || ! isset( $_POST['rando_nono_contact_submit'] ) ) return;
@@ -1378,8 +1435,42 @@ function rando_nono_get_homepage_stats() {
     return $stats;
 }
 
+/**
+ * Bornes maximales (distance, dénivelé positif) pour les curseurs de filtre
+ * de l'archive — calculées sur les randonnées publiées et arrondies pour un
+ * curseur confortable à manipuler (pas de borne du type "17.3 km"). Mise en
+ * cache comme les autres statistiques agrégées de la page (voir
+ * rando_nono_bust_homepage_stats_cache, qui invalide aussi ce transient).
+ */
+function rando_nono_get_archive_filter_bounds() {
+    $cached = get_transient( 'rando_nono_archive_filter_bounds' );
+    if ( false !== $cached ) return $cached;
+
+    $max_distance = 0;
+    $max_denivele = 0;
+
+    $bounds_query = new WP_Query( array( 'post_type' => 'randonnee', 'posts_per_page' => -1, 'no_found_rows' => true ) );
+    if ( $bounds_query->have_posts() ) {
+        while ( $bounds_query->have_posts() ) {
+            $bounds_query->the_post();
+            $sid = get_the_ID();
+            $max_distance = max( $max_distance, abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_distance', true ) ) ) );
+            $max_denivele = max( $max_denivele, abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_denivele', true ) ) ) );
+        }
+        wp_reset_postdata();
+    }
+
+    $bounds = array(
+        'distance_max' => max( 5, (int) ( ceil( $max_distance / 5 ) * 5 ) ),
+        'denivele_max' => max( 100, (int) ( ceil( $max_denivele / 100 ) * 100 ) ),
+    );
+    set_transient( 'rando_nono_archive_filter_bounds', $bounds, DAY_IN_SECONDS );
+    return $bounds;
+}
+
 function rando_nono_bust_homepage_stats_cache() {
     delete_transient( 'rando_nono_homepage_stats' );
+    delete_transient( 'rando_nono_archive_filter_bounds' );
 }
 add_action( 'save_post_randonnee', 'rando_nono_bust_homepage_stats_cache' );
 add_action( 'before_delete_post', function( $post_id ) {

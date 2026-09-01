@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 3.6
+Version: 3.7
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -786,6 +786,12 @@ a.card-title { display: block; }
   min-width: 160px;
 }
 .filter-group input:focus, .filter-group select:focus { outline: 1.5px solid var(--orange); }
+.filter-group input[type="range"] { padding: 0.55rem 0.5rem; accent-color: var(--accent); min-width: 140px; }
+.filter-group label output { color: var(--sombre); font-weight: 700; text-transform: none; letter-spacing: normal; }
+.filter-group-label { font-size: 0.65rem; color: var(--gris); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+.filter-checks { display: flex; gap: 0.9rem; flex-wrap: wrap; padding-top: 0.45rem; }
+.filter-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: var(--text); font-weight: 400; cursor: pointer; }
+.filter-check input[type="checkbox"] { width: auto; accent-color: var(--accent); }
 .filter-reset { font-size: 0.78rem; color: var(--gris); text-decoration: underline; align-self: center; }
 .filter-reset:hover { color: var(--orange); }
 

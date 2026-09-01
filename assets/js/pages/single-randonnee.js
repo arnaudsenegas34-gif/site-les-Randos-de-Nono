@@ -72,7 +72,7 @@
             L.marker([start.lat, start.lng], { icon: startIcon }).bindTooltip('Départ', { permanent: false }).addTo(map);
           }
         }
-        buildAltitudeChart(e.target);
+        buildAltitudeChart(e.target, map);
       })
       .on('error', function (e) {
         console.warn('[Randonnée] Impossible de charger la trace GPX (réseau, CORS ou Content-Security-Policy) :', gpxUrl, e);
@@ -88,15 +88,20 @@
     window.srMap = map;
   }
 
-  /* ── Profil altimétrique (Chart.js), à partir des points du GPX déjà chargé pour la carte ── */
-  function buildAltitudeChart(gpxLayer) {
+  /* ── Profil altimétrique (Chart.js), à partir des points du GPX déjà chargé pour la carte ──
+     Relié à la carte dans les deux sens : survoler le graphique déplace un
+     repère sur la trace, et survoler la trace met en évidence le point
+     correspondant sur le graphique. */
+  function buildAltitudeChart(gpxLayer, map) {
     var section = document.getElementById('sr-altitude-section');
     var canvas = document.getElementById('sr-altitude-chart');
     if (!section || !canvas || typeof Chart === 'undefined') return;
 
     var points = [];
+    var polylineLayer = null;
     gpxLayer.getLayers().forEach(function (layer) {
       if (layer.getLatLngs) {
+        if (!polylineLayer) polylineLayer = layer;
         var lls = layer.getLatLngs();
         var flat = Array.isArray(lls[0]) ? lls[0] : lls;
         flat.forEach(function (ll) {
@@ -108,7 +113,7 @@
 
     if (points.length < 2) return;
 
-    var labels = [], alts = [], cumDist = 0;
+    var labels = [], alts = [], chartPoints = [], cumDist = 0;
     for (var i = 0; i < points.length; i++) {
       if (i > 0) {
         var prev = points[i - 1], cur = points[i];
@@ -122,6 +127,7 @@
       if (i % Math.max(1, Math.floor(points.length / 80)) === 0) {
         labels.push(cumDist.toFixed(1) + ' km');
         alts.push(Math.round(points[i].alt));
+        chartPoints.push({ lat: points[i].lat, lng: points[i].lng });
       }
     }
 
@@ -131,7 +137,21 @@
     var tickColor = dark ? '#A6AC9C' : '#888';
     var gridColor = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
 
-    new Chart(canvas, {
+    // Repère de survol partagé entre le graphique et la carte.
+    var hoverMarker = L.circleMarker([0, 0], {
+      radius: 6, color: '#fff', weight: 2, fillColor: '#D97706', fillOpacity: 1, interactive: false
+    });
+    function showHoverAt(index) {
+      var p = chartPoints[index];
+      if (!p) return;
+      hoverMarker.setLatLng([p.lat, p.lng]);
+      if (map && !map.hasLayer(hoverMarker)) hoverMarker.addTo(map);
+    }
+    function hideHover() {
+      if (map && map.hasLayer(hoverMarker)) map.removeLayer(hoverMarker);
+    }
+
+    var chart = new Chart(canvas, {
       type: 'line',
       data: {
         labels: labels,
@@ -142,6 +162,14 @@
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        onHover: function (evt, elements) {
+          if (elements && elements.length) {
+            showHoverAt(elements[0].index);
+          } else {
+            hideHover();
+          }
+        },
         plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (ctx) { return ctx.parsed.y + ' m'; } } } },
         scales: {
           x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: tickColor }, grid: { display: false } },
@@ -149,6 +177,34 @@
         }
       }
     });
+
+    // Survol de la trace sur la carte -> point correspondant sur le graphique
+    // (recherche du point échantillonné le plus proche du curseur).
+    if (polylineLayer && map) {
+      var lastHoverIndex = -1;
+      polylineLayer.on('mousemove', function (e) {
+        var nearest = 0, best = Infinity;
+        for (var idx = 0; idx < chartPoints.length; idx++) {
+          var dLat = chartPoints[idx].lat - e.latlng.lat;
+          var dLng = chartPoints[idx].lng - e.latlng.lng;
+          var d = dLat * dLat + dLng * dLng;
+          if (d < best) { best = d; nearest = idx; }
+        }
+        if (nearest === lastHoverIndex) return;
+        lastHoverIndex = nearest;
+        chart.setActiveElements([{ datasetIndex: 0, index: nearest }]);
+        chart.tooltip.setActiveElements([{ datasetIndex: 0, index: nearest }], { x: 0, y: 0 });
+        chart.update();
+        showHoverAt(nearest);
+      });
+      polylineLayer.on('mouseout', function () {
+        lastHoverIndex = -1;
+        chart.setActiveElements([]);
+        chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+        chart.update();
+        hideHover();
+      });
+    }
   }
 
   /* ── Météo Open-Meteo ── */

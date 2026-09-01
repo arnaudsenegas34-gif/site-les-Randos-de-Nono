@@ -67,6 +67,13 @@
       });
     }
 
+    /* ── Curseurs de l'archive (distance / dénivelé max) : valeur affichée en direct ── */
+    document.querySelectorAll('.archive-filters input[type="range"]').forEach((slider) => {
+      const output = document.getElementById(slider.id + '_out');
+      if (!output) return;
+      slider.addEventListener('input', () => { output.textContent = slider.value; });
+    });
+
     /* ── Bouton "Toutes les randonnées" (voir plus) ── */
     const btnVoirPlus = document.getElementById('btn-voir-plus');
     if (btnVoirPlus) {

@@ -1,7 +1,8 @@
 <?php
 /**
  * Archive des randonnées — page "Toutes les randonnées"
- * Filtres : difficulté (taxonomie), distance, recherche texte.
+ * Filtres : difficulté (taxonomie), caractéristiques (taxonomie), distance
+ * max, dénivelé max, recherche texte.
  */
 get_header();
 rando_nono_breadcrumb();
@@ -9,9 +10,20 @@ rando_nono_breadcrumb();
 <main id="main-content">
 <?php
 
-$selected_diff = isset( $_GET['difficulte'] ) ? sanitize_text_field( $_GET['difficulte'] ) : '';
-$selected_dist = isset( $_GET['distance'] ) ? sanitize_text_field( $_GET['distance'] ) : '';
-$search_term   = isset( $_GET['recherche'] ) ? sanitize_text_field( $_GET['recherche'] ) : '';
+$selected_diff  = isset( $_GET['difficulte'] ) ? sanitize_text_field( $_GET['difficulte'] ) : '';
+$search_term    = isset( $_GET['recherche'] ) ? sanitize_text_field( $_GET['recherche'] ) : '';
+$selected_carac = isset( $_GET['carac'] ) ? array_map( 'sanitize_title', (array) $_GET['carac'] ) : array();
+
+// Bornes réelles (calculées sur les randos publiées) pour les curseurs —
+// le curseur part toujours du maximum tant qu'on n'y a pas touché.
+$filter_bounds    = rando_nono_get_archive_filter_bounds();
+$distance_max_cap = $filter_bounds['distance_max'];
+$denivele_max_cap = $filter_bounds['denivele_max'];
+
+$selected_distance_max = isset( $_GET['distance_max'] ) ? min( max( 0, (int) $_GET['distance_max'] ), $distance_max_cap ) : $distance_max_cap;
+$selected_denivele_max = isset( $_GET['denivele_max'] ) ? min( max( 0, (int) $_GET['denivele_max'] ), $denivele_max_cap ) : $denivele_max_cap;
+$distance_filter_active = $selected_distance_max < $distance_max_cap;
+$denivele_filter_active = $selected_denivele_max < $denivele_max_cap;
 
 $paged = get_query_var( 'paged' ) ? get_query_var( 'paged' ) : 1;
 
@@ -23,14 +35,32 @@ $args = array(
     'order'          => 'DESC',
 );
 
+$tax_query = array();
 if ( $selected_diff ) {
-    $args['tax_query'] = array(
-        array(
-            'taxonomy' => 'difficulte',
-            'field'    => 'slug',
-            'terms'    => $selected_diff,
-        ),
-    );
+    $tax_query[] = array( 'taxonomy' => 'difficulte', 'field' => 'slug', 'terms' => $selected_diff );
+}
+if ( $selected_carac ) {
+    $tax_query[] = array( 'taxonomy' => 'caracteristique', 'field' => 'slug', 'terms' => $selected_carac );
+}
+if ( $tax_query ) {
+    if ( count( $tax_query ) > 1 ) $tax_query['relation'] = 'AND';
+    $args['tax_query'] = $tax_query;
+}
+
+// rando_distance / rando_denivele sont du texte libre ("12 km", "+380 m") :
+// CAST(... AS DECIMAL) lit correctement la valeur numérique en tête de
+// chaîne (comportement standard MySQL), sans avoir à dupliquer ces champs
+// dans un format numérique séparé.
+$meta_query = array();
+if ( $distance_filter_active ) {
+    $meta_query[] = array( 'key' => 'rando_distance', 'value' => $selected_distance_max, 'compare' => '<=', 'type' => 'DECIMAL(10,1)' );
+}
+if ( $denivele_filter_active ) {
+    $meta_query[] = array( 'key' => 'rando_denivele', 'value' => $selected_denivele_max, 'compare' => '<=', 'type' => 'DECIMAL(10,1)' );
+}
+if ( $meta_query ) {
+    if ( count( $meta_query ) > 1 ) $meta_query['relation'] = 'AND';
+    $args['meta_query'] = $meta_query;
 }
 
 if ( $search_term ) {
@@ -39,8 +69,11 @@ if ( $search_term ) {
 
 $archive_query = new WP_Query( $args );
 
-// Toutes les difficultés disponibles pour le filtre
-$all_difficultes = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' => true ) );
+// Toutes les difficultés / caractéristiques disponibles pour le filtre.
+// hide_empty=false pour les caractéristiques : sinon les cases "En famille"
+// / "Avec chien" restent invisibles tant qu'aucune rando n'est encore taguée.
+$all_difficultes      = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' => true ) );
+$all_caracteristiques = get_terms( array( 'taxonomy' => 'caracteristique', 'hide_empty' => false ) );
 
 // Marqueurs de la carte : mêmes filtres que la liste, mais sans pagination —
 // la carte doit toujours montrer TOUTES les randonnées correspondantes.
@@ -76,7 +109,7 @@ if ( $map_query->have_posts() ) {
   <div class="section-eyebrow">Le carnet complet</div>
   <h1 class="section-title">Toutes les randonnées</h1>
   <div class="divider"></div>
-  <p class="section-sub">Filtre par difficulté ou recherche une randonnée par son nom ou son lieu.</p>
+  <p class="section-sub">Filtre par difficulté, distance, dénivelé ou caractéristiques, ou recherche une randonnée par son nom ou son lieu.</p>
 
   <!-- ════════ FILTRES ════════ -->
   <form method="get" class="archive-filters">
@@ -99,8 +132,32 @@ if ( $map_query->have_posts() ) {
       </select>
     </div>
 
+    <div class="filter-group">
+      <label for="distance_max">Distance max&nbsp;: <output id="distance_max_out" for="distance_max"><?php echo esc_html( $selected_distance_max ); ?></output>&nbsp;km</label>
+      <input type="range" id="distance_max" name="distance_max" min="0" max="<?php echo esc_attr( $distance_max_cap ); ?>" step="1" value="<?php echo esc_attr( $selected_distance_max ); ?>">
+    </div>
+
+    <div class="filter-group">
+      <label for="denivele_max">Dénivelé max&nbsp;: <output id="denivele_max_out" for="denivele_max"><?php echo esc_html( $selected_denivele_max ); ?></output>&nbsp;m</label>
+      <input type="range" id="denivele_max" name="denivele_max" min="0" max="<?php echo esc_attr( $denivele_max_cap ); ?>" step="10" value="<?php echo esc_attr( $selected_denivele_max ); ?>">
+    </div>
+
+    <?php if ( $all_caracteristiques && ! is_wp_error( $all_caracteristiques ) ) : ?>
+    <div class="filter-group">
+      <span class="filter-group-label">Caractéristiques</span>
+      <div class="filter-checks">
+        <?php foreach ( $all_caracteristiques as $term ) : ?>
+          <label class="filter-check">
+            <input type="checkbox" name="carac[]" value="<?php echo esc_attr( $term->slug ); ?>" <?php checked( in_array( $term->slug, $selected_carac, true ) ); ?>>
+            <?php echo esc_html( $term->name ); ?>
+          </label>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <button type="submit" class="btn btn-sm">Filtrer</button>
-    <?php if ( $selected_diff || $search_term ) : ?>
+    <?php if ( $selected_diff || $search_term || $selected_carac || $distance_filter_active || $denivele_filter_active ) : ?>
       <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="filter-reset">Réinitialiser</a>
     <?php endif; ?>
   </form>
