@@ -88,6 +88,45 @@ rester identiques** : dans `.htaccess` (mod_headers, prioritaire si le module
 est actif) et dans `rando_nono_security_headers()` de `functions.php` (filet
 de secours si mod_headers est indisponible).
 
+## Couleurs — trois oranges, pas un
+
+`--orange` (#D97706) ne passe le contraste WCAG AA **nulle part** : 3,00:1 en
+texte sur fond clair, 3,19:1 pour du blanc sur un bouton orange. Il reste
+réservé au décoratif (filets, bordures, anneaux de focus) et aux fonds
+sombres (hero, footer), où il est lisible. Pour tout le reste :
+
+- `--orange-texte` — texte orange sur une surface claire (#974D03, 5,86:1 sur
+  blanc et 4,68:1 sur beige). Éclairci à #E8912B en mode sombre, sans quoi il
+  tomberait à 2,59:1.
+- `--orange-fond` — fond orange portant du texte blanc (#A85504, 5,29:1).
+- `--orange-clair` — orange sur le vert de la section Statistiques (#F0A44A,
+  3,64:1 ; l'orange d'origine y était à 2,37:1, sous le seuil même pour du
+  grand texte).
+
+Avant d'introduire une nouvelle couleur, en calculer le ratio plutôt que de
+l'estimer à l'œil.
+
+## Taxonomie « difficulté » — les noms sont libres
+
+Les termes ne sont pas `facile/moyen/difficile` mais des formules maison
+(« Simpliste », « Ça se corse », « Tu vas t'en souvenir »). Conséquences :
+
+- La classe CSS d'une pastille se dérive par `sanitize_title()`, jamais du nom
+  brut : `class="badge-diff-ça se corse"` produisait trois classes invalides.
+- Ne jamais passer ces noms à `strtolower()`/`ucfirst()` : ces fonctions
+  travaillent octet par octet et cassent le « Ç ».
+- `.badge-diff` habille correctement **n'importe quelle** difficulté ; les
+  classes nommées ne font qu'affiner la couleur de celles qu'on reconnaît.
+  Ajouter un terme ne casse donc plus l'affichage.
+
+## Le champ « lieu » contient parfois une adresse entière
+
+Exemple réel : « Cascade du Fornet Auvergne-Rhône-Alpes Savoie (73)
+Val-d'Isère, hameau du Fornet, Parc national de la Vanoise ». Sur une carte,
+il est tronqué à une ligne (`.meta-item-lieu .meta-text`) avec le texte
+complet en `title`. Sans ça, il s'étalait sur quatre lignes et les cartes
+d'une même rangée n'avaient plus la même hauteur.
+
 ## Polices — provenance et fabrication des fichiers
 
 Les 5 `.woff2` de `assets/fonts/` sont **fabriqués**, pas téléchargés tels

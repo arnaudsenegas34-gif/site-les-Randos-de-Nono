@@ -138,6 +138,47 @@ function rando_nono_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'rando_nono_assets' );
 
+/**
+ * Allègement du site public — deux ressources chargées pour rien.
+ *
+ * Constaté sur la page d'accueil en ligne (PageSpeed, 01/09/2026) :
+ * 2 080 ms de requêtes bloquant le rendu sur mobile, dont une bonne part
+ * imputable à ces deux-là.
+ */
+function rando_nono_alleger_front() {
+    if ( is_admin() ) {
+        return;
+    }
+    // Dashicons est la police d'icônes de l'ADMINISTRATION. Un plugin la
+    // charge aussi sur le site public, où elle bloque le rendu pour ~45 Ko
+    // dont aucune page publique ne se sert. Les visiteurs connectés la
+    // gardent : la barre d'admin en a besoin.
+    if ( ! is_user_logged_in() ) {
+        wp_dequeue_style( 'dashicons' );
+    }
+}
+add_action( 'wp_enqueue_scripts', 'rando_nono_alleger_front', 100 );
+
+/**
+ * Émojis WordPress — script inutile ici, et bruyant.
+ *
+ * Le thème n'affiche pas d'émoji dans son contenu, mais le chargeur de
+ * WordPress tente de créer un worker depuis une URL `blob:` que la CSP du
+ * site refuse : chaque visiteur récolte une erreur dans sa console (relevée
+ * par Lighthouse dans « Bonnes pratiques »). On retire le tout.
+ */
+function rando_nono_desactiver_emojis() {
+    remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+    remove_action( 'wp_print_styles', 'print_emoji_styles' );
+    remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+    remove_action( 'admin_print_styles', 'print_emoji_styles' );
+    remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+    remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+    remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+    add_filter( 'emoji_svg_url', '__return_false' );
+}
+add_action( 'init', 'rando_nono_desactiver_emojis' );
+
 /* ──────────────────────────────────────────
    3. CUSTOM POST TYPE "RANDONNÉE"
    ────────────────────────────────────────── */
@@ -770,11 +811,52 @@ function rando_nono_document_title_parts( $title ) {
 }
 add_filter( 'document_title_parts', 'rando_nono_document_title_parts' );
 
+/**
+ * URL canonique — construite depuis l'objet affiché, jamais depuis la requête.
+ *
+ * `home_url( add_query_arg( null, null ) )` recopiait la chaîne de requête
+ * telle quelle : le paramètre anti-bot `?i=1` d'InfinityFree se retrouvait
+ * donc dans <link rel="canonical"> et og:url, et Google se voyait désigner
+ * « /?i=1 » comme l'adresse de référence de la page d'accueil.
+ */
+function rando_nono_canonical_url() {
+    if ( is_front_page() ) {
+        $url = home_url( '/' );
+    } elseif ( is_singular() ) {
+        $url = get_permalink();
+    } elseif ( is_post_type_archive() ) {
+        $post_type = get_query_var( 'post_type' );
+        $url       = get_post_type_archive_link( is_array( $post_type ) ? reset( $post_type ) : $post_type );
+    } elseif ( is_category() || is_tag() || is_tax() ) {
+        $term = get_queried_object();
+        $url  = ( $term && ! is_wp_error( $term ) ) ? get_term_link( $term ) : '';
+    } elseif ( is_home() ) {
+        $url = get_permalink( (int) get_option( 'page_for_posts' ) );
+    } else {
+        // Recherche, 404, archives de dates : le chemin nu, sans la requête.
+        $path = wp_parse_url( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/', PHP_URL_PATH );
+        $url  = home_url( is_string( $path ) ? $path : '/' );
+    }
+
+    if ( ! $url || is_wp_error( $url ) ) {
+        $url = home_url( '/' );
+    }
+
+    // La pagination fait partie de l'adresse canonique : /page/2/ n'est pas
+    // un doublon de la page 1.
+    $paged = max( (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
+    if ( $paged > 1 && ! is_singular() ) {
+        $url = trailingslashit( $url ) . 'page/' . $paged . '/';
+    }
+
+    return $url;
+}
+
 function rando_nono_seo_meta_tags() {
     $description = '';
     $title       = get_bloginfo( 'name' );
     $image       = get_template_directory_uri() . '/assets/img/og-image.jpg';
-    $url         = home_url( add_query_arg( null, null ) );
+    $url         = rando_nono_canonical_url();
     $keywords    = '';
 
     if ( is_singular( 'randonnee' ) ) {

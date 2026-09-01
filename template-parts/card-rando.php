@@ -14,7 +14,11 @@ $date_sortie = get_post_meta( $id, 'rando_date', true );
 $gpx_url   = get_post_meta( $id, 'rando_gpx_url', true );
 
 $diff_terms = get_the_terms( $id, 'difficulte' );
-$difficulte = $diff_terms && ! is_wp_error( $diff_terms ) ? strtolower( $diff_terms[0]->name ) : 'moyen';
+// Le NOM sert de libellé (tel que saisi, accents compris), la classe CSS est
+// dérivée par sanitize_title() : un nom libre comme « Ça se corse » donnait
+// sinon class="badge-diff-ça se corse", soit trois classes invalides.
+$difficulte_nom  = $diff_terms && ! is_wp_error( $diff_terms ) ? $diff_terms[0]->name : 'Moyen';
+$difficulte_slug = sanitize_title( $difficulte_nom );
 
 $thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-card', array(
     'class'   => 'card-photo',
@@ -34,7 +38,7 @@ $thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-car
       </picture>
     <?php endif; ?>
     <div class="card-badges">
-      <span class="badge badge-diff-<?php echo esc_attr( $difficulte ); ?>"><?php echo esc_html( ucfirst( $difficulte ) ); ?></span>
+      <span class="badge badge-diff badge-diff-<?php echo esc_attr( $difficulte_slug ); ?>"><?php echo esc_html( $difficulte_nom ); ?></span>
       <?php if ( $gpx_url ) : ?><span class="badge badge-gpx">GPX</span><?php endif; ?>
     </div>
     <button type="button" class="card-fav-btn js-favori-btn" data-id="<?php echo esc_attr( $id ); ?>" aria-pressed="false" aria-label="Ajouter aux favoris">
@@ -43,7 +47,7 @@ $thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-car
   </div>
   <div class="card-body">
     <div class="card-meta">
-      <span class="meta-item"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $lieu ); ?></span>
+      <span class="meta-item meta-item-lieu"><?php echo rando_nono_icon( 'pin' ); ?> <span class="meta-text" title="<?php echo esc_attr( $lieu ); ?>"><?php echo esc_html( $lieu ); ?></span></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $date_sortie ); ?></span>
     </div>
     <h3 class="card-title"><a class="card-title-link" href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php the_title(); ?></a></h3>

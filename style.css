@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 4.2
+Version: 4.3
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -13,6 +13,13 @@ Text Domain: rando-nono
   --vert:   #2E5E3B;
   --beige:  #E8DFC8;
   --orange: #D97706;
+  /* Trois oranges, pas un seul. Le #D97706 d'origine ne passe le contraste
+     AA (4,5:1) NULLE PART : 3,00:1 en texte sur fond clair, 3,19:1 pour du
+     blanc sur un bouton orange. Il reste utilisé pour le décoratif et sur
+     les fonds sombres (hero, footer), où il est parfaitement lisible. */
+  --orange-texte: #974D03;  /* texte orange sur blanc (5,86:1) ou beige (4,68:1) */
+  --orange-fond:  #A85504;  /* fond orange portant du texte blanc (5,29:1) */
+  --orange-clair: #F0A44A;  /* orange sur le vert de la section Statistiques (3,64:1) */
   --blanc:  #FAF8F3;
   --gris:   #5E5E52;
   --sombre: #1A2E1F;
@@ -71,6 +78,7 @@ Text Domain: rando-nono
   --text: #EDE9DD;
   --accent: #6FC28A;
   --vert-section: #1B3024;
+  --orange-texte: #E8912B;  /* 6,54:1 sur le fond sombre, 5,04:1 sur les surfaces */
   --shadow-1: 0 1px 2px rgba(0,0,0,0.34);
   --shadow-2: 0 2px 6px rgba(0,0,0,0.34), 0 10px 26px -8px rgba(0,0,0,0.50);
   --shadow-3: 0 6px 14px rgba(0,0,0,0.38), 0 28px 56px -16px rgba(0,0,0,0.62);
@@ -89,6 +97,7 @@ Text Domain: rando-nono
     --text: #EDE9DD;
     --accent: #6FC28A;
     --vert-section: #1B3024;
+    --orange-texte: #E8912B;  /* 6,54:1 sur le fond sombre, 5,04:1 sur les surfaces */
     --shadow-1: 0 1px 2px rgba(0,0,0,0.34);
     --shadow-2: 0 2px 6px rgba(0,0,0,0.34), 0 10px 26px -8px rgba(0,0,0,0.50);
     --shadow-3: 0 6px 14px rgba(0,0,0,0.38), 0 28px 56px -16px rgba(0,0,0,0.62);
@@ -107,7 +116,7 @@ html {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) transparent;
 }
-::selection { background: var(--orange); color: #fff; }
+::selection { background: var(--orange-fond); color: #fff; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--r-pill); border: 3px solid transparent; background-clip: content-box; }
@@ -181,7 +190,7 @@ button { font-family: inherit; }
   color: var(--accent);
   font-size: 1.2rem;
 }
-.site-logo span { color: var(--orange); }
+.site-logo span { color: var(--orange-texte); }
 
 /* Navigation boutons style Hero
    nowrap volontaire : avec 8 entrées, un retour à la ligne sortait du
@@ -202,14 +211,14 @@ button { font-family: inherit; }
 }
 .btn-nav:hover {
   border-color: var(--orange);
-  color: var(--orange);
+  color: var(--orange-texte);
   transform: translateY(-1px);
 }
 .btn-nav-solid,
 .btn-nav.is-current,
 .nav-group.has-current > .btn-nav-parent {
-  background: var(--orange);
-  border-color: var(--orange);
+  background: var(--orange-fond);
+  border-color: var(--orange-fond);
   color: #fff;
 }
 .btn-nav-solid:hover,
@@ -274,8 +283,8 @@ button { font-family: inherit; }
   white-space: nowrap;
   transition: background 0.15s ease, color 0.15s ease;
 }
-.nav-submenu a:hover { background: rgba(217,119,6,0.12); color: var(--orange); }
-.nav-submenu a.is-current { background: var(--orange); color: #fff; }
+.nav-submenu a:hover { background: rgba(217,119,6,0.12); color: var(--orange-texte); }
+.nav-submenu a.is-current { background: var(--orange-fond); color: #fff; }
 
 /* Garder .nav-links pour le fallback menu WordPress customisé */
 .nav-links { display: flex; gap: 2.25rem; list-style: none; }
@@ -287,8 +296,8 @@ button { font-family: inherit; }
   opacity: 0.7;
   transition: opacity 0.2s, color 0.2s;
 }
-.nav-links a:hover { opacity: 1; color: var(--orange); }
-.nav-links li.current-menu-item > a { opacity: 1; color: var(--orange); }
+.nav-links a:hover { opacity: 1; color: var(--orange-texte); }
+.nav-links li.current-menu-item > a { opacity: 1; color: var(--orange-texte); }
 .menu-toggle { display: none; align-items: center; justify-content: center; width: 44px; height: 44px; margin-right: -0.6rem; background: none; border: none; color: var(--vert); font-size: 1.4rem; cursor: pointer; }
 
 /* ══════════════════════ BASCULE MODE SOMBRE ══════════════════════ */
@@ -307,7 +316,7 @@ button { font-family: inherit; }
   flex-shrink: 0;
   transition: border-color 0.2s, color 0.2s, transform 0.15s;
 }
-.theme-toggle:hover { border-color: var(--orange); color: var(--orange); transform: translateY(-1px); }
+.theme-toggle:hover { border-color: var(--orange); color: var(--orange-texte); transform: translateY(-1px); }
 .theme-toggle-icon { width: 17px; height: 17px; }
 .theme-toggle-icon-moon { display: none; }
 [data-theme="dark"] .theme-toggle-icon-sun { display: none; }
@@ -342,7 +351,7 @@ button { font-family: inherit; }
   padding: 0.3rem;
   transition: color 0.2s;
 }
-.site-search button:hover { color: var(--orange); }
+.site-search button:hover { color: var(--orange-texte); }
 .site-search-mobile { width: 100%; border: 1.5px solid rgba(46,94,59,0.18); border-radius: 3px; padding: 0.2rem 0.7rem; margin-bottom: 0.4rem; }
 .site-search-mobile input[type="search"] { flex: 1; width: auto; border-bottom: none; }
 
@@ -432,18 +441,18 @@ button { font-family: inherit; }
   text-align: center;
 }
 .trust-item { display: inline-flex; align-items: center; gap: 0.5rem; }
-.trust-stars { color: var(--orange); letter-spacing: 0.05em; }
+.trust-stars { color: var(--orange-texte); letter-spacing: 0.05em; }
 .trust-instagram {
   color: var(--accent);
   text-decoration: none;
   font-weight: 700;
   transition: color 0.2s;
 }
-.trust-instagram:hover { color: var(--orange); }
+.trust-instagram:hover { color: var(--orange-texte); }
 
 .btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
-  background: var(--orange); color: #fff;
+  background: var(--orange-fond); color: #fff;
   font-family: 'Merriweather', serif; font-size: 0.84rem; font-weight: 700;
   padding: 0.8rem 1.6rem; border-radius: var(--r-xs);
   box-shadow: 0 1px 2px rgba(26,46,31,0.14);
@@ -472,7 +481,7 @@ select:focus-visible {
 
 /* ══════════════════════ SECTIONS GÉNÉRIQUES ══════════════════════ */
 section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); background: var(--bg); }
-.section-eyebrow { display: flex; align-items: center; gap: 0.7rem; font-size: 0.7rem; font-weight: 300; color: var(--orange); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.6rem; }
+.section-eyebrow { display: flex; align-items: center; gap: 0.7rem; font-size: 0.7rem; font-weight: 300; color: var(--orange-texte); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.6rem; }
 .section-title { font-size: clamp(1.7rem, 2.8vw, 2.3rem); color: var(--accent); text-wrap: balance; margin-bottom: 0.85rem; }
 .section-sub { font-size: 0.93rem; color: var(--gris); font-weight: 300; font-style: italic; max-width: 56ch; margin-bottom: 3rem; }
 .divider { width: 40px; height: 2px; background: var(--orange); margin: 1rem 0 1.75rem; }
@@ -564,15 +573,31 @@ section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), 
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.badge-diff-facile, .badge-diff-moyen, .badge-diff-difficile { color: #fff; }
-.badge-diff-facile::before, .badge-diff-moyen::before, .badge-diff-difficile::before { display: none; }
-.badge-diff-facile { background: linear-gradient(135deg, #4CAF50, #2f6b3a); }
-.badge-diff-moyen { background: linear-gradient(135deg, #f0a238, var(--orange)); }
-.badge-diff-difficile { background: linear-gradient(135deg, #e0584a, #9a2c1d); }
+ /* Les noms de difficulté sont libres (« Simpliste », « Ça se corse »…).
+    La classe nommée n'est plus la SEULE source du style : .badge-diff donne
+    déjà une pastille correcte à n'importe quelle difficulté, les classes
+    ci-dessous ne font qu'affiner la couleur de celles qu'on reconnaît.
+    Avant, une difficulté hors des trois noms prévus retombait sur le style
+    de base et perdait sa couleur. */
+.badge-diff { color: #fff; background: linear-gradient(135deg, #5f7a52, #3a5636); }
+.badge-diff::before { display: none; }
+
+.badge-diff-facile, .badge-diff-simpliste, .badge-diff-tres-facile {
+  background: linear-gradient(135deg, #4CAF50, #2f6b3a);
+}
+.badge-diff-moyen, .badge-diff-ca-pique-un-peu, .badge-diff-modere {
+  background: linear-gradient(135deg, #e09a34, var(--orange-fond));
+}
+.badge-diff-ca-se-corse, .badge-diff-soutenu {
+  background: linear-gradient(135deg, #dd8235, #a94d08);
+}
+.badge-diff-difficile, .badge-diff-tu-vas-t-en-souvenir, .badge-diff-tu-vas-ten-souvenir {
+  background: linear-gradient(135deg, #e0584a, #9a2c1d);
+}
 .badge-gpx { background: rgba(26,46,31,0.7); color: var(--beige); backdrop-filter: blur(3px); }
 .badge-gpx::before { display: none; }
 /* Ces variantes n'affichent pas le point (::before masqué) : padding symétrique pour centrer le texte */
-.badge-diff-facile, .badge-diff-moyen, .badge-diff-difficile, .badge-gpx { padding: 0.32rem 0.7rem; }
+.badge-diff, .badge-gpx { padding: 0.32rem 0.7rem; }
 
 .card-fav-btn {
   position: absolute;
@@ -594,16 +619,20 @@ section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), 
 }
 .card-fav-btn .icon-svg { width: 16px; height: 16px; }
 .card-fav-btn:hover { transform: scale(1.08); }
-.card-fav-btn.is-favori { background: var(--orange); }
+.card-fav-btn.is-favori { background: var(--orange-fond); }
 .card-fav-btn.is-favori .icon-svg { fill: currentColor; }
 
 .card-body { display: flex; flex-direction: column; flex: 1; padding: 1.5rem 1.4rem 1.4rem; }
 .card-meta { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
-.meta-item { font-size: 0.7rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.32rem; }
+.meta-item { font-size: 0.7rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.32rem; min-width: 0; }
+.meta-item .meta-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Le lieu occupe la ligne entière et se coupe proprement plutôt que
+   d'empiler quatre lignes de texte. */
+.card-meta .meta-item-lieu { flex: 1 1 100%; }
 .icon-svg { width: 13px; height: 13px; flex-shrink: 0; stroke-width: 2px; }
 .icon-svg-lg { width: 18px; height: 18px; }
 .card-title { font-family: 'Abril Fatface', serif; font-size: 1.3rem; color: var(--accent); text-wrap: balance; margin-bottom: 0.55rem; transition: color 0.25s var(--ease); }
-.rando-card:hover .card-title { color: var(--orange); }
+.rando-card:hover .card-title { color: var(--orange-texte); }
 a.card-title { display: block; }
 .card-desc { flex: 1; text-wrap: pretty; font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.6; margin-bottom: 1.25rem; }
 .card-actions { display: flex; gap: 0.55rem; flex-wrap: wrap; margin-top: auto; }
@@ -636,7 +665,7 @@ a.card-title { display: block; }
 .meteo-day .temp-range { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
 .meteo-day .temp-max { font-weight: 700; color: var(--text); font-size: 0.7rem; }
 .meteo-day .temp-min { font-weight: 400; color: var(--gris); font-size: 0.6rem; }
-.meteo-day.today { background: var(--orange); color: #fff; }
+.meteo-day.today { background: var(--orange-fond); color: #fff; }
 .meteo-day.today .temp-max { color: #fff; }
 .meteo-day.today .temp-min { color: rgba(255,255,255,0.7); }
 .meteo-loading { font-size: 0.8rem; color: var(--gris); font-style: italic; padding: 1rem 0; }
@@ -665,7 +694,7 @@ a.card-title { display: block; }
 .derniere-img-wrap { position: relative; min-height: 400px; }
 .derniere-img-wrap img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
 .derniere-img-placeholder { width: 100%; height: 100%; min-height: 400px; background: linear-gradient(135deg, var(--vert), #3d7a4e); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; color: rgba(232,223,200,0.3); }
-.derniere-badge { position: absolute; top: 1.1rem; left: 1.1rem; z-index: 2; background: var(--orange); color: #fff; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; padding: 0.35rem 0.8rem; border-radius: var(--r-pill); box-shadow: 0 4px 12px -4px rgba(217,119,6,0.7); }
+.derniere-badge { position: absolute; top: 1.1rem; left: 1.1rem; z-index: 2; background: var(--orange-fond); color: #fff; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; padding: 0.35rem 0.8rem; border-radius: var(--r-pill); box-shadow: 0 4px 12px -4px rgba(217,119,6,0.7); }
 
 .derniere-content { padding: 2.75rem 2.5rem; display: flex; flex-direction: column; justify-content: center; }
 .derniere-content .card-title { font-size: 1.85rem; margin: 0.6rem 0 0.9rem; }
@@ -702,7 +731,7 @@ a.card-title { display: block; }
 .section-wave-bottom { bottom: -1px; transform: scaleY(-1); }
 .section-wave svg { width: 100%; height: 60px; display: block; }
 .section-wave svg path { fill: var(--bg); }
-#statistiques .section-eyebrow { color: var(--orange); }
+#statistiques .section-eyebrow { color: var(--orange-clair); }
 #statistiques .section-title { color: var(--beige); }
 #statistiques .section-sub { color: rgba(232,223,200,0.65); }
 .stats-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
@@ -722,7 +751,7 @@ a.card-title { display: block; }
 }
 /* tabular-nums : les chiffres gardent la même chasse pendant le comptage
    animé, sinon les cartes tressautent en largeur à chaque incrément. */
-.stat-block .big-num { font-family: 'Abril Fatface', serif; font-size: 2.5rem; color: var(--orange); line-height: 1; font-variant-numeric: tabular-nums; }
+.stat-block .big-num { font-family: 'Abril Fatface', serif; font-size: 2.5rem; color: var(--orange-clair); line-height: 1; font-variant-numeric: tabular-nums; }
 .stat-block .big-label { font-size: 0.74rem; color: var(--beige); font-weight: 300; margin-top: 0.55rem; }
 
 /* ══════════════════════ À PROPOS ══════════════════════ */
@@ -738,7 +767,7 @@ a.card-title { display: block; }
 .apropos-visual { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-1), var(--hairline); padding: 1.75rem; display: flex; flex-direction: column; gap: 1.1rem; }
 .apropos-stat { display: flex; align-items: center; gap: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid rgba(46,94,59,0.12); }
 .apropos-stat:last-child { border-bottom: none; padding-bottom: 0; }
-.apropos-stat .num { font-family: 'Abril Fatface', serif; font-size: 1.75rem; color: var(--orange); min-width: 3.5rem; line-height: 1; flex-shrink: 0; overflow-wrap: break-word; }
+.apropos-stat .num { font-family: 'Abril Fatface', serif; font-size: 1.75rem; color: var(--orange-texte); min-width: 3.5rem; line-height: 1; flex-shrink: 0; overflow-wrap: break-word; }
 .apropos-stat .info { min-width: 0; }
 .apropos-stat .info .label { font-size: 0.76rem; color: var(--text); font-weight: 700; overflow-wrap: break-word; }
 .apropos-stat .info .sub { font-size: 0.7rem; color: var(--gris); font-weight: 300; overflow-wrap: break-word; }
@@ -748,7 +777,7 @@ a.card-title { display: block; }
 .simple-page h1 { font-size: clamp(1.9rem,4vw,2.6rem); color: var(--accent); margin-bottom: 0.5rem; }
 .simple-page h2 { font-size: 1.2rem; color: var(--accent); margin-bottom: 0.7rem; margin-top: 2.25rem; }
 .simple-page p { color: var(--gris); font-weight: 300; margin-bottom: 0.7rem; font-size: 0.93rem; }
-.simple-page a { color: var(--orange); }
+.simple-page a { color: var(--orange-texte); }
 .simple-page a.btn { color: #fff; }
 .simple-page .card { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-1), var(--hairline); padding: 1.4rem; margin-top: 1rem; }
 
@@ -760,7 +789,7 @@ a.card-title { display: block; }
 .article-body h3 { font-size: 1.1rem; color: var(--accent); margin: 1.75rem 0 0.6rem; }
 .article-body p { color: var(--gris); font-weight: 300; line-height: 1.75; text-wrap: pretty; margin-bottom: 1rem; }
 .article-body ul, .article-body ol { color: var(--gris); font-weight: 300; line-height: 1.75; margin: 0 0 1rem 1.25rem; }
-.article-body a { color: var(--orange); }
+.article-body a { color: var(--orange-texte); }
 .article-body img { max-width: 100%; height: auto; border-radius: var(--r-md); margin: 0.5rem 0 1rem; }
 .article-body blockquote { border-left: 3px solid var(--orange); padding-left: 1rem; font-style: italic; color: var(--gris); margin: 1.5rem 0; }
 .article-body figcaption { font-size: 0.8rem; color: var(--gris); text-align: center; margin-top: -0.6rem; margin-bottom: 1rem; }
@@ -773,7 +802,7 @@ a.card-title { display: block; }
 .guide-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.7s var(--ease-out); }
 .guide-card:hover .guide-card-img img { transform: scale(1.055); }
 .guide-card h3 { text-wrap: balance; }
-.guide-card-tag { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--orange); font-weight: 700; margin: 1rem 1.1rem 0; }
+.guide-card-tag { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--orange-texte); font-weight: 700; margin: 1rem 1.1rem 0; }
 .guide-card h3 { font-size: 1rem; color: var(--text); margin: 1rem 1.1rem 0.4rem; }
 .guide-card-tag + h3 { margin-top: 0.4rem; }
 .guide-card p { font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.5; margin: 0 1.1rem 1.1rem; }
@@ -848,7 +877,7 @@ a.card-title { display: block; }
 .share-facebook:hover { background: #1877F2; color: #fff; }
 .share-copy { color: var(--accent); border-color: var(--accent); background: transparent; }
 .share-copy:hover { background: var(--vert); color: #fff; }
-.share-copy.copied { background: var(--orange); border-color: var(--orange); color: #fff; }
+.share-copy.copied { background: var(--orange-fond); border-color: var(--orange-fond); color: #fff; }
 
 /* ══════════════════════ FIL D'ARIANE (breadcrumb) ══════════════════════ */
 .breadcrumb {
@@ -863,7 +892,7 @@ a.card-title { display: block; }
   color: var(--gris);
 }
 .breadcrumb a { color: var(--gris); transition: color 0.2s; }
-.breadcrumb a:hover { color: var(--orange); }
+.breadcrumb a:hover { color: var(--orange-texte); }
 .breadcrumb-sep { opacity: 0.4; font-size: 0.65rem; }
 .breadcrumb-current { color: var(--text); font-weight: 400; }
 @media (max-width: 900px) {
@@ -924,7 +953,7 @@ a.card-title { display: block; }
   padding: 0.75rem 1.3rem;
   border: none;
   border-radius: var(--r-sm);
-  background: var(--orange);
+  background: var(--orange-fond);
   color: var(--blanc);
   font-weight: 600;
   font-size: 0.9rem;
@@ -938,7 +967,7 @@ a.card-title { display: block; }
 .newsletter-msg-error { color: #ffd7d7; }
 .newsletter-download-link {
   display: inline-flex; align-items: center; gap: 0.4rem;
-  background: var(--orange); color: #fff; text-decoration: none;
+  background: var(--orange-fond); color: #fff; text-decoration: none;
   font-size: 0.82rem; font-weight: 700;
   padding: 0.6rem 1.1rem; border-radius: var(--r-xs);
   transition: background 0.2s, transform 0.18s var(--ease), box-shadow 0.25s var(--ease);
@@ -992,7 +1021,7 @@ a.card-title { display: block; }
 .filter-group input[type="range"] { padding: 0.55rem 0.5rem; accent-color: var(--accent); min-width: 140px; }
 .filter-group label output { color: var(--sombre); font-weight: 700; text-transform: none; letter-spacing: normal; }
 .filter-reset { font-size: 0.78rem; color: var(--gris); text-decoration: underline; align-self: center; }
-.filter-reset:hover { color: var(--orange); }
+.filter-reset:hover { color: var(--orange-texte); }
 
 .archive-map-wrap { margin-bottom: 2rem; }
 .archive-map {
@@ -1007,7 +1036,7 @@ a.card-title { display: block; }
 .archive-map-popup .amp-body { padding: 0.6rem 0.15rem 0.15rem; }
 .archive-map-popup .amp-titre { font-family: 'Abril Fatface', serif; font-size: 0.95rem; color: var(--accent); margin-bottom: 0.2rem; line-height: 1.2; }
 .archive-map-popup .amp-meta { font-size: 0.7rem; color: var(--gris); margin-bottom: 0.45rem; }
-.archive-map-popup .amp-link { font-size: 0.75rem; color: var(--orange); font-weight: 700; text-decoration: underline; }
+.archive-map-popup .amp-link { font-size: 0.75rem; color: var(--orange-texte); font-weight: 700; text-decoration: underline; }
 
 .archive-count { font-size: 0.85rem; color: var(--gris); font-weight: 300; margin-bottom: 1.5rem; }
 
@@ -1022,8 +1051,8 @@ a.card-title { display: block; }
   font-weight: 700;
   transition: background 0.2s, color 0.2s;
 }
-.archive-pagination .page-numbers:hover { background: var(--orange); color: #fff; }
-.archive-pagination .page-numbers.current { background: var(--orange); color: #fff; }
+.archive-pagination .page-numbers:hover { background: var(--orange-fond); color: #fff; }
+.archive-pagination .page-numbers.current { background: var(--orange-fond); color: #fff; }
 .archive-pagination .page-numbers.dots { background: none; }
 
 /* ══════════════════════ RESPONSIVE ══════════════════════ */
@@ -1088,8 +1117,8 @@ a.card-title { display: block; }
   text-align: center;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.nav-mobile-drawer a:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
-.nav-mobile-drawer a.is-current { background: var(--orange); color: #fff; border-color: var(--orange); }
+.nav-mobile-drawer a:hover { background: var(--orange-fond); color: #fff; border-color: var(--orange-fond); }
+.nav-mobile-drawer a.is-current { background: var(--orange-fond); color: #fff; border-color: var(--orange-fond); }
 /* Pas de repli à déplier sur mobile : les 3 ancres de l'accueil sont
    visibles d'emblée, simplement décalées sous leur parent. */
 .nav-drawer-sub {
