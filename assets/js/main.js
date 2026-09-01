@@ -41,6 +41,24 @@
   }
 
   /* ══════════════════════════════════════════════
+     HEADER — relief au défilement
+     Le header ne pose sa bordure et son ombre qu'une fois la page défilée :
+     en haut de page il se fond dans le hero au lieu de le couper d'un trait.
+  ══════════════════════════════════════════════ */
+  const siteHeader = document.querySelector('.site-header');
+  if (siteHeader) {
+    let headerTicking = false;
+    const syncHeader = () => {
+      siteHeader.classList.toggle('is-scrolled', window.scrollY > 8);
+      headerTicking = false;
+    };
+    syncHeader();
+    window.addEventListener('scroll', () => {
+      if (!headerTicking) { requestAnimationFrame(syncHeader); headerTicking = true; }
+    }, { passive: true });
+  }
+
+  /* ══════════════════════════════════════════════
      RÉVÉLATION AU SCROLL — titres de section et grands blocs
      Même principe que .rando-card/.matos-card (voir randos.js),
      étendu ici aux en-têtes de section pour que chaque page (accueil,
