@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 3.9
+Version: 4.0
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -187,12 +187,12 @@ button { font-family: inherit; }
    nowrap volontaire : avec 8 entrées, un retour à la ligne sortait du
    header (hauteur figée à 68px) et se superposait au hero. En dessous de
    1240px on bascule sur le menu déroulant plutôt que de laisser déborder. */
-.nav-buttons { display: flex; align-items: center; gap: 0.4rem; flex-wrap: nowrap; }
+.nav-buttons { display: flex; align-items: center; gap: 0.55rem; flex-wrap: nowrap; }
 .btn-nav {
   font-family: 'Merriweather', serif;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.52rem 0.82rem;
+  padding: 0.52rem 1.05rem;
   border-radius: var(--r-xs);
   border: 1.5px solid rgba(46,94,59,0.25);
   color: var(--text);
@@ -206,17 +206,76 @@ button { font-family: inherit; }
   transform: translateY(-1px);
 }
 .btn-nav-solid,
-.btn-nav.is-current {
+.btn-nav.is-current,
+.nav-group.has-current > .btn-nav-parent {
   background: var(--orange);
   border-color: var(--orange);
   color: #fff;
 }
 .btn-nav-solid:hover,
-.btn-nav.is-current:hover {
+.btn-nav.is-current:hover,
+.nav-group.has-current > .btn-nav-parent:hover {
   background: #b45e04;
   border-color: #b45e04;
   color: #fff;
 }
+
+/* ── Sous-menu « Accueil » ──
+   Matos, Statistiques et À propos sont des ancres de la page d'accueil :
+   elles sont regroupées sous leur page parente au lieu d'occuper trois
+   places au premier niveau. Ouverture au survol ET au focus clavier
+   (:focus-within), sans JavaScript — le lien parent reste un vrai lien
+   vers l'accueil, on ne le sacrifie pas pour ouvrir un menu. */
+.nav-group { position: relative; display: flex; }
+.btn-nav-parent { display: inline-flex; align-items: center; gap: 0.35rem; }
+.nav-caret { width: 12px; height: 12px; stroke-width: 2.5px; transition: transform 0.22s var(--ease); }
+.nav-group:hover .nav-caret,
+.nav-group:focus-within .nav-caret { transform: rotate(180deg); }
+
+/* Pont invisible sous le bouton : sans lui, traverser l'espace qui sépare
+   le bouton du menu suffit à refermer celui-ci. */
+.nav-group::after {
+  content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 0.6rem;
+}
+
+.nav-submenu {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 0;
+  z-index: 101;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.4rem;
+  background: var(--bg);
+  border: 1px solid var(--ligne);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-3);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.22s var(--ease), transform 0.22s var(--ease), visibility 0s linear 0.22s;
+}
+.nav-group:hover .nav-submenu,
+.nav-group:focus-within .nav-submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+.nav-submenu a {
+  font-family: 'Merriweather', serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  padding: 0.52rem 0.8rem;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-submenu a:hover { background: rgba(217,119,6,0.12); color: var(--orange); }
+.nav-submenu a.is-current { background: var(--orange); color: #fff; }
 
 /* Garder .nav-links pour le fallback menu WordPress customisé */
 .nav-links { display: flex; gap: 2.25rem; list-style: none; }
@@ -995,13 +1054,13 @@ a.card-title { display: block; }
 
 /* Bascule vers le menu déroulant — seuil calé sur la largeur réellement
    nécessaire à la barre de nav, pas sur un point de rupture arbitraire. */
-@media (max-width: 1400px) {
+@media (max-width: 1240px) {
   /* Premier palier : on sacrifie le champ de recherche du header (il reste
      dans le menu déroulant et sur la page de résultats) pour garder les
      8 entrées de navigation sur une seule ligne. */
   .site-search-wrap { display: none; }
 }
-@media (max-width: 1240px) {
+@media (max-width: 1080px) {
   .nav-links { display: none; }
   .nav-buttons { display: none; }
   .menu-toggle { display: flex; }
@@ -1031,6 +1090,23 @@ a.card-title { display: block; }
 }
 .nav-mobile-drawer a:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
 .nav-mobile-drawer a.is-current { background: var(--orange); color: #fff; border-color: var(--orange); }
+/* Pas de repli à déplier sur mobile : les 3 ancres de l'accueil sont
+   visibles d'emblée, simplement décalées sous leur parent. */
+.nav-drawer-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: -0.15rem 0 0.25rem 0.9rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--ligne);
+}
+.nav-drawer-sub a {
+  font-size: 0.8rem;
+  font-weight: 400;
+  text-align: left;
+  background: var(--surface);
+  border-color: transparent;
+}
 @media (max-width: 600px) {
   .randos-grid { grid-template-columns: 1fr; }
   .favoris-grid { grid-template-columns: 1fr; }

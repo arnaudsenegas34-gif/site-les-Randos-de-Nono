@@ -122,8 +122,15 @@
   ══════════════════════════════════════════════ */
   if (heroEl) {
     const navButtons = document.querySelectorAll('[data-nav-key]');
+    const navGroups = document.querySelectorAll('.nav-group');
     const setActiveNav = (key) => {
       navButtons.forEach(btn => btn.classList.toggle('is-current', btn.dataset.navKey === key));
+      // Les ancres Matos / Statistiques / À propos vivent dans le sous-menu
+      // « Accueil » : sans ça, arriver sur l'une d'elles éteignait le seul
+      // bouton visible et la barre n'indiquait plus rien.
+      navGroups.forEach(group => {
+        group.classList.toggle('has-current', !!group.querySelector('[data-nav-key].is-current'));
+      });
     };
     const navSections = ['matos', 'statistiques', 'apropos']
       .map(id => ({ id, el: document.getElementById(id) }))
