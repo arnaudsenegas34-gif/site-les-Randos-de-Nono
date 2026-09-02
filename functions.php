@@ -724,6 +724,16 @@ add_filter( 'xmlrpc_enabled', '__return_false' );
  * .htaccess servent de première ligne, celles-ci de filet de sécurité).
  */
 function rando_nono_security_headers() {
+    // JAMAIS dans l'administration. WordPress y dessine la médiathèque, la
+    // liste des thèmes et l'éditeur avec underscore.js, qui compile ses
+    // gabarits via new Function() — ce que `script-src` sans 'unsafe-eval'
+    // interdit. Résultat : ces écrans restaient blancs, sans autre indice
+    // qu'une EvalError dans la console. La CSP protège les pages publiques ;
+    // l'admin est derrière authentification et n'a rien à y gagner.
+    if ( is_admin() ) {
+        return;
+    }
+
     if ( headers_sent() ) return;
     header( 'X-Content-Type-Options: nosniff' );
     header( 'X-Frame-Options: SAMEORIGIN' );

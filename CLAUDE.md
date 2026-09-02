@@ -88,6 +88,20 @@ rester identiques** : dans `.htaccess` (mod_headers, prioritaire si le module
 est actif) et dans `rando_nono_security_headers()` de `functions.php` (filet
 de secours si mod_headers est indisponible).
 
+**Elle ne doit jamais s'appliquer à `/wp-admin/`** (corrigé le 01/09/2026).
+WordPress y dessine la médiathèque, la liste des thèmes et l'éditeur avec
+underscore.js, qui compile ses gabarits par `new Function()` — donc
+`'unsafe-eval'`. Sans exclusion, ces écrans restent **blancs**, sans message
+à l'écran : la seule trace est une `EvalError` dans la console du navigateur.
+Le même en-tête bloquait aussi les avatars Gravatar (`img-src`) et le worker
+des émojis (`worker-src`) dans l'admin.
+
+L'exclusion se fait côté PHP par `if ( is_admin() ) return;`, et côté Apache
+par `SetEnvIf Request_URI "^/wp-admin/" RANDO_ZONE_ADMIN` puis
+`env=!RANDO_ZONE_ADMIN` sur la directive `Header`. On n'autorise surtout pas
+`'unsafe-eval'` globalement : cela affaiblirait le site public pour un besoin
+qui n'existe que derrière authentification.
+
 ## Tailles d'images — `add_image_size()` ne vaut que pour l'avenir
 
 Les tailles déclarées (`rando-card` 640×420, `rando-hero`, `rando-gallery`)

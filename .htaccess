@@ -491,7 +491,15 @@ Options -Indexes
   # contrepartie, object-src/base-uri/form-action/frame-ancestors sont
   # verrouillés. Dupliquée en PHP (rando_nono_security_headers) comme filet
   # de sécurité si mod_headers est indisponible — garder les deux synchronisées.
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://api.sports-tracker.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+  # NE PAS appliquer la CSP à /wp-admin/ : WordPress y dessine la
+  # médiathèque, la liste des thèmes et l'éditeur avec underscore.js, qui
+  # compile ses gabarits via new Function(). Sans 'unsafe-eval' ces écrans
+  # restent BLANCS (EvalError dans la console, aucun message à l'écran).
+  # Plutôt que d'autoriser 'unsafe-eval' partout — ce qui affaiblirait le
+  # site public — on retire simplement l'en-tête dans l'administration,
+  # qui est derrière authentification.
+  SetEnvIf Request_URI "^/wp-admin/" RANDO_ZONE_ADMIN
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.facebook.com; font-src 'self' data:; connect-src 'self' https://api.open-meteo.com https://api.sports-tracker.com https://*.google-analytics.com https://*.analytics.google.com https://www.facebook.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" env=!RANDO_ZONE_ADMIN
 </IfModule>
 ServerSignature Off
 # END Durcissement sécurité
