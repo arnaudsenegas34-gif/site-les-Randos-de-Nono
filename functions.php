@@ -158,6 +158,15 @@ add_action( 'wp_enqueue_scripts', 'rando_nono_assets' );
  * fonction rend la valeur de WordPress inchangée.
  */
 function rando_nono_repli_taille_image( $image, $attachment_id, $size, $icon ) {
+    // Site public UNIQUEMENT. L'administration doit voir les vraies tailles :
+    // l'éditeur d'image, la médiathèque et le sélecteur de vignette
+    // travaillent sur ces valeurs, il serait faux de leur en substituer
+    // d'autres. Cela met aussi ce filtre hors de cause pour tout problème
+    // survenant dans l'admin.
+    if ( is_admin() ) {
+        return $image;
+    }
+
     // rando-hero est volontairement exclu : y retomber sur « large » (1024 px)
     // dégraderait visiblement la grande image d'en-tête.
     $largeurs_cibles = array(
