@@ -115,9 +115,19 @@ Les termes ne sont pas `facile/moyen/difficile` mais des formules maison
   brut : `class="badge-diff-ça se corse"` produisait trois classes invalides.
 - Ne jamais passer ces noms à `strtolower()`/`ucfirst()` : ces fonctions
   travaillent octet par octet et cassent le « Ç ».
-- `.badge-diff` habille correctement **n'importe quelle** difficulté ; les
-  classes nommées ne font qu'affiner la couleur de celles qu'on reconnaît.
-  Ajouter un terme ne casse donc plus l'affichage.
+- Deux filets, pas un : `:where(.card-badges .badge):first-child` habille la
+  pastille **sans rien savoir de son nom** (la difficulté est toujours la
+  première d'une carte), et `.badge-diff` fait de même sur le HTML à jour.
+  Les classes nommées ne font qu'affiner la couleur de celles qu'on
+  reconnaît. Ajouter ou renommer un terme ne peut donc plus produire de
+  pastille incolore.
+- Ces trois règles pèsent toutes (0,1,0) — le `:where()` est là pour ça :
+  c'est l'**ordre** dans le fichier qui tranche. Le filet de position doit
+  rester APRÈS `.badge` (qu'il écrase) et AVANT les couleurs nommées (qui
+  l'écrasent). Ne pas réordonner ce bloc.
+- Un cache de page (W3TC) peut servir l'ANCIEN HTML avec le NOUVEAU CSS :
+  c'est ce qui a fait croire à un bug le 01/09/2026, seul « Simpliste »
+  restait coloré. Purger le cache après toute modification du balisage.
 
 ## Le champ « lieu » contient parfois une adresse entière
 

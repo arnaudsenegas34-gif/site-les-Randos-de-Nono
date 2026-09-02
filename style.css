@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 4.4
+Version: 4.5
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -579,6 +579,22 @@ section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), 
     ci-dessous ne font qu'affiner la couleur de celles qu'on reconnaît.
     Avant, une difficulté hors des trois noms prévus retombait sur le style
     de base et perdait sa couleur. */
+/* Filet de position : la difficulté est TOUJOURS la première pastille d'une
+   carte. Ce sélecteur l'habille sans rien savoir de son nom — y compris sur
+   une page servie par le cache avec les anciennes classes cassées
+   (« badge-diff-Ça se corse », découpée en trois classes invalides).
+   `:where(...)` neutralise la spécificité des sélecteurs qu'il contient :
+   la règle pèse donc (0,1,0), comme `.badge` et comme les couleurs nommées.
+   L'ORDRE tranche alors : placée après `.badge` elle l'écrase, placée avant
+   les couleurs nommées elle leur cède la place. S'il n'est pas compris,
+   `.badge-diff` juste en dessous prend le relais sur le HTML à jour. */
+:where(.card-badges .badge):first-child {
+  color: #fff;
+  background: linear-gradient(135deg, #5f7a52, #3a5636);
+  padding: 0.32rem 0.7rem;
+}
+:where(.card-badges .badge):first-child::before { display: none; }
+
 .badge-diff { color: #fff; background: linear-gradient(135deg, #5f7a52, #3a5636); }
 .badge-diff::before { display: none; }
 
