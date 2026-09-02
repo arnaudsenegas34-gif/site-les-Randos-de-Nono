@@ -88,6 +88,26 @@ rester identiques** : dans `.htaccess` (mod_headers, prioritaire si le module
 est actif) et dans `rando_nono_security_headers()` de `functions.php` (filet
 de secours si mod_headers est indisponible).
 
+## Tailles d'images — `add_image_size()` ne vaut que pour l'avenir
+
+Les tailles déclarées (`rando-card` 640×420, `rando-hero`, `rando-gallery`)
+ne sont générées que pour les images téléversées **après** leur déclaration.
+Pour les plus anciennes, WordPress retombe silencieusement sur le **fichier
+d'origine** : au 01/09/2026, l'accueil servait des PNG de 1 172 px pour des
+vignettes affichées à 250 px, soit 5,8 Mo de page.
+
+Conséquence visible le 01/09/2026 : la grille « Matos » réclamant 25 de ces
+fichiers d'un coup, InfinityFree refusait une partie des requêtes. Signature
+à reconnaître : **des images cassées qui se chargent parfaitement une par une
+au clic droit → « Charger l'image »**. C'est un refus de connexions
+simultanées, pas un fichier manquant.
+
+`rando_nono_repli_taille_image()` amortit le problème (repli sur
+`medium_large` au lieu de l'original), mais **le vrai correctif reste de
+régénérer les miniatures** après tout ajout ou modification de
+`add_image_size()` — extension *Regenerate Thumbnails*, à passer sur toute la
+médiathèque.
+
 ## Couleurs — trois oranges, pas un
 
 `--orange` (#D97706) ne passe le contraste WCAG AA **nulle part** : 3,00:1 en

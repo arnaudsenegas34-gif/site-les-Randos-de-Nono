@@ -139,6 +139,56 @@ function rando_nono_assets() {
 add_action( 'wp_enqueue_scripts', 'rando_nono_assets' );
 
 /**
+ * Repli quand une taille d'image du thème n'a pas été générée.
+ *
+ * `add_image_size()` ne vaut que pour les images téléversées APRÈS son ajout.
+ * Pour les plus anciennes, la taille demandée n'existe pas et WordPress
+ * retombe sur le FICHIER D'ORIGINE. Concrètement, sur la page d'accueil du
+ * 01/09/2026 : des PNG de 1 172 px servis pour des vignettes affichées à
+ * 250 px, et la grille « Matos » qui en réclamait 25 d'un coup — assez pour
+ * qu'un hébergement mutualisé refuse une partie des requêtes. Symptôme :
+ * des images cassées qui se chargent parfaitement une par une au clic droit.
+ *
+ * On retombe donc sur la plus petite taille intermédiaire réellement
+ * générée qui reste assez grande, au lieu de l'original.
+ *
+ * Ce filet ne remplace PAS une régénération des miniatures (qui, elle,
+ * produit la vraie taille recadrée) : il évite seulement qu'une image
+ * ancienne coûte plusieurs fois son poids utile. En cas de doute, la
+ * fonction rend la valeur de WordPress inchangée.
+ */
+function rando_nono_repli_taille_image( $image, $attachment_id, $size, $icon ) {
+    // rando-hero est volontairement exclu : y retomber sur « large » (1024 px)
+    // dégraderait visiblement la grande image d'en-tête.
+    $largeurs_cibles = array(
+        'rando-card'    => 640,
+        'rando-gallery' => 1000,
+    );
+
+    if ( $icon || ! is_string( $size ) || ! isset( $largeurs_cibles[ $size ] ) ) {
+        return $image;
+    }
+
+    // La taille demandée a bien été générée : on ne touche à rien.
+    if ( image_get_intermediate_size( $attachment_id, $size ) ) {
+        return $image;
+    }
+
+    $mini = $largeurs_cibles[ $size ] * 0.6;
+
+    foreach ( array( 'medium', 'medium_large', 'large' ) as $repli ) {
+        $inter = image_get_intermediate_size( $attachment_id, $repli );
+        if ( ! empty( $inter['url'] ) && ! empty( $inter['width'] ) && $inter['width'] >= $mini ) {
+            return array( $inter['url'], (int) $inter['width'], (int) $inter['height'], true );
+        }
+    }
+
+    // Aucune taille intermédiaire assez grande : on garde le choix de WordPress.
+    return $image;
+}
+add_filter( 'wp_get_attachment_image_src', 'rando_nono_repli_taille_image', 10, 4 );
+
+/**
  * Allègement du site public — deux ressources chargées pour rien.
  *
  * Constaté sur la page d'accueil en ligne (PageSpeed, 01/09/2026) :
