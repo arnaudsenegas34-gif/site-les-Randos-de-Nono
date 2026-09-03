@@ -455,11 +455,16 @@ Options -Indexes
 
 # N'exécute pas de PHP dans le dossier des médias uploadés (empêche l'exécution
 # d'un script si un fichier malveillant y était un jour déposé).
-<IfModule mod_php.c>
-  <Directory "wp-content/uploads">
-    php_flag engine off
-  </Directory>
-</IfModule>
+#
+# Une variante <IfModule mod_php.c><Directory ...> a été retirée le 01/09/2026 :
+# <Directory> est interdite en .htaccess (contexte « server config » /
+# « virtual host » uniquement) et provoque une erreur 500 sur TOUT le site.
+# Elle ne nuisait pas ici parce que mod_php n'est pas chargé (PHP tourne en
+# FastCGI/LiteSpeed) et qu'un <IfModule> faux n'analyse même pas son contenu —
+# mais elle serait devenue fatale le jour où l'hébergeur activerait mod_php,
+# sans que rien n'ait été modifié. La règle ci-dessous fait le même travail,
+# reste valide en .htaccess, et fonctionne quelle que soit la façon dont PHP
+# est exécuté.
 <FilesMatch "\.(php|phtml|php\d)$">
   <If "%{REQUEST_URI} =~ m#^/wp-content/uploads/#">
     Require all denied
