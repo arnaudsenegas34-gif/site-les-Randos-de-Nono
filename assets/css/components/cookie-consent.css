@@ -38,5 +38,16 @@
 
 @media (max-width: 480px) {
   .cookie-consent { flex-direction: column; align-items: stretch; }
+  /* `flex: 1 1 280px` ci-dessus dimensionne l'axe PRINCIPAL : en ligne
+     c'est une largeur, mais une fois passé en colonne c'est une HAUTEUR.
+     Le paragraphe était donc étiré à 280px de haut pour ~110px de texte,
+     et le bandeau occupait 65% de l'écran d'un iPhone SE. */
+  .cookie-consent p { flex: 0 1 auto; }
   .cookie-consent-actions { justify-content: flex-end; }
+}
+
+/* Écrans très bas (mobile en paysage) : le bandeau reste consultable au
+   lieu de recouvrir la page entière. */
+@media (max-height: 460px) {
+  .cookie-consent { max-height: calc(100vh - 2rem); overflow-y: auto; }
 }

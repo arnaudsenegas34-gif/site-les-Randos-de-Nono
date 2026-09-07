@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 4.8
+Version: 4.9
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -151,6 +151,15 @@ body {
   font-size: 16px;
   line-height: 1.7;
   transition: background-color 0.25s ease, color 0.25s ease;
+  /* Filet de sécurité : si un jour un bloc redéborde, la page ne devient
+     pas scrollable latéralement (ce qui, sur mobile, décale AUSSI les
+     éléments `position: fixed` — le bandeau cookies sortait de l'écran
+     par la droite alors que le vrai coupable était la grille de randos).
+     `clip` et non `hidden` : `hidden` crée un conteneur de défilement et
+     casserait le `position: sticky` du header. Propriété récente, mais sa
+     perte ne fait que revenir au comportement actuel — pas de régression
+     sur un navigateur ancien. */
+  overflow-x: clip;
 }
 @media (prefers-reduced-motion: reduce) {
   body { transition: none; }
@@ -480,7 +489,12 @@ select:focus-visible {
 }
 
 /* ══════════════════════ SECTIONS GÉNÉRIQUES ══════════════════════ */
-section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); background: var(--bg); }
+/* `position: relative` obligatoire : `.section-wave` est en `position:
+   absolute` et se calait sinon sur le bloc conteneur initial, donc EN HAUT
+   DE LA PAGE (par-dessus le hero) au lieu du haut de sa propre section.
+   Seul `#statistiques` posait ce `relative`, la vague de `#matos` était
+   donc dessinée sur le hero. */
+section.site-section { position: relative; padding: 5.5rem 3rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); background: var(--bg); }
 .section-eyebrow { display: flex; align-items: center; gap: 0.7rem; font-size: 0.7rem; font-weight: 300; color: var(--orange-texte); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 0.6rem; }
 .section-title { font-size: clamp(1.7rem, 2.8vw, 2.3rem); color: var(--accent); text-wrap: balance; margin-bottom: 0.85rem; }
 .section-sub { font-size: 0.93rem; color: var(--gris); font-weight: 300; font-style: italic; max-width: 56ch; margin-bottom: 3rem; }
@@ -514,10 +528,30 @@ section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), 
 /* ══════════════════════ GRILLE RANDOS ══════════════════════ */
 .randos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  /* `min(330px, 100%)` et non `330px` : sous 378px de large, une piste de
+     330px minimum est plus large que la colonne disponible et la grille
+     déborde de l'écran. */
+  grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr));
   gap: 1.5rem;
   margin-top: 2.5rem;
 }
+
+/* ══ Filet anti-débordement des grilles ══
+   Un enfant de grille (comme un enfant de flex) a `min-width: auto` : il
+   refuse de descendre sous la largeur MIN-CONTENT de son contenu. Une seule
+   ligne insécable à l'intérieur — ici le champ « lieu », qui contient
+   parfois une adresse entière en `white-space: nowrap` — imposait donc sa
+   largeur à toute la carte, à la piste, à la grille et enfin à la page :
+   676px de contenu sur un écran de 360px. C'est ce qui faisait « déborder »
+   les photos, les cartes ET le bandeau cookies (voir `overflow-x` sur body).
+   `min-width: 0` rend la main au conteneur ; la troncature par points de
+   suspension de `.meta-text`, jusque-là inopérante, fonctionne enfin. */
+.randos-grid > *,
+.favoris-grid > *,
+.guides-grid > *,
+.error-404-cards > *,
+.stats-grid > *,
+.matos-grid > * { min-width: 0; }
 
 .rando-card {
   position: relative;
@@ -641,7 +675,7 @@ section.site-section { padding: 5.5rem 3rem; padding-inline: max(var(--gutter), 
 .card-body { display: flex; flex-direction: column; flex: 1; padding: 1.5rem 1.4rem 1.4rem; }
 .card-meta { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
 .meta-item { font-size: 0.7rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.32rem; min-width: 0; }
-.meta-item .meta-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta-item .meta-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Le lieu occupe la ligne entière et se coupe proprement plutôt que
    d'empiler quatre lignes de texte. */
 .card-meta .meta-item-lieu { flex: 1 1 100%; }
@@ -811,7 +845,7 @@ a.card-title { display: block; }
 .article-body figcaption { font-size: 0.8rem; color: var(--gris); text-align: center; margin-top: -0.6rem; margin-bottom: 1rem; }
 
 /* ══════════════════════ HUB "GUIDES & SÉLECTIONS" ══════════════════════ */
-.guides-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.5rem; }
+.guides-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr)); gap: 1.5rem; }
 .guide-card { display: block; background: var(--surface); border-radius: var(--r-md); overflow: hidden; text-decoration: none; box-shadow: var(--shadow-1), var(--hairline); transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease); }
 .guide-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-3), var(--hairline); }
 .guide-card-img { aspect-ratio: 16 / 10; overflow: hidden; }
@@ -824,7 +858,7 @@ a.card-title { display: block; }
 .guide-card p { font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.5; margin: 0 1.1rem 1.1rem; }
 
 /* ══════════════════════ FAVORIS (page "Mes randos à faire") ══════════════════════ */
-.favoris-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
+.favoris-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 1.25rem; margin-top: 1.5rem; }
 .favoris-card {
   text-decoration: none;
   border-radius: var(--r-md);
@@ -1154,6 +1188,7 @@ a.card-title { display: block; }
 }
 @media (max-width: 600px) {
   .randos-grid { grid-template-columns: 1fr; }
+  .error-404-cards { grid-template-columns: 1fr; }
   .favoris-grid { grid-template-columns: 1fr; }
   .sac-list { grid-template-columns: 1fr; }
   .matos-grid { grid-template-columns: repeat(2, 1fr); }
