@@ -276,9 +276,9 @@ add_action( 'init', 'rando_nono_register_cpt' );
  */
 function rando_nono_register_rest_meta() {
     $fields = array(
-        'rando_lieu', 'rando_lat', 'rando_lon', 'rando_distance', 'rando_denivele',
-        'rando_denivele_neg', 'rando_duree', 'rando_date', 'rando_meilleure_saison',
-        'rando_maps_url', 'rando_gpx_url', 'rando_conseils',
+        'rando_lieu', 'rando_lieu_court', 'rando_lat', 'rando_lon', 'rando_distance',
+        'rando_denivele', 'rando_denivele_neg', 'rando_duree', 'rando_date',
+        'rando_meilleure_saison', 'rando_maps_url', 'rando_gpx_url', 'rando_conseils',
     );
     foreach ( $fields as $field ) {
         register_post_meta( 'randonnee', $field, array(
@@ -398,7 +398,8 @@ add_action( 'add_meta_boxes', 'rando_nono_add_meta_boxes' );
 function rando_nono_details_callback( $post ) {
     wp_nonce_field( 'rando_nono_save_meta', 'rando_nono_nonce' );
     $champs = array(
-        'rando_lieu'         => 'Lieu (ex: Mourèze, Hérault)',
+        'rando_lieu'         => 'Lieu complet (ex: Mourèze, Hérault)',
+        'rando_lieu_court'   => 'Lieu court — affiché sur les cartes (facultatif)',
         'rando_lat'          => 'Latitude (ex: 43.5783)',
         'rando_lon'          => 'Longitude (ex: 3.3922)',
         'rando_distance'     => 'Distance (ex: 12 km)',
@@ -418,9 +419,53 @@ function rando_nono_details_callback( $post ) {
     }
     echo '</table>';
 
+    echo '<p id="rando-nono-lieu-apercu" style="margin-top:0.75rem;padding:0.6rem 0.8rem;background:#F4F2E8;border-left:3px solid #D97706;font-size:13px;color:#3A3A32"></p>';
     echo '<p id="rando-nono-effort-suggestion" style="margin-top:0.75rem;padding:0.6rem 0.8rem;background:#F4F2E8;border-left:3px solid #2E5E3B;font-size:13px;color:#3A3A32"></p>';
     ?>
     <script>
+    ( function () {
+        // Aperçu du libellé qui apparaîtra sur les cartes. Reproduit la règle
+        // de rando_nono_lieu_court() en PHP : le champ court gagne, sinon la
+        // portion avant la première virgule, coupée sur un espace si besoin.
+        // Purement indicatif — c'est toujours le PHP qui fait foi à l'affichage.
+        var lieuEl      = document.getElementById( 'rando_lieu' );
+        var lieuCourtEl = document.getElementById( 'rando_lieu_court' );
+        var apercu      = document.getElementById( 'rando-nono-lieu-apercu' );
+
+        if ( lieuEl && lieuCourtEl && apercu ) {
+            var MAX = 34;
+
+            function lieuCourt() {
+                var court = ( lieuCourtEl.value || '' ).trim();
+                if ( court ) return { texte: court, auto: false };
+
+                var lieu = ( lieuEl.value || '' ).trim();
+                if ( ! lieu ) return { texte: '', auto: true };
+
+                court = lieu.split( ',' )[0].trim();
+                if ( court.length <= MAX ) return { texte: court, auto: true };
+
+                var coupe  = court.slice( 0, MAX );
+                var espace = coupe.lastIndexOf( ' ' );
+                if ( espace > 8 ) coupe = coupe.slice( 0, espace );
+                return { texte: coupe.replace( /[\s,;:-]+$/, '' ) + '…', auto: true, tronque: true };
+            }
+
+            function majApercu() {
+                var r = lieuCourt();
+                if ( ! r.texte ) { apercu.textContent = ''; return; }
+                apercu.textContent = 'Sur les cartes, ce lieu s\'affichera : « ' + r.texte + ' »'
+                    + ( r.tronque
+                        ? ' — coupé faute de place. Renseigne « Lieu court » pour choisir toi-même (ex : « Val-d\'Isère »).'
+                        : ( r.auto ? ' (déduit automatiquement du lieu complet).' : ' (libellé choisi à la main).' ) );
+            }
+
+            lieuEl.addEventListener( 'input', majApercu );
+            lieuCourtEl.addEventListener( 'input', majApercu );
+            majApercu();
+        }
+    } )();
+
     ( function () {
         // Suggestion indicative (distance + dénivelé/100, façon indice d'effort) —
         // n'écrit jamais la case à cocher "Difficulté" toute seule, c'est toujours
@@ -488,7 +533,7 @@ function rando_nono_featured_callback( $post ) {
 function rando_nono_save_meta( $post_id ) {
     if ( isset( $_POST['rando_nono_nonce'] ) && wp_verify_nonce( $_POST['rando_nono_nonce'], 'rando_nono_save_meta' ) ) {
         if ( ! ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) && current_user_can( 'edit_post', $post_id ) ) {
-            $fields = array( 'rando_lieu', 'rando_lat', 'rando_lon', 'rando_distance', 'rando_denivele', 'rando_denivele_neg', 'rando_duree', 'rando_date', 'rando_meilleure_saison', 'rando_maps_url', 'rando_gpx_url', 'rando_photos', 'rando_sac', 'rando_conseils' );
+            $fields = array( 'rando_lieu', 'rando_lieu_court', 'rando_lat', 'rando_lon', 'rando_distance', 'rando_denivele', 'rando_denivele_neg', 'rando_duree', 'rando_date', 'rando_meilleure_saison', 'rando_maps_url', 'rando_gpx_url', 'rando_photos', 'rando_sac', 'rando_conseils' );
             foreach ( $fields as $field ) {
                 if ( isset( $_POST[ $field ] ) ) {
                     update_post_meta( $post_id, $field, sanitize_textarea_field( $_POST[ $field ] ) );
@@ -507,6 +552,47 @@ function rando_nono_save_meta( $post_id ) {
     }
 }
 add_action( 'save_post_randonnee', 'rando_nono_save_meta' );
+
+/**
+ * Colonne « Lieu (cartes) » dans Randonnées → Toutes les randonnées.
+ *
+ * Sans elle, rien ne signale qu'un lieu est trop long pour les cartes : il
+ * faut ouvrir chaque randonnée une par une. La colonne affiche le libellé
+ * réellement rendu et marque en orange ceux qui ont dû être coupés — la
+ * liste des fiches à reprendre se lit alors d'un coup d'œil.
+ */
+add_filter( 'manage_randonnee_posts_columns', function( $columns ) {
+    $nouvelles = array();
+    foreach ( $columns as $cle => $libelle ) {
+        $nouvelles[ $cle ] = $libelle;
+        if ( 'title' === $cle ) {
+            $nouvelles['rando_lieu_court'] = 'Lieu (cartes)';
+        }
+    }
+    return $nouvelles;
+} );
+
+add_action( 'manage_randonnee_posts_custom_column', function( $colonne, $post_id ) {
+    if ( 'rando_lieu_court' !== $colonne ) {
+        return;
+    }
+
+    $court   = rando_nono_lieu_court( $post_id );
+    $manuel  = '' !== trim( (string) get_post_meta( $post_id, 'rando_lieu_court', true ) );
+    $tronque = ! $manuel && '' !== $court && '…' === mb_substr( $court, -1 );
+
+    if ( '' === $court ) {
+        echo '<span style="color:#8C8F94">—</span>';
+        return;
+    }
+
+    echo esc_html( $court );
+    if ( $tronque ) {
+        echo '<br><span style="color:#A85504;font-size:11px">coupé — à raccourcir à la main</span>';
+    } elseif ( ! $manuel ) {
+        echo '<br><span style="color:#8C8F94;font-size:11px">déduit du lieu complet</span>';
+    }
+}, 10, 2 );
 
 /* ──────────────────────────────────────────
    5. CUSTOM POST TYPE "MATOS"
@@ -1050,6 +1136,61 @@ function rando_nono_lieu_region( $lieu ) {
     if ( ! $lieu ) return '';
     $parts = array_map( 'trim', explode( ',', $lieu ) );
     return end( $parts );
+}
+
+/**
+ * Libellé de lieu COURT, pour les surfaces où la place est comptée : cartes
+ * des grilles, popups de la carte d'ensemble, suggestions de la page 404,
+ * favoris. La fiche de randonnée, le schema.org et les e-mails gardent le
+ * lieu complet — c'est là qu'il a une valeur (référencement local, précision).
+ *
+ * Le champ « lieu » contient parfois une adresse entière (exemple réel :
+ * « Cascade du Fornet Auvergne-Rhône-Alpes Savoie (73) Val-d'Isère, hameau
+ * du Fornet, Parc national de la Vanoise »). On s'appuyait jusqu'ici sur une
+ * troncature CSS, qui coupe sans discernement et n'aide ni le référencement
+ * ni la lecture.
+ *
+ * Ordre de priorité :
+ *   1. le champ « Lieu court » s'il est renseigné — c'est toujours Nono qui
+ *      tranche, aucune heuristique ne devinera « Val-d'Isère » toute seule ;
+ *   2. à défaut, la portion avant la première virgule (« Mourèze, Hérault »
+ *      → « Mourèze »), coupée sur un espace si elle reste trop longue.
+ *
+ * Ce repli fait que les randonnées déjà publiées s'améliorent sans être
+ * rouvertes une par une ; la colonne « Lieu (cartes) » de la liste des
+ * randonnées signale celles qui méritent encore un libellé écrit à la main.
+ */
+function rando_nono_lieu_court( $post_id, $max = 34 ) {
+    $court = trim( (string) get_post_meta( $post_id, 'rando_lieu_court', true ) );
+    if ( '' !== $court ) {
+        return $court;
+    }
+
+    $lieu = trim( (string) get_post_meta( $post_id, 'rando_lieu', true ) );
+    if ( '' === $lieu ) {
+        return '';
+    }
+
+    $parts = explode( ',', $lieu );
+    $court = trim( $parts[0] );
+
+    // mb_substr / mb_strlen : WordPress les fournit lui-même (wp-includes/
+    // compat.php) si mbstring manque sur l'hébergement. Interdiction de
+    // passer par substr() seul : il coupe au milieu d'un caractère accentué.
+    if ( mb_strlen( $court ) <= $max ) {
+        return $court;
+    }
+
+    $coupe = mb_substr( $court, 0, $max );
+    // strrpos sur une ESPACE est sûr en UTF-8 (0x20 n'apparaît jamais à
+    // l'intérieur d'une séquence multi-octets), et substr sur cette position
+    // tombe donc forcément sur une frontière de caractère.
+    $espace = strrpos( $coupe, ' ' );
+    if ( false !== $espace && $espace > 8 ) {
+        $coupe = substr( $coupe, 0, $espace );
+    }
+
+    return rtrim( $coupe, " \t\n\r\0\x0B,;:-" ) . '…';
 }
 
 function rando_nono_schema_jsonld() {

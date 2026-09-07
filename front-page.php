@@ -64,6 +64,7 @@ if ( ! $featured_query->have_posts() ) {
     $featured_query->the_post();
     $fid         = get_the_ID();
     $f_lieu      = get_post_meta( $fid, 'rando_lieu', true );
+    $f_lieu_court = rando_nono_lieu_court( $fid );
     $f_dist      = get_post_meta( $fid, 'rando_distance', true );
     $f_deniv     = get_post_meta( $fid, 'rando_denivele', true );
     $f_duree     = get_post_meta( $fid, 'rando_duree', true );
@@ -94,7 +95,7 @@ if ( ! $featured_query->have_posts() ) {
           <?php endif; ?>
         </div>
         <div class="derniere-content">
-          <span class="meta-item"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $f_lieu ); ?> · <?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $f_date ); ?></span>
+          <span class="meta-item" title="<?php echo esc_attr( $f_lieu ); ?>"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $f_lieu_court ); ?> · <?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $f_date ); ?></span>
           <h3 class="card-title"><a href="<?php echo esc_url( get_permalink( $fid ) ); ?>"><?php the_title(); ?></a></h3>
           <p class="derniere-desc"><?php echo esc_html( wp_trim_words( get_the_content(), 28 ) ); ?></p>
 

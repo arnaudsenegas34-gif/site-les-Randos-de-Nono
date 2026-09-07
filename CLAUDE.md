@@ -228,10 +228,36 @@ vraie cause en une mesure.
 ## Le champ « lieu » contient parfois une adresse entière
 
 Exemple réel : « Cascade du Fornet Auvergne-Rhône-Alpes Savoie (73)
-Val-d'Isère, hameau du Fornet, Parc national de la Vanoise ». Sur une carte,
-il est tronqué à une ligne (`.meta-item-lieu .meta-text`) avec le texte
-complet en `title`. Sans ça, il s'étalait sur quatre lignes et les cartes
-d'une même rangée n'avaient plus la même hauteur.
+Val-d'Isère, hameau du Fornet, Parc national de la Vanoise ». Sans traitement,
+il s'étalait sur quatre lignes et les cartes d'une même rangée n'avaient plus
+la même hauteur.
+
+**Deux champs, pas un** (depuis le 07/09/2026) : `rando_lieu` (complet) et
+`rando_lieu_court` (facultatif). `rando_nono_lieu_court()` sert de source
+unique aux surfaces où la place est comptée — cartes de grille, popups de la
+carte d'ensemble, suggestions 404, favoris, « randonnées similaires ». Elle
+renvoie le champ court s'il est rempli, sinon la portion avant la première
+virgule, coupée sur un espace au-delà de 34 caractères.
+
+La **fiche de randonnée, le schema.org et les e-mails gardent le lieu
+complet** : c'est là qu'il sert au référencement local et à la précision. Ne
+pas y substituer le lieu court.
+
+Le repli automatique existe pour que les randonnées déjà publiées
+s'améliorent sans être rouvertes une par une. La colonne « Lieu (cartes) »
+de *Randonnées → Toutes les randonnées* affiche le libellé réellement rendu
+et marque en orange ceux qui ont dû être coupés : c'est la liste des fiches
+à reprendre à la main.
+
+`mb_substr`/`mb_strlen` plutôt que `substr`/`strlen` (WordPress les fournit
+lui-même si mbstring manque) : `substr` coupe au milieu d'un caractère
+accentué. Le `strrpos` sur une espace, lui, est sûr en UTF-8 — 0x20
+n'apparaît jamais à l'intérieur d'une séquence multi-octets.
+
+La troncature CSS (`.meta-item-lieu .meta-text`, avec le texte complet en
+`title`) reste en place comme second filet, mais elle n'est plus la première
+ligne de défense — et elle ne fonctionnait de toute façon pas avant le
+correctif `min-width: 0` (voir plus haut).
 
 ## Polices — provenance et fabrication des fichiers
 

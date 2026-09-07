@@ -20,7 +20,7 @@ foreach ( $rando_nono_all_randos as $r ) {
         'id'    => $r->ID,
         'titre' => get_the_title( $r ),
         'url'   => get_permalink( $r ),
-        'lieu'  => get_post_meta( $r->ID, 'rando_lieu', true ),
+        'lieu'  => rando_nono_lieu_court( $r->ID ),
         'thumb' => get_the_post_thumbnail_url( $r->ID, 'medium' ),
     );
 }

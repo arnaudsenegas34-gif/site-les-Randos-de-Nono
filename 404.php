@@ -36,7 +36,7 @@ rando_nono_breadcrumb();
         <?php while ( $recent->have_posts() ) : $recent->the_post(); ?>
           <?php
           $thumb = get_the_post_thumbnail_url( get_the_ID(), 'thumbnail' );
-          $lieu  = get_post_meta( get_the_ID(), 'rando_lieu', true );
+          $lieu  = rando_nono_lieu_court( get_the_ID() );
           $dist  = get_post_meta( get_the_ID(), 'rando_distance', true );
           ?>
           <a href="<?php echo esc_url( get_permalink() ); ?>" class="error-404-card">

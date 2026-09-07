@@ -472,9 +472,9 @@ if ( ! empty( $related_randos ) ) :
         <?php endif; ?>
         <div class="sr-related-info">
           <span class="sr-related-title"><?php echo esc_html( get_the_title( $related ) ); ?></span>
-          <?php $rlieu = get_post_meta( $related->ID, 'rando_lieu', true ); ?>
+          <?php $rlieu = rando_nono_lieu_court( $related->ID ); ?>
           <?php if ( $rlieu ) : ?>
-          <span class="sr-related-lieu"><?php echo esc_html( $rlieu ); ?></span>
+          <span class="sr-related-lieu" title="<?php echo esc_attr( get_post_meta( $related->ID, 'rando_lieu', true ) ); ?>"><?php echo esc_html( $rlieu ); ?></span>
           <?php endif; ?>
         </div>
       </a>

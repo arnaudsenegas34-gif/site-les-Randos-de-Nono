@@ -84,7 +84,7 @@ if ( $map_query->have_posts() ) {
             'lat'      => (float) $mlat,
             'lon'      => (float) $mlon,
             'titre'    => get_the_title(),
-            'lieu'     => get_post_meta( $mid, 'rando_lieu', true ),
+            'lieu'     => rando_nono_lieu_court( $mid ),
             'distance' => get_post_meta( $mid, 'rando_distance', true ),
             'url'      => get_permalink( $mid ),
             'thumb'    => get_the_post_thumbnail_url( $mid, 'medium' ),

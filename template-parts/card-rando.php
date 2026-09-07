@@ -6,7 +6,11 @@
  */
 
 $id        = get_the_ID();
-$lieu      = get_post_meta( $id, 'rando_lieu', true );
+// Lieu COMPLET en `title` (l'info reste accessible), lieu COURT à l'écran :
+// une carte n'a pas la place d'une adresse entière, et la troncature CSS
+// coupait au milieu d'un mot. Voir rando_nono_lieu_court() dans functions.php.
+$lieu       = get_post_meta( $id, 'rando_lieu', true );
+$lieu_court = rando_nono_lieu_court( $id );
 $distance  = get_post_meta( $id, 'rando_distance', true );
 $denivele  = get_post_meta( $id, 'rando_denivele', true );
 $duree     = get_post_meta( $id, 'rando_duree', true );
@@ -47,7 +51,7 @@ $thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-car
   </div>
   <div class="card-body">
     <div class="card-meta">
-      <span class="meta-item meta-item-lieu"><?php echo rando_nono_icon( 'pin' ); ?> <span class="meta-text" title="<?php echo esc_attr( $lieu ); ?>"><?php echo esc_html( $lieu ); ?></span></span>
+      <span class="meta-item meta-item-lieu"><?php echo rando_nono_icon( 'pin' ); ?> <span class="meta-text" title="<?php echo esc_attr( $lieu ); ?>"><?php echo esc_html( $lieu_court ); ?></span></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $date_sortie ); ?></span>
     </div>
     <h3 class="card-title"><a class="card-title-link" href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php the_title(); ?></a></h3>
