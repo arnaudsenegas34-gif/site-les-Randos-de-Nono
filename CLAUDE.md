@@ -163,6 +163,68 @@ Les termes ne sont pas `facile/moyen/difficile` mais des formules maison
   c'est ce qui a fait croire à un bug le 01/09/2026, seul « Simpliste »
   restait coloré. Purger le cache après toute modification du balisage.
 
+## Débordement horizontal mobile — `min-width: 0` sur les enfants de grille
+
+Panne corrigée le 07/09/2026 : sur la page d'accueil en mobile, la page
+entière était scrollable latéralement (676px de contenu pour 360px d'écran).
+Symptômes rapportés : « les cookies débordent à droite », « certaines photos
+débordent », « les cartes débordent ». **Une seule cause pour les trois.**
+
+Un enfant de grille (comme un enfant de flex) a `min-width: auto` : il refuse
+de descendre sous la largeur **min-content** de son contenu. Le champ « lieu »
+d'une carte est en `white-space: nowrap` ; sur une adresse entière il mesure
+~590px. Cette largeur remontait à la carte → à la piste de la grille → à la
+grille → à la page. Le correctif est `min-width: 0` sur les enfants de
+`.randos-grid` (et des autres grilles) : la troncature par points de
+suspension de `.meta-text`, jusque-là **inopérante faute de conteneur borné**,
+fonctionne enfin.
+
+Pourquoi le bandeau cookies « débordait » alors qu'il est en `position:
+fixed` et correctement centré : quand le document est plus large que l'écran,
+les navigateurs mobiles élargissent le *layout viewport* à la largeur du
+document, et les éléments fixes se calent dessus. Le bandeau était donc large
+de 660px, moitié hors écran. **Devant un élément `fixed` qui sort de l'écran
+sur mobile, chercher le débordement du document, pas l'élément lui-même.**
+
+Deux filets posés en plus du correctif :
+
+- `overflow-x: clip` sur `body` — `clip` et **pas** `hidden` : `hidden` crée
+  un conteneur de défilement et casserait le `position: sticky` du header
+  (vérifié). Sa perte sur un navigateur ancien ne fait que revenir au
+  comportement d'avant, sans régression.
+- `minmax(min(330px, 100%), 1fr)` au lieu de `minmax(330px, 1fr)` : une
+  piste minimale de 330px est plus large que la colonne disponible sous
+  378px d'écran.
+
+Méthode de vérification (reproductible) : générer une réplique statique de
+la page qui charge les vrais CSS, l'ouvrir dans Chromium avec Playwright, et
+lister les éléments dont `getBoundingClientRect().right` dépasse la largeur
+du viewport. Comparer `document.documentElement.scrollWidth` à `clientWidth`
+à 320 / 360 / 390 / 430 / 600px. C'est ce qui a permis d'écarter les
+suspects habituels (hero, vagues SVG, grille matos) et de remonter à la
+vraie cause en une mesure.
+
+### Deux défauts trouvés au passage, même page
+
+- **Vague de transition dessinée en haut de la page.** `.section-wave` est en
+  `position: absolute`, mais `section.site-section` n'était pas positionnée —
+  seul `#statistiques` posait son `position: relative`. La vague de `#matos`
+  se calait donc sur le bloc conteneur initial, c'est-à-dire par-dessus le
+  hero. Corrigé en posant `position: relative` sur `section.site-section`.
+- **Bandeau cookies occupant 65% de l'écran d'un iPhone SE.** `.cookie-consent p`
+  porte `flex: 1 1 280px` ; sous 480px le bandeau passe en
+  `flex-direction: column`, où `flex-basis` dimensionne la **hauteur** et non
+  la largeur. Le paragraphe était étiré à 280px de haut pour ~110px de texte.
+  `flex: 0 1 auto` dans la requête média ramène le bandeau à 37% (320px) et
+  20% (390px).
+- **Cartes « Matos » écrasées à 53px de haut sur mobile.** `grid-auto-rows:
+  53px` est correct hors mobile, où `matos.js` fait occuper 1 à 4 rangées à
+  chaque carte selon la taille réelle du matériel. Sous 900px, les spans sont
+  ramenés à 1 par `!important` sans que la hauteur de rangée soit redéfinie :
+  chaque photo tombait dans un bandeau de 230×53. Hauteur de rangée fixe
+  (165px puis 150px) — et non `aspect-ratio`, `.matos-img` étant en
+  `height: 100%` (voir la règle plus haut).
+
 ## Le champ « lieu » contient parfois une adresse entière
 
 Exemple réel : « Cascade du Fornet Auvergne-Rhône-Alpes Savoie (73)

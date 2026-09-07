@@ -358,6 +358,15 @@
   .matos-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.8rem;
+    /* `grid-auto-rows` reste à 53px hors de cette requête parce que les
+       cartes y occupent 1 à 4 rangées selon la taille réelle du matériel
+       (spans posés en ligne par matos.js). Ici les spans sont ramenés à 1 :
+       sans redéfinir la hauteur de rangée, chaque carte tombait à 53px de
+       haut pour ~230px de large — un bandeau de 4,3:1 dans lequel la photo,
+       en `object-fit: contain`, devenait illisible sous son propre libellé.
+       Hauteur FIXE et non `aspect-ratio` : `.matos-img` est en
+       `height: 100%`, un ratio perdu ferait donc disparaître l'image. */
+    grid-auto-rows: 165px;
   }
 
   .matos-card {
@@ -407,6 +416,7 @@
   .matos-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.6rem;
+    grid-auto-rows: 150px;
   }
 
   .matos-panel-img {
