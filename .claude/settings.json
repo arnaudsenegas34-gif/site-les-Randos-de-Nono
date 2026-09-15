@@ -2,10 +2,10 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "deny": [
-      "Read(**/assets/vendor/**)",
-      "Read(./assets/vendor/**)",
-      "Read(**/assets/fonts/**)",
-      "Read(./assets/fonts/**)"
+      "Read(./assets/vendor/leaflet/leaflet.js)",
+      "Read(./assets/vendor/chartjs/chart.umd.min.js)",
+      "Read(**/assets/vendor/leaflet/leaflet.js)",
+      "Read(**/assets/vendor/chartjs/chart.umd.min.js)"
     ],
     "allow": [
       "Bash(php -l *)",
@@ -14,9 +14,6 @@
       "Bash(rg *)",
       "Bash(wc *)",
       "Bash(sed -n *)",
-      "Bash(head *)",
-      "Bash(tail *)",
-      "Bash(find *)",
       "Bash(md5sum *)",
       "Bash(git status *)",
       "Bash(git diff *)",

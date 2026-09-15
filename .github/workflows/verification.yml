@@ -1,0 +1,45 @@
+##
+# Contrôles automatiques du thème — à chaque envoi de code sur GitHub.
+#
+# CE WORKFLOW NE DÉPLOIE RIEN. Il vérifie, et c'est tout. La mise en ligne
+# reste manuelle : zip du thème depuis l'administration WordPress, `.htaccess`
+# par FTP (voir CLAUDE.md).
+#
+# Il exécute `.github/verifier.sh`, exactement le même script qu'en local. Un
+# seul endroit à modifier pour ajouter un contrôle, donc aucune dérive
+# possible entre les deux.
+##
+name: Contrôles du thème
+
+on:
+  push:
+  pull_request:
+
+# Une nouvelle poussée annule la vérification en cours sur la même branche :
+# seul le dernier état du code intéresse.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verifier:
+    name: Vérifications
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: S'assurer que PHP est disponible
+        # PHP est préinstallé sur les machines GitHub, mais on ne veut pas que
+        # le jour où ça change, le contrôle disparaisse en silence.
+        run: |
+          if ! command -v php >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq php-cli
+          fi
+          php -v | head -n 1
+          node -v
+
+      - name: Lancer les contrôles
+        run: bash .github/verifier.sh

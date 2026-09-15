@@ -95,10 +95,10 @@ Pour trouver quelque chose : `grep -rn "motif" --include="*.php" .` puis
 
 ---
 
-## Hébergement et livraison — aucune automatisation
+## Hébergement et livraison — aucun déploiement automatique
 
-Hébergeur : **InfinityFree**. **Pas de CI/CD** : pousser sur `main` ne déploie
-rien. Toute mise à jour est remontée à la main, en **deux étapes séparées** :
+Hébergeur : **InfinityFree**. **Pousser sur `main` ne déploie rien.** Toute
+mise à jour est remontée à la main, en **deux étapes séparées** :
 
 1. **Le thème** (tout le dépôt sauf `.htaccess`) → zip avec un dossier racine
    `rando-nono/`, téléversé depuis *Apparence → Thèmes → Ajouter → Téléverser*.
@@ -110,6 +110,30 @@ deux livrables **séparément** plutôt qu'un seul zip.
 Le numéro de `Version:` dans l'en-tête de `style.css` doit être **incrémenté à
 chaque livraison** : c'est le seul moyen de vérifier après upload que la bonne
 version est en ligne.
+
+### Contrôles automatiques — ils vérifient, ils ne déploient pas
+
+Un workflow GitHub (`.github/workflows/verification.yml`) exécute
+`.github/verifier.sh` à chaque envoi de code. **Il ne met rien en ligne** : la
+livraison reste entièrement manuelle.
+
+Les neuf contrôles sont les règles de ce fichier transformées en
+vérifications : syntaxe PHP et JS, modules déclarés réellement présents,
+polices aux empreintes distinctes, absence de sélecteur `.js .xxx`,
+`api.sports-tracker.com` dans les deux déclarations de CSP, garde-fou
+`/wp-admin/` présent des deux côtés, pas d'`unsafe-eval`, version du thème
+bien formée.
+
+Le script tourne à l'identique en local :
+
+```
+bash .github/verifier.sh
+```
+
+**Pour ajouter un contrôle, modifier le script — pas le workflow** : les deux
+exécutions partagent le même fichier, elles ne peuvent donc pas diverger.
+Chaque contrôle a été validé en cassant volontairement le code pour vérifier
+qu'il échoue bien.
 
 ### Cache
 
