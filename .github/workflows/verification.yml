@@ -28,7 +28,10 @@ jobs:
 
     steps:
       - name: Récupérer le code
-        uses: actions/checkout@v4
+        # v5 et pas v4 : v4 tourne sur Node 20, déprécié par GitHub. Ça
+        # fonctionne encore, avec un avertissement jaune à chaque exécution,
+        # mais ça cessera de fonctionner.
+        uses: actions/checkout@v5
 
       - name: S'assurer que PHP est disponible
         # PHP est préinstallé sur les machines GitHub, mais on ne veut pas que
