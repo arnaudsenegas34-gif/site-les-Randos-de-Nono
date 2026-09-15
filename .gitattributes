@@ -1,0 +1,15 @@
+# Bibliothèques tierces : ni comptées dans les statistiques de langage, ni
+# affichées en diff. Sans `-diff`, une mise à jour de Leaflet ou Chart.js
+# déverse 200 Ko de code minifié dans un `git diff` — illisible pour un humain
+# et très coûteux pour un assistant.
+assets/vendor/**        linguist-vendored
+assets/vendor/**/*.js   -diff
+assets/vendor/**/*.css  -diff
+*.min.js                -diff
+
+# Binaires : pas de tentative de fusion ni de diff textuel.
+assets/fonts/*.woff2    binary
+*.jpg                   binary
+*.png                   binary
+*.webp                  binary
+*.pdf                   binary

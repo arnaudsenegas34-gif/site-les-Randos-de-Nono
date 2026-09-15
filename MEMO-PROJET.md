@@ -47,7 +47,7 @@ configurés — Google Analytics et le pixel Facebook.
 
 | | |
 |---|---|
-| Fichiers PHP | 21 (≈ 5 800 lignes, dont `functions.php` à 3 284) |
+| Fichiers PHP | 44 (≈ 5 900 lignes) — `functions.php` n'est qu'un chargeur de 54 lignes, la logique vit dans 25 modules `inc/` de 27 à 354 lignes |
 | CSS | 6 fichiers (≈ 2 900 lignes) |
 | JS | 9 fichiers (≈ 2 100 lignes) |
 | Poids d'une page simple | 224 Ko · fiche de randonnée 765 Ko |
@@ -109,10 +109,12 @@ la place est comptée), `rando_lat`/`rando_lon`, `rando_distance`,
 | **6.0** | 15/09/2026 | 48 constats d'audit corrigés |
 | **6.1** | 15/09/2026 | Répare les contenus invisibles introduits en 6.0 |
 | **6.2** | 15/09/2026 | Rétablit la mosaïque Matos sans libellé sur grand écran |
+| **6.3** | 15/09/2026 | Découpe `functions.php` en modules ; documentation réorganisée. Aucun changement de comportement (HTML rendu identique à l'octet près) |
 
-Les pannes de 2026 sont documentées en détail dans `CLAUDE.md`, avec leur
-signature et la règle qui en découle. **Les relire avant de toucher au
-`.htaccess`, aux polices, aux tailles d'images ou aux pastilles de difficulté.**
+Les règles qui en découlent sont dans `CLAUDE.md` ; le récit détaillé de
+chaque panne, avec sa signature, est dans `docs/incidents.md`. **Les relire
+avant de toucher au `.htaccess`, aux polices, aux tailles d'images ou aux
+pastilles de difficulté.**
 
 ---
 

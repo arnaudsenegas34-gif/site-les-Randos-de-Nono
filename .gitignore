@@ -1,0 +1,9 @@
+# Livrables fabriqués localement — ils ne sont jamais versionnés : le zip se
+# reconstruit depuis le dépôt à chaque livraison (voir CLAUDE.md).
+*.zip
+
+# Artefacts d'outils et de systèmes de fichiers
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
