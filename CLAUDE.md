@@ -4,6 +4,11 @@ Thème WordPress classique (pas de build, pas de dépendances npm/composer).
 Ces notes couvrent ce qui n'est *pas* visible en lisant le code : l'environnement
 d'hébergement réel, découvert le 31/08/2026 en corrigeant un bug d'affichage GPX.
 
+> **Pour une vue d'ensemble du projet — ce qu'il est, comment il est structuré,
+> l'historique des versions, l'état des lieux et ce qui reste ouvert — voir
+> [`MEMO-PROJET.md`](MEMO-PROJET.md).** Ce fichier-ci énonce les règles à ne pas
+> enfreindre ; le mémo raconte le projet.
+
 ## Hébergement & déploiement — aucune automatisation
 
 - Hébergeur : InfinityFree.
