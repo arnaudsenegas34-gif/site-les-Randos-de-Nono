@@ -472,10 +472,19 @@ un parc ou un massif.
 
 ### Autres corrections de la v6.1
 
-- **Nom de l'équipement affiché en permanence** sur les vignettes Matos. La v6.0
-  ne le montrait qu'au survol : invisible sans souris, sans JavaScript, et à
-  l'arrêt sur la page. Le dégradé sombre du bandeau assure le contraste quelle
-  que soit la photo dessous.
+- **Nom de l'équipement sur les vignettes Matos : masqué sur grand écran,
+  affiché sur mobile.** C'est le comportement d'origine, rétabli après deux
+  essais écartés. Sur desktop, la mosaïque reste une mosaïque : seules la
+  surbrillance au survol (`.matos-img-overlay` et son « + ») et la modale au
+  clic donnent le détail. Sur mobile, où le survol n'existe pas, le nom est
+  affiché en permanence par la requête média.
+
+  L'audit avait relevé « 25 vignettes sans nom » comme une friction — c'est un
+  **parti pris de design assumé**, pas un défaut : l'`aria-label` de chaque
+  carte (« Voir le détail de… ») porte le nom pour les lecteurs d'écran, et
+  axe-core ne signale rien. Ne pas y revenir : afficher le libellé au repos sur
+  grand écran alourdit la grille et lui fait perdre son sens, et l'afficher au
+  survol le rend invisible sur mobile.
 - **Mention RGPD du bandeau newsletter** : elle héritait de `--gris` et
   `--orange-texte`, deux couleurs prévues pour une surface claire, posées sur le
   vert du bandeau — 1,15:1 et 1,21:1, illisibles. Passée en `--beige` (5,69:1).

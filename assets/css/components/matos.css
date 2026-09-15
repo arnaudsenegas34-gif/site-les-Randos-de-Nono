@@ -175,32 +175,18 @@
    survol, par-dessus la photo assombrie — la mosaïque reste une mosaïque, mais
    on peut la parcourir du regard. Sur mobile, où le survol n'existe pas, le
    nom est affiché en permanence (voir la requête média en bas de ce fichier). */
-/* Le nom de l'équipement, lisible en permanence par-dessus la photo.
+/* Sur grand écran, la mosaïque reste une mosaïque : pas de libellé sur les
+   vignettes, seulement la surbrillance au survol (.matos-img-overlay et son
+   « + »), et le détail au clic dans la modale. Le nom reste dans le HTML —
+   `aria-label` sur la carte le porte pour les lecteurs d'écran.
 
-   Il était en `display: none` sur grand écran : la mosaïque ne montrait que
-   des photos et il fallait ouvrir chaque vignette pour savoir ce qu'elle
-   contenait. Une première tentative l'a fait apparaître au survol seulement —
-   mais alors il reste invisible sans souris, sans JavaScript, et à l'arrêt sur
-   la page. Il est donc affiché au repos : le dégradé sombre garantit le
-   contraste quelle que soit la photo dessous, et le survol ne fait que
-   renforcer le fond. */
+   Sur mobile, où il n'y a pas de survol, il est affiché en permanence : voir
+   la requête média en bas de ce fichier. Deux essais ont été écartés au
+   passage : l'afficher au repos partout (trop chargé, la mosaïque perdait son
+   sens) et l'afficher au survol (un simple `opacity` suffit à le faire
+   disparaître aussi sur mobile, où le survol n'existe pas). */
 .matos-name {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  z-index: 3;
-  padding: 0.45rem 0.55rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  line-height: 1.25;
-  color: #fff;
-  background: linear-gradient(to top, rgba(26,46,31,0.94) 15%, rgba(26,46,31,0.72) 55%, rgba(26,46,31,0));
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  transition: background 0.22s ease;
-  pointer-events: none;
-}
-.matos-card:hover .matos-name,
-.matos-card:focus-visible .matos-name {
-  background: linear-gradient(to top, rgba(26,46,31,0.98) 20%, rgba(26,46,31,0.85) 60%, rgba(26,46,31,0.15));
+  display: none;
 }
 
 /* ══════════════════════════════════════════════
