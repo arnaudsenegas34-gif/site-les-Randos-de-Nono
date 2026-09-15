@@ -322,6 +322,28 @@ Trois audits (technique, utilisateur, conformité) ont produit 60 constats ;
 cette version en corrige 48 dans le code. Les points ci-dessous documentent
 les décisions qui ne se lisent pas dans le diff.
 
+### Bascule `no-js` → `js` : `:where()` est obligatoire
+
+**Correctif du 15/09/2026, v6.1 — régression introduite puis réparée le jour
+même.** La première version écrivait `.js .section-title { opacity: 0 }`. Ce
+sélecteur pèse (0,2,0) et écrasait `.is-revealed { opacity: 1 }` (0,1,0),
+quelques lignes plus bas dans le même fichier. Le JavaScript posait bien la
+classe — on la voyait dans l'inspecteur — mais **l'opacité restait à 0**.
+
+Résultat : la rando à la une, les statistiques, tous les titres et sous-titres
+de section, les filtres d'archive et le bandeau newsletter devenaient
+**définitivement invisibles**, sur l'accueil, l'archive, Guides & Sélections et
+les pages de contenu. Le contenu était bien dans le HTML : c'était uniquement
+la cascade CSS.
+
+Le correctif est `:where(.js)`, qui conditionne la règle **sans changer sa
+spécificité** — exactement le motif déjà utilisé pour les pastilles de
+difficulté. **Ne jamais remplacer `:where(.js)` par `.js` dans ces blocs.**
+
+Symptôme à reconnaître : un élément qui porte `is-revealed` (ou `is-visible`)
+et reste malgré tout à `opacity: 0`. C'est une bataille de spécificité, pas un
+problème de JavaScript — inutile de chercher du côté de l'observer.
+
 ### Bascule `no-js` → `js` : ne pas la retirer
 
 `<html class="no-js">` est remplacé par `js` par un script en ligne, première
@@ -447,6 +469,19 @@ valides mais inexploitables pour le référencement local.
 sûre à la plus hasardeuse, et **ne renvoie rien plutôt qu'une valeur fausse**.
 `addressRegion` n'est renseigné que si le dernier segment ne ressemble pas à
 un parc ou un massif.
+
+### Autres corrections de la v6.1
+
+- **Nom de l'équipement affiché en permanence** sur les vignettes Matos. La v6.0
+  ne le montrait qu'au survol : invisible sans souris, sans JavaScript, et à
+  l'arrêt sur la page. Le dégradé sombre du bandeau assure le contraste quelle
+  que soit la photo dessous.
+- **Mention RGPD du bandeau newsletter** : elle héritait de `--gris` et
+  `--orange-texte`, deux couleurs prévues pour une surface claire, posées sur le
+  vert du bandeau — 1,15:1 et 1,21:1, illisibles. Passée en `--beige` (5,69:1).
+  À noter : `--orange-clair` n'y suffit pas non plus (3,64:1) pour un texte de
+  12,5 px, et un soulignement ne remplace pas le contraste — il lève le critère
+  « usage de la couleur », pas celui du contraste du texte.
 
 ### Ce qui reste à faire hors du code
 

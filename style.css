@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.0
+Version: 6.1
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -522,18 +522,33 @@ section.site-section { position: relative; padding: 5.5rem 3rem; padding-inline:
    Fondu + léger mouvement vers le haut pour les titres de section et
    grands blocs de contenu, déclenché par main.js (classe .is-revealed),
    même principe que .rando-card/.matos-card déjà utilisé sur les grilles. */
-.js .section-eyebrow,
-.js .section-title,
-.js .section-sub,
-/* Le préfixe `.js` conditionne l'opacité nulle à la présence de JavaScript :
-   c'est lui qui la lèvera. Sans JS, la classe reste `no-js` sur <html>, ces
-   règles ne s'appliquent pas, et le contenu est visible immédiatement. */
-.js .derniere-card,
-.js .apropos-visual,
-.js .stat-block,
-.js .matos-filters,
-.js .archive-filters,
-.js .newsletter-inner {
+/* `:where(.js)` conditionne l'opacité nulle à la présence de JavaScript — c'est
+   lui qui la lèvera — SANS toucher à la spécificité.
+
+   Le `:where()` est indispensable : écrit `.js .section-title`, le sélecteur
+   pèse (0,2,0) et écrase `.is-revealed` (0,1,0) quelques lignes plus bas. Le
+   JavaScript posait bien la classe, mais l'opacité restait à 0 — titres de
+   section, rando à la une, statistiques, filtres et bandeau newsletter
+   devenaient définitivement invisibles sur toutes les pages. Avec `:where()`,
+   la règle garde son poids d'origine et la cascade se comporte exactement
+   comme avant l'ajout du repli sans JavaScript.
+
+   Même motif que `:where(.card-badges .badge):first-child` pour les pastilles
+   de difficulté, et même piège : ici c'est la SPÉCIFICITÉ qui tranche, pas
+   l'ordre. Ne pas retirer le `:where()`.
+
+   Sans JavaScript, la classe reste `no-js` sur <html>, ces règles ne
+   s'appliquent pas, et le contenu s'affiche immédiatement. */
+:where(.js) .section-eyebrow,
+:where(.js) .section-title,
+:where(.js) .section-sub,
+:where(.js) .divider,
+:where(.js) .derniere-card,
+:where(.js) .apropos-visual,
+:where(.js) .stat-block,
+:where(.js) .matos-filters,
+:where(.js) .archive-filters,
+:where(.js) .newsletter-inner {
   opacity: 0;
   transform: translateY(22px);
   transition: opacity 0.65s cubic-bezier(.2,.8,.2,1), transform 0.65s cubic-bezier(.2,.8,.2,1);
@@ -616,8 +631,10 @@ section.site-section { position: relative; padding: 5.5rem 3rem; padding-inline:
   box-shadow: var(--shadow-1), var(--hairline);
 }
 /* Apparition au défilement, uniquement quand JavaScript peut la lever
-   (voir la bascule no-js → js dans header.php). */
-.js .rando-card {
+   (voir la bascule no-js → js dans header.php). `:where()` garde la
+   spécificité d'origine pour que `.rando-card.is-visible` l'emporte sans
+   dépendre de l'ordre des règles. */
+:where(.js) .rando-card {
   opacity: 0;
   transform: translateY(18px);
 }
@@ -1371,3 +1388,14 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   color: var(--gris);
 }
 .form-legal a { color: var(--orange-texte); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Sur le bandeau newsletter, le fond est le vert du thème : --gris (1,15:1) et
+   --orange-texte (1,21:1) y sont illisibles — ce sont des couleurs prévues pour
+   une surface claire. Le beige monte à 5,69:1 sur ce vert.
+   --orange-clair aurait été le jeton attendu pour de l'orange sur ce fond, mais
+   il n'atteint que 3,64:1 : c'est assez pour du grand texte, pas pour ces
+   12,5 px. Le lien reste donc beige, distingué par son soulignement et sa
+   graisse — le soulignement lève le critère « usage de la couleur », il ne
+   remplace pas le contraste du texte. */
+.newsletter-band .form-legal { color: var(--beige); }
+.newsletter-band .form-legal a { color: var(--beige); font-weight: 600; }
