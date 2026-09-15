@@ -1,9 +1,17 @@
 <!DOCTYPE html>
-<html <?php language_attributes(); ?>>
+<html <?php language_attributes(); ?> class="no-js">
 <head>
 <meta charset="<?php bloginfo( 'charset' ); ?>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>
+// Bascule no-js → js dès la première ligne du <head>, avant tout rendu.
+// Les cartes, titres de section et blocs de statistiques partent à
+// `opacity: 0` et ne sont révélés que par l'IntersectionObserver de main.js.
+// Sans JavaScript — script bloqué, erreur de chargement, navigateur ancien —
+// 31 des 39 blocs de la page d'accueil restaient donc invisibles, sans le
+// moindre message. Le CSS conditionne maintenant cette opacité nulle à la
+// classe `js` : si le script ne tourne pas, le contenu s'affiche d'emblée.
+document.documentElement.className = document.documentElement.className.replace( /\bno-js\b/, 'js' );
 (function () {
   try {
     var saved    = localStorage.getItem( 'rando-nono-theme' );
@@ -63,6 +71,14 @@
   );
   ?>
 
+  <?php
+  // Un menu WordPress assigné à l'emplacement « primary » ne s'appliquait
+  // qu'au bandeau de bureau : le tiroir mobile continuait de parcourir
+  // $rando_nono_nav_items. Les deux affichages divergeaient donc dès qu'on
+  // configurait un menu — rubriques différentes, en nombre différent, selon
+  // l'appareil — et le menu réglé dans l'administration n'apparaissait jamais
+  // sur téléphone. Le tiroir lit maintenant la même source (voir plus bas).
+  ?>
   <?php if ( has_nav_menu( 'primary' ) ) : ?>
     <nav>
       <?php
@@ -102,7 +118,7 @@
 
   <div class="site-search-wrap">
     <form method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>" class="site-search" role="search">
-      <input type="search" name="s" placeholder="Rechercher..." value="<?php echo esc_attr( get_search_query() ); ?>">
+      <input type="search" name="s" aria-label="Rechercher une randonnée" placeholder="Rechercher..." value="<?php echo esc_attr( get_search_query() ); ?>">
       <button type="submit" aria-label="Rechercher"><?php echo rando_nono_icon( 'search' ); ?></button>
     </form>
   </div>
@@ -117,9 +133,22 @@
 
 <div class="nav-mobile-drawer" id="nav-mobile-drawer">
   <form method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>" class="site-search site-search-mobile" role="search">
-    <input type="search" name="s" placeholder="Rechercher..." value="<?php echo esc_attr( get_search_query() ); ?>">
+    <input type="search" name="s" aria-label="Rechercher une randonnée" placeholder="Rechercher..." value="<?php echo esc_attr( get_search_query() ); ?>">
     <button type="submit" aria-label="Rechercher"><?php echo rando_nono_icon( 'search' ); ?></button>
   </form>
+  <?php if ( has_nav_menu( 'primary' ) ) : ?>
+    <?php
+    // Même menu que le bandeau de bureau : c'est celui que l'administrateur a
+    // configuré, il doit s'afficher partout.
+    wp_nav_menu( array(
+        'theme_location' => 'primary',
+        'container'      => false,
+        'items_wrap'     => '%3$s',
+        'depth'          => 2,
+        'walker'         => new Rando_Nono_Drawer_Walker(),
+    ) );
+    ?>
+  <?php else : ?>
   <?php foreach ( $rando_nono_nav_items as $item ) : ?>
     <a href="<?php echo esc_url( $item['href'] ); ?>" data-nav-key="<?php echo esc_attr( $item['key'] ); ?>" class="<?php echo $item['current'] ? 'is-current' : ''; ?>"><?php echo esc_html( $item['label'] ); ?></a>
     <?php if ( ! empty( $item['children'] ) ) : ?>
@@ -132,4 +161,5 @@
       </div>
     <?php endif; ?>
   <?php endforeach; ?>
+  <?php endif; ?>
 </div>

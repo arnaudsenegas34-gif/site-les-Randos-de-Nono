@@ -159,7 +159,9 @@
   margin-bottom: 0.25rem;
 }
 .sr-meta-label {
-  font-size: 0.6rem;
+  /* 0.6rem valait 9,6 px : lisible de près, pas en marchant. 0.7rem (11,2 px)
+     reste discret sans demander d'effort. */
+  font-size: 0.7rem;
   color: var(--gris);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -167,7 +169,7 @@
   overflow-wrap: break-word;
 }
 .sr-meta-value {
-  font-family: 'Abril Fatface', serif;
+  font-family: 'Abril Fatface', 'Abril Fatface Repli', serif;
   color: var(--accent);
   font-size: 1.2rem;
   overflow-wrap: break-word;
@@ -182,7 +184,7 @@
   margin-bottom: 2.5rem;
 }
 .sr-content p { margin-bottom: 1rem; }
-.sr-content a { color: var(--orange); text-decoration: underline; }
+.sr-content a { color: var(--orange-texte); text-decoration: underline; text-underline-offset: 2px; }
 
 /* ══════════════════════ GPX BAR ══════════════════════ */
 .sr-gpx-bar {
@@ -205,16 +207,32 @@
   font-weight: 300;
 }
 .sr-gpx-info .icon-svg { stroke: var(--orange); }
+/* --orange (#D97706) portant du texte blanc mesurait 3,19:1, sous le seuil AA
+   de 4,5:1 pour ce corps de 11,5 px. --orange-fond (#A85504) est précisément le
+   jeton prévu pour ce cas (5,29:1) — il existait déjà, il n'était pas utilisé
+   ici. Le !important reste nécessaire pour écraser .btn. */
 .sr-btn-gpx {
-  background: var(--orange) !important;
+  background: var(--orange-fond) !important;
 }
 .sr-btn-gpx:hover {
-  background: #b45e04 !important;
+  background: #8C4503 !important;
+}
+/* Une seule action principale par fiche : télécharger la trace. Les deux
+   autres boutons de la barre (Suunto, itinéraire) passent en contour, pour
+   qu'on voie du premier coup d'œil lequel compte. */
+.sr-btn-secondaire {
+  background: transparent !important;
+  color: var(--orange-texte) !important;
+  border: 1.5px solid var(--orange-fond) !important;
+}
+.sr-btn-secondaire:hover {
+  background: var(--orange-fond) !important;
+  color: #fff !important;
 }
 
 /* ══════════════════════ SECTION TITLES ══════════════════════ */
 .sr-section-title {
-  font-family: 'Abril Fatface', serif;
+  font-family: 'Abril Fatface', 'Abril Fatface Repli', serif;
   font-size: 1.4rem;
   color: var(--accent);
   margin-bottom: 1.2rem;
@@ -400,7 +418,7 @@
 .sr-avis-section { margin-bottom: 2.5rem; }
 .sr-avis-summary { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 1.5rem; }
 .sr-avis-stars { color: var(--orange); font-size: 1.2rem; letter-spacing: 0.1em; }
-.sr-avis-avg { font-family: 'Abril Fatface', serif; font-size: 1.2rem; color: var(--accent); }
+.sr-avis-avg { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 1.2rem; color: var(--accent); }
 .sr-avis-count { font-size: 0.8rem; color: var(--gris); font-weight: 300; }
 .sr-avis-empty { font-size: 0.85rem; color: var(--gris); font-weight: 300; margin-bottom: 1.5rem; }
 .sr-avis-list { list-style: none; display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1.75rem; }
@@ -426,7 +444,11 @@
   height: 1px;
 }
 .sr-avis-rating label {
-  color: rgba(46,94,59,0.2);
+  /* 0.2 donnait 1,36:1 sur le fond clair : les étoiles étaient quasi
+     invisibles et personne ne voyait qu'il y avait quelque chose à cliquer.
+     0.7 monte à 3,52:1 — au-dessus du seuil WCAG 1.4.11 pour un composant
+     d'interface — sans donner l'impression d'une note déjà attribuée. */
+  color: rgba(46,94,59,0.7);
   cursor: pointer;
   transition: color 0.15s;
   line-height: 1;
@@ -489,7 +511,10 @@
 .sr-nav-title { transition: color 0.25s var(--ease); }
 .sr-nav-prev { align-items: flex-start; }
 .sr-nav-next { align-items: flex-end; text-align: right; }
-.sr-nav-empty { background: transparent; pointer-events: none; }
+/* Cale la place du voisin manquant sur la première et la dernière randonnée.
+   `background: transparent` seul laissait le box-shadow de .sr-nav-post
+   dessiner un rectangle vide : il faut aussi le retirer. */
+.sr-nav-empty { background: transparent; box-shadow: none; pointer-events: none; }
 .sr-nav-direction {
   font-size: 0.75rem;
   color: var(--accent);
@@ -626,4 +651,49 @@
   .sr-meta-grid { page-break-inside: avoid; }
   .sr-sac-section, .sr-conseils-section { page-break-inside: avoid; }
   body { background: #fff; }
+}
+
+/* ══════════════════════ LISIBILITÉ SUR LE TERRAIN ══════════════════════
+   Ce site se lit sur un sentier, souvent en plein soleil et à bout de bras.
+   Le corps de texte tombait à 13,6 px en graisse 300 sur mobile — sous le
+   standard de 16 px, et dans la graisse la plus fine du jeu de polices.
+   La colonne fait déjà 342 px de large : passer à 16 px ne change presque
+   rien à la mise en page (environ 52 caractères par ligne, toujours dans la
+   plage confortable) et beaucoup à la lecture.  */
+@media (max-width: 600px) {
+  .sr-content,
+  .sr-sac-list,
+  .sr-conseils-list {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.7;
+  }
+  /* Les actions principales méritent un libellé qu'on vise sans hésiter. */
+  .sr-gpx-bar .btn,
+  .sr-map-section .btn {
+    font-size: 0.82rem;
+    min-height: 40px;
+  }
+}
+
+/* ── Message d'indisponibilité de la carte ───────────────────────────
+   La météo affiche « Météo indisponible » et le profil altimétrique se
+   masque ; la carte restait un rectangle gris muet, qui ressemble à un site
+   cassé plutôt qu'à un service momentanément injoignable. */
+.sr-map-message {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  z-index: 500;
+  max-width: min(90%, 30rem);
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  background: var(--sombre);
+  color: var(--beige);
+  border-radius: var(--r-md);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: center;
+  box-shadow: 0 6px 18px -6px rgba(0,0,0,0.5);
 }

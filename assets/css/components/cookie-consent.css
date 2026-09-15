@@ -22,7 +22,7 @@
 
 .cookie-consent p {
   flex: 1 1 280px;
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.85rem;
   line-height: 1.5;
   color: var(--text);

@@ -61,8 +61,11 @@ if ( $search_term ) {
 
 $archive_query = new WP_Query( $args );
 
-// Toutes les difficultés disponibles pour le filtre.
-$all_difficultes = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' => true ) );
+// Toutes les difficultés disponibles pour le filtre, du plus facile au plus
+// exigeant — get_terms() les renvoyait par ordre alphabétique, ce qui plaçait
+// « Ça se corse » après « Tu vas t'en souvenir » à cause de la cédille et ne
+// disait rien de la progression.
+$all_difficultes = rando_nono_difficultes_ordonnees( true );
 
 // Marqueurs de la carte : mêmes filtres que la liste, mais sans pagination —
 // la carte doit toujours montrer TOUTES les randonnées correspondantes.
@@ -101,7 +104,13 @@ if ( $map_query->have_posts() ) {
   <p class="section-sub">Filtre par difficulté, distance ou dénivelé, ou recherche une randonnée par son nom ou son lieu.</p>
 
   <!-- ════════ FILTRES ════════ -->
-  <form method="get" class="archive-filters">
+  <?php
+      // Sans ancre, valider les filtres rechargeait la page en position haute :
+      // il fallait refaire 1,4 écran de défilement pour voir les résultats
+      // qu'on venait de demander, en repassant devant le formulaire et la
+      // carte. L'ancre y ramène directement.
+      ?>
+      <form method="get" action="#resultats" class="archive-filters">
     <div class="filter-group">
       <label for="recherche">Recherche</label>
       <input type="text" id="recherche" name="recherche" placeholder="Nom, lieu..." value="<?php echo esc_attr( $search_term ); ?>">
@@ -113,8 +122,9 @@ if ( $map_query->have_posts() ) {
         <option value="">Toutes</option>
         <?php if ( $all_difficultes && ! is_wp_error( $all_difficultes ) ) : ?>
           <?php foreach ( $all_difficultes as $term ) : ?>
+            <?php $rn_repere = rando_nono_difficulte_repere( $term ); ?>
             <option value="<?php echo esc_attr( $term->slug ); ?>" <?php selected( $selected_diff, $term->slug ); ?>>
-              <?php echo esc_html( $term->name ); ?>
+              <?php echo esc_html( $term->name . ( $rn_repere ? ' · ' . $rn_repere : '' ) ); ?>
             </option>
           <?php endforeach; ?>
         <?php endif; ?>
@@ -146,12 +156,12 @@ if ( $map_query->have_posts() ) {
 
   <!-- ════════ RÉSULTATS ════════ -->
   <?php if ( $archive_query->have_posts() ) : ?>
-    <p class="archive-count"><?php echo esc_html( $archive_query->found_posts ); ?> randonnée<?php echo $archive_query->found_posts > 1 ? 's' : ''; ?> trouvée<?php echo $archive_query->found_posts > 1 ? 's' : ''; ?></p>
+    <p id="resultats" class="archive-count"><?php echo esc_html( $archive_query->found_posts ); ?> randonnée<?php echo $archive_query->found_posts > 1 ? 's' : ''; ?> trouvée<?php echo $archive_query->found_posts > 1 ? 's' : ''; ?></p>
 
     <div class="randos-grid">
       <?php while ( $archive_query->have_posts() ) : $archive_query->the_post(); ?>
         <div>
-          <?php get_template_part( 'template-parts/card', 'rando' ); ?>
+          <?php get_template_part( 'template-parts/card', 'rando', array( 'niveau' => 'h2' ) ); ?>
         </div>
       <?php endwhile; ?>
     </div>

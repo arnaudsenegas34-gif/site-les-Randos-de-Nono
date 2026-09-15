@@ -43,7 +43,7 @@ $rando_nono_search_total = $rando_nono_search_randos->found_posts + $rando_nono_
       <h2 class="sr-section-title" style="margin-top:2.5rem">Randonn&eacute;es</h2>
       <div class="randos-grid">
         <?php while ( $rando_nono_search_randos->have_posts() ) : $rando_nono_search_randos->the_post(); ?>
-          <div><?php get_template_part( 'template-parts/card', 'rando' ); ?></div>
+          <div><?php get_template_part( 'template-parts/card', 'rando', array( 'niveau' => 'h2' ) ); ?></div>
         <?php endwhile; wp_reset_postdata(); ?>
       </div>
     <?php endif; ?>

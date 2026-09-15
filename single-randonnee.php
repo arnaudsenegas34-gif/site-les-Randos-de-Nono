@@ -173,6 +173,39 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     <?php endif; ?>
 
     <!-- CARTE OSM -->
+    <?php
+    // « Dans le sac » et « Conseils » arrivaient en 11e et 12e position sur
+    // 16, après la carte, le profil, le suivi GPS et la météo — soit à 2,5 et
+    // 2,8 écrans de défilement sur mobile. Ce sont pourtant les seules
+    // informations qu'on ne trouve nulle part ailleurs : ce qu'il faut
+    // emporter et ce qu'il faut savoir avant de partir, écrits par quelqu'un
+    // qui y est allé. Elles remontent juste après la trace GPX, là où on
+    // prépare sa sortie.
+    ?>
+    <!-- SAC -->
+    <?php if ( ! empty( $sac_items ) ) : ?>
+    <div class="sr-sac-section">
+      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'backpack' ); ?> Dans le sac</h2>
+      <ul class="sr-sac-list">
+        <?php foreach ( $sac_items as $item ) : ?>
+          <li><?php echo esc_html( $item ); ?></li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+    <?php endif; ?>
+
+    <!-- CONSEILS -->
+    <?php if ( ! empty( $conseils_items ) ) : ?>
+    <div class="sr-conseils-section">
+      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'lightbulb' ); ?> Conseils</h2>
+      <ul class="sr-conseils-list">
+        <?php foreach ( $conseils_items as $conseil ) : ?>
+          <li><?php echo esc_html( $conseil ); ?></li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
+    <?php endif; ?>
+
     <?php if ( $lat && $lon ) : ?>
     <div class="sr-map-section">
       <h2 class="sr-section-title"><?php echo rando_nono_icon( 'map' ); ?> Localisation</h2>
@@ -181,20 +214,33 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
            data-lon="<?php echo esc_attr( $lon ); ?>"
            data-gpx="<?php echo esc_attr( $gpx_url ); ?>"></div>
       <div class="sr-print-map-wrap sr-print-only" id="sr-print-map-wrap" data-lat="<?php echo esc_attr( $lat ); ?>" data-lon="<?php echo esc_attr( $lon ); ?>" data-gpx="<?php echo esc_attr( $gpx_url ); ?>"></div>
+      <?php
+      // Trois boutons pleins de même taille, dans deux oranges différents, sans
+      // qu'aucun ne se détache : on ne savait pas lequel comptait. Un seul
+      // reste plein — la trace, la promesse du site — les autres passent en
+      // contour. Et chaque libellé dit ce qui va se passer : « Activité
+      // Suunto » nommait un outil, pas une action ; « Démarrer la randonnée »
+      // se lisait comme un lancement de navigation.
+      ?>
       <div class="sr-map-actions sr-no-print">
         <?php if ( $maps_url ) : ?>
-          <a href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener" class="btn btn-sm">
-            <?php echo rando_nono_icon( 'map' ); ?> Activité Suunto
+          <a href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener" class="btn btn-sm sr-btn-gpx sr-btn-secondaire">
+            <?php echo rando_nono_icon( 'map' ); ?> Voir la sortie sur Suunto
           </a>
         <?php endif; ?>
-        <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo esc_attr( $lat ); ?>,<?php echo esc_attr( $lon ); ?>&travelmode=driving" target="_blank" rel="noopener" class="btn btn-sm sr-btn-gpx">
-          Aller au d&eacute;part
+        <a href="https://www.google.com/maps/dir/?api=1&destination=<?php echo esc_attr( $lat ); ?>,<?php echo esc_attr( $lon ); ?>&travelmode=driving" target="_blank" rel="noopener" class="btn btn-sm sr-btn-gpx sr-btn-secondaire">
+          <?php echo rando_nono_icon( 'navigation' ); ?> Itin&eacute;raire vers le d&eacute;part
         </a>
+      </div>
+      <?php
+      // L'explication était SOUS le bouton : on cliquait avant de la lire.
+      ?>
+      <p class="sr-tracking-hint" id="sr-tracking-hint">Suis ta position, ta distance parcourue et ton temps en direct depuis ton t&eacute;l&eacute;phone pendant la rando — les donn&eacute;es restent sur ton appareil.</p>
+      <div class="sr-map-actions sr-no-print">
         <button type="button" class="btn btn-sm sr-track-start" id="sr-track-start" data-rando-id="<?php echo esc_attr( $id ); ?>" data-rando-title="<?php echo esc_attr( get_the_title() ); ?>">
-          <?php echo rando_nono_icon( 'play' ); ?> D&eacute;marrer la randonn&eacute;e
+          <?php echo rando_nono_icon( 'play' ); ?> Suivre ma position pendant la rando
         </button>
       </div>
-      <p class="sr-tracking-hint" id="sr-tracking-hint">Suivez votre position, votre distance parcourue et votre temps en direct depuis votre t&eacute;l&eacute;phone pendant la rando.</p>
     </div>
     <?php endif; ?>
 
@@ -237,7 +283,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
 
     <!-- Récapitulatif de fin de randonnée -->
     <div class="sr-track-recap" id="sr-track-recap" hidden>
-      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'navigation' ); ?> R&eacute;capitulatif de votre sortie</h2>
+      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'navigation' ); ?> R&eacute;capitulatif de ta sortie</h2>
       <div class="sr-track-recap-grid">
         <div class="sr-track-recap-item">
           <span class="sr-track-recap-value" id="sr-recap-time">&ndash;</span>
@@ -292,29 +338,6 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     </div>
     <?php endif; ?>
 
-    <!-- SAC -->
-    <?php if ( ! empty( $sac_items ) ) : ?>
-    <div class="sr-sac-section">
-      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'backpack' ); ?> Dans le sac</h2>
-      <ul class="sr-sac-list">
-        <?php foreach ( $sac_items as $item ) : ?>
-          <li><?php echo esc_html( $item ); ?></li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-    <?php endif; ?>
-
-    <!-- CONSEILS -->
-    <?php if ( ! empty( $conseils_items ) ) : ?>
-    <div class="sr-conseils-section">
-      <h2 class="sr-section-title"><?php echo rando_nono_icon( 'lightbulb' ); ?> Conseils</h2>
-      <ul class="sr-conseils-list">
-        <?php foreach ( $conseils_items as $conseil ) : ?>
-          <li><?php echo esc_html( $conseil ); ?></li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-    <?php endif; ?>
 
     <!-- ARTICLES & RÉCITS LIÉS -->
     <?php if ( ! empty( $linked_articles ) ) : ?>
@@ -377,8 +400,8 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       <form class="sr-avis-form contact-form" method="post" action="<?php echo esc_url( get_permalink( $id ) . '#avis' ); ?>">
         <?php wp_nonce_field( 'rando_nono_avis_form_' . $id, 'rando_nono_avis_nonce' ); ?>
         <div class="contact-honeypot" aria-hidden="true">
-          <label for="site_web_avis">Site web</label>
-          <input type="text" id="site_web_avis" name="site_web_avis" tabindex="-1" autocomplete="off">
+          <label for="site_web_avis" aria-hidden="true">Site web</label>
+          <input type="text" id="site_web_avis" name="site_web_avis" tabindex="-1" autocomplete="off" aria-hidden="true">
         </div>
 
         <label for="avis_nom">Ton pr&eacute;nom</label>
@@ -396,6 +419,12 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
         <textarea id="avis_commentaire" name="avis_commentaire" rows="4" required></textarea>
 
         <button type="submit" name="rando_nono_avis_submit" value="1" class="btn-nav btn-nav-solid">Publier mon avis</button>
+      
+        <p class="form-legal">
+          Seuls ton prénom, ta note et ton commentaire sont enregistrés — ni adresse e-mail,
+          ni adresse IP. Les avis sont relus avant publication —
+          <a href="<?php echo esc_url( home_url( '/mentions-legales/' ) ); ?>">en savoir plus</a>.
+        </p>
       </form>
     </div>
 

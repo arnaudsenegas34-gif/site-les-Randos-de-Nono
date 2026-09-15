@@ -63,3 +63,39 @@
   src: url('../fonts/merriweather-italic.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+FEFF, U+FFFD;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   POLICES DE REPLI AJUSTÉES — contre le décalage de mise en page
+
+   `font-display: swap` affiche d'abord une police système, puis bascule sur
+   la police téléchargée. Si les deux n'ont pas les mêmes métriques, le texte
+   change de largeur au moment de la bascule : un titre qui tenait sur deux
+   lignes en passe à trois, tout ce qui suit descend, et le navigateur compte
+   un décalage de mise en page (CLS).
+
+   Mesuré sur ce site : « Les Randos de Nono » fait 899 px en Abril Fatface
+   contre 836 px en Georgia à taille égale, soit 7 % d'écart — assez pour
+   changer le nombre de lignes du titre du hero et pousser toute la page.
+
+   `size-adjust` corrige l'échelle de la police de repli pour qu'elle occupe
+   exactement la même place. La bascule devient invisible.
+   ══════════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Abril Fatface Repli';
+  src: local('Georgia'), local('Times New Roman'), local('serif');
+  size-adjust: 107.54%;       /* 899 / 836 */
+  ascent-override: 92%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Merriweather Repli';
+  src: local('Georgia'), local('Times New Roman'), local('serif');
+  /* Merriweather est nettement plus large que Georgia à taille égale. */
+  size-adjust: 111%;
+  ascent-override: 98%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}

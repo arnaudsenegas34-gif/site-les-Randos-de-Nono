@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: mailto:arnaud.senegas34@gmail.com
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 5.0
+Version: 6.0
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -147,7 +147,7 @@ body.page-exit {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'Merriweather', 'Merriweather Repli', Georgia, serif;
   font-size: 16px;
   line-height: 1.7;
   transition: background-color 0.25s ease, color 0.25s ease;
@@ -166,7 +166,7 @@ body {
 }
 
 h1, h2, h3, .display {
-  font-family: 'Abril Fatface', serif;
+  font-family: 'Abril Fatface', 'Abril Fatface Repli', serif;
   font-weight: 400;
   line-height: 1.15;
   letter-spacing: -0.01em;
@@ -195,7 +195,7 @@ button { font-family: inherit; }
   box-shadow: 0 6px 24px -18px rgba(26,46,31,0.55);
 }
 .site-logo {
-  font-family: 'Abril Fatface', serif;
+  font-family: 'Abril Fatface', 'Abril Fatface Repli', serif;
   color: var(--accent);
   font-size: 1.2rem;
 }
@@ -207,7 +207,7 @@ button { font-family: inherit; }
    1240px on bascule sur le menu déroulant plutôt que de laisser déborder. */
 .nav-buttons { display: flex; align-items: center; gap: 0.55rem; flex-wrap: nowrap; }
 .btn-nav {
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.78rem;
   font-weight: 700;
   padding: 0.52rem 1.05rem;
@@ -283,7 +283,7 @@ button { font-family: inherit; }
   transition-delay: 0s;
 }
 .nav-submenu a {
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--text);
@@ -299,7 +299,7 @@ button { font-family: inherit; }
 .nav-links { display: flex; gap: 2.25rem; list-style: none; }
 .nav-links a {
   color: var(--text);
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.82rem;
   font-weight: 300;
   opacity: 0.7;
@@ -342,13 +342,21 @@ button { font-family: inherit; }
   border: none;
   border-bottom: 1.5px solid rgba(46,94,59,0.25);
   background: transparent;
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.8rem;
   padding: 0.3rem 0.1rem;
   color: var(--text);
   transition: border-color 0.2s;
 }
-.site-search input[type="search"]:focus { outline: none; border-color: var(--orange); }
+/* La bordure orange seule (3,00:1) satisfaisait le critère « focus visible »
+   de justesse, là où tout le reste du site a un anneau de 2 px. L'ombre portée
+   rend l'état aussi lisible qu'ailleurs — c'est déjà ce que fait le champ de
+   la newsletter. */
+.site-search input[type="search"]:focus {
+  outline: none;
+  border-color: var(--orange-fond);
+  box-shadow: 0 0 0 3px rgba(168, 85, 4, 0.3);
+}
 .site-search input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
 .site-search button {
   background: none;
@@ -429,9 +437,19 @@ button { font-family: inherit; }
 .hero-desc {
   color: var(--beige);
   font-size: 1rem; font-weight: 300; font-style: italic;
+  line-height: 1.7;
   max-width: 50ch;
   margin-bottom: 2rem;
   text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  /* Même raison que .hero-actions : le texte passe de deux à trois lignes
+     quand Merriweather remplace la police système. La place est réservée pour
+     trois, la bascule ne déplace donc plus rien. */
+  min-height: calc(3 * 1rem * 1.7);
+}
+@media (min-width: 900px) {
+  /* Sur grand écran la ligne est assez large pour que le texte tienne sur
+     deux lignes dans les deux polices. */
+  .hero-desc { min-height: calc(2 * 1rem * 1.7); }
 }
 
 /* ══════════════════════ PREUVE SOCIALE ══════════════════════ */
@@ -462,7 +480,7 @@ button { font-family: inherit; }
 .btn {
   display: inline-flex; align-items: center; gap: 0.5rem;
   background: var(--orange-fond); color: #fff;
-  font-family: 'Merriweather', serif; font-size: 0.84rem; font-weight: 700;
+  font-family: 'Merriweather', 'Merriweather Repli', serif; font-size: 0.84rem; font-weight: 700;
   padding: 0.8rem 1.6rem; border-radius: var(--r-xs);
   box-shadow: 0 1px 2px rgba(26,46,31,0.14);
   transition: background 0.2s, transform 0.18s var(--ease), box-shadow 0.25s var(--ease);
@@ -504,15 +522,18 @@ section.site-section { position: relative; padding: 5.5rem 3rem; padding-inline:
    Fondu + léger mouvement vers le haut pour les titres de section et
    grands blocs de contenu, déclenché par main.js (classe .is-revealed),
    même principe que .rando-card/.matos-card déjà utilisé sur les grilles. */
-.section-eyebrow,
-.section-title,
-.section-sub,
-.derniere-card,
-.apropos-visual,
-.stat-block,
-.matos-filters,
-.archive-filters,
-.newsletter-inner {
+.js .section-eyebrow,
+.js .section-title,
+.js .section-sub,
+/* Le préfixe `.js` conditionne l'opacité nulle à la présence de JavaScript :
+   c'est lui qui la lèvera. Sans JS, la classe reste `no-js` sur <html>, ces
+   règles ne s'appliquent pas, et le contenu est visible immédiatement. */
+.js .derniere-card,
+.js .apropos-visual,
+.js .stat-block,
+.js .matos-filters,
+.js .archive-filters,
+.js .newsletter-inner {
   opacity: 0;
   transform: translateY(22px);
   transition: opacity 0.65s cubic-bezier(.2,.8,.2,1), transform 0.65s cubic-bezier(.2,.8,.2,1);
@@ -524,6 +545,35 @@ section.site-section { position: relative; padding: 5.5rem 3rem; padding-inline:
 }
 .is-revealed { opacity: 1; transform: translateY(0); }
 .divider.is-revealed { transform: scaleX(1); }
+
+/* ══════════════════════ CIBLES TACTILES ══════════════════════
+   Les listes de navigation du pied de page mesuraient ~20 px de haut à 390 px
+   de large. WCAG 2.2 (2.5.8, niveau AA) demande 24 × 24 px pour une cible qui
+   n'est pas un lien en ligne dans du texte — les liens d'un paragraphe
+   bénéficient de l'exception « inline » et ne sont pas concernés. Le padding
+   vertical suffit : l'espacement visuel change à peine. */
+.site-footer nav a,
+.footer-col a,
+.footer-links a,
+.footer-nav a {
+  display: inline-block;
+  padding-block: 0.28rem;
+}
+
+/* ══════════════════════ LIENS DANS LE CONTENU ══════════════════════
+   Aucun lien en ligne n'était souligné : le seul indice était la teinte, et
+   l'écart de couleur avec le gris de paragraphe tombait à 1,05:1 — très loin
+   des 3:1 qui permettent de se passer d'un soulignement (WCAG 1.4.1). */
+.entry-content a:not(.btn):not([class*="btn-"]):not([class*="share-"]),
+.page-content a:not(.btn):not([class*="btn-"]),
+.simple-page article a:not(.btn):not([class*="btn-"]),
+.section-sub a:not(.btn):not([class*="btn-"]),
+.sr-content a:not(.btn):not([class*="btn-"]) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  color: var(--orange-texte);
+}
 
 /* ══════════════════════ GRILLE RANDOS ══════════════════════ */
 .randos-grid {
@@ -564,6 +614,10 @@ section.site-section { position: relative; padding: 5.5rem 3rem; padding-inline:
   cursor: pointer;
   transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
   box-shadow: var(--shadow-1), var(--hairline);
+}
+/* Apparition au défilement, uniquement quand JavaScript peut la lever
+   (voir la bascule no-js → js dans header.php). */
+.js .rando-card {
   opacity: 0;
   transform: translateY(18px);
 }
@@ -681,7 +735,7 @@ section.site-section { position: relative; padding: 5.5rem 3rem; padding-inline:
 .card-meta .meta-item-lieu { flex: 1 1 100%; }
 .icon-svg { width: 13px; height: 13px; flex-shrink: 0; stroke-width: 2px; }
 .icon-svg-lg { width: 18px; height: 18px; }
-.card-title { font-family: 'Abril Fatface', serif; font-size: 1.3rem; color: var(--accent); text-wrap: balance; margin-bottom: 0.55rem; transition: color 0.25s var(--ease); }
+.card-title { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 1.3rem; color: var(--accent); text-wrap: balance; margin-bottom: 0.55rem; transition: color 0.25s var(--ease); }
 .rando-card:hover .card-title { color: var(--orange-texte); }
 a.card-title { display: block; }
 .card-desc { flex: 1; text-wrap: pretty; font-size: 0.85rem; color: var(--gris); font-weight: 300; line-height: 1.6; margin-bottom: 1.25rem; }
@@ -693,7 +747,7 @@ a.card-title { display: block; }
 
 .meteo-now { background: var(--sombre); border-radius: var(--r-md); padding: 1.15rem; display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1rem; color: var(--beige); }
 .meteo-now .big-icon { font-size: 2.6rem; }
-.meteo-now .now-temp { font-family: 'Abril Fatface', serif; font-size: 2.2rem; }
+.meteo-now .now-temp { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 2.2rem; }
 .meteo-now .now-desc { font-size: 0.78rem; color: rgba(232,223,200,0.7); font-weight: 300; }
 .meteo-now .now-lieu { font-size: 0.62rem; color: var(--orange); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.2rem; }
 
@@ -750,7 +804,7 @@ a.card-title { display: block; }
 .derniere-content .card-title { font-size: 1.85rem; margin: 0.6rem 0 0.9rem; }
 .derniere-desc { font-size: 0.9rem; color: var(--gris); font-weight: 300; line-height: 1.75; margin-bottom: 1.4rem; }
 .derniere-stats-row { display: flex; gap: 1.4rem; margin-bottom: 1.6rem; flex-wrap: wrap; }
-.derniere-stat .num { font-family: 'Abril Fatface', serif; color: var(--accent); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.derniere-stat .num { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; color: var(--accent); font-size: 1.3rem; font-variant-numeric: tabular-nums; }
 .derniere-stat .label { font-size: 0.62rem; color: var(--gris); letter-spacing: 0.07em; text-transform: uppercase; margin-top: 0.15rem; }
 .derniere-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
 
@@ -801,7 +855,7 @@ a.card-title { display: block; }
 }
 /* tabular-nums : les chiffres gardent la même chasse pendant le comptage
    animé, sinon les cartes tressautent en largeur à chaque incrément. */
-.stat-block .big-num { font-family: 'Abril Fatface', serif; font-size: 2.5rem; color: var(--orange-clair); line-height: 1; font-variant-numeric: tabular-nums; }
+.stat-block .big-num { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 2.5rem; color: var(--orange-clair); line-height: 1; font-variant-numeric: tabular-nums; }
 .stat-block .big-label { font-size: 0.74rem; color: var(--beige); font-weight: 300; margin-top: 0.55rem; }
 
 /* ══════════════════════ À PROPOS ══════════════════════ */
@@ -812,12 +866,12 @@ a.card-title { display: block; }
 .apropos-photo-placeholder { display: flex; align-items: center; justify-content: center; background: var(--vert); color: var(--beige); }
 .apropos-photo-placeholder svg { width: 28px; height: 28px; }
 .apropos-author-info { display: flex; flex-direction: column; }
-.apropos-author-name { font-family: 'Abril Fatface', serif; color: var(--accent); font-size: 1.1rem; }
+.apropos-author-name { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; color: var(--accent); font-size: 1.1rem; }
 .apropos-author-role { font-size: 0.72rem; color: var(--gris); text-transform: uppercase; letter-spacing: 0.06em; }
 .apropos-visual { background: var(--surface); border-radius: var(--r-md); box-shadow: var(--shadow-1), var(--hairline); padding: 1.75rem; display: flex; flex-direction: column; gap: 1.1rem; }
 .apropos-stat { display: flex; align-items: center; gap: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid rgba(46,94,59,0.12); }
 .apropos-stat:last-child { border-bottom: none; padding-bottom: 0; }
-.apropos-stat .num { font-family: 'Abril Fatface', serif; font-size: 1.75rem; color: var(--orange-texte); min-width: 3.5rem; line-height: 1; flex-shrink: 0; overflow-wrap: break-word; }
+.apropos-stat .num { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 1.75rem; color: var(--orange-texte); min-width: 3.5rem; line-height: 1; flex-shrink: 0; overflow-wrap: break-word; }
 .apropos-stat .info { min-width: 0; }
 .apropos-stat .info .label { font-size: 0.76rem; color: var(--text); font-weight: 700; overflow-wrap: break-word; }
 .apropos-stat .info .sub { font-size: 0.7rem; color: var(--gris); font-weight: 300; overflow-wrap: break-word; }
@@ -915,16 +969,19 @@ a.card-title { display: block; }
 .share-label { font-size: 0.65rem; color: var(--gris); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 0.25rem; }
 .share-btn {
   display: inline-flex; align-items: center; gap: 0.35rem;
-  font-family: 'Merriweather', serif; font-size: 0.72rem; font-weight: 700;
+  font-family: 'Merriweather', 'Merriweather Repli', serif; font-size: 0.72rem; font-weight: 700;
   padding: 0.42rem 0.85rem;
   border-radius: var(--r-pill); border: 1.5px solid; cursor: pointer;
   transition: background 0.2s, color 0.2s, transform 0.15s;
 }
 .share-btn:hover { transform: translateY(-1px); }
-.share-whatsapp { color: #25D366; border-color: #25D366; background: transparent; }
-.share-whatsapp:hover { background: #25D366; color: #fff; }
-.share-facebook { color: #1877F2; border-color: #1877F2; background: transparent; }
-.share-facebook:hover { background: #1877F2; color: #fff; }
+/* #25D366 sur fond clair mesurait 1,87:1 (seuil AA : 4,5:1) et #1877F2 3,99:1.
+   Ces couleurs de marque sont conçues comme fonds, pas comme texte : on
+   assombrit la teinte du libellé et on garde la couleur d'origine au survol. */
+.share-whatsapp { color: #0F7A3D; border-color: #25D366; background: transparent; }
+.share-whatsapp:hover { background: #128C4A; color: #fff; border-color: #128C4A; }
+.share-facebook { color: #0B5FCE; border-color: #1877F2; background: transparent; }
+.share-facebook:hover { background: #0B5FCE; color: #fff; border-color: #0B5FCE; }
 .share-copy { color: var(--accent); border-color: var(--accent); background: transparent; }
 .share-copy:hover { background: var(--vert); color: #fff; }
 .share-copy.copied { background: var(--orange-fond); border-color: var(--orange-fond); color: #fff; }
@@ -937,7 +994,7 @@ a.card-title { display: block; }
   background: var(--bg);
   border-bottom: 1px solid var(--ligne);
   font-size: 0.72rem;
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-weight: 300;
   color: var(--gris);
 }
@@ -952,9 +1009,13 @@ a.card-title { display: block; }
 /* ══════════════════════ PAGE 404 ══════════════════════ */
 .error-404-inner { max-width: 680px; margin: 0 auto; padding: 4rem 2rem; text-align: center; }
 .error-404-num {
-  font-family: 'Abril Fatface', serif;
+  font-family: 'Abril Fatface', 'Abril Fatface Repli', serif;
   font-size: clamp(6rem, 16vw, 10rem);
-  color: var(--beige);
+  /* --beige sur le fond clair donnait 1,25:1 : le nombre était à peine
+     perceptible, pour tout le monde et pas seulement pour les malvoyants.
+     0.7 place le vert du thème à 3,52:1, au-dessus du seuil grand texte de
+     3:1, tout en le gardant discret derrière le titre. */
+  color: rgba(46, 94, 59, 0.7);
   line-height: 1;
   margin-bottom: 0.5rem;
 }
@@ -972,7 +1033,7 @@ a.card-title { display: block; }
 .error-404-thumb { height: 100px; background-size: cover; background-position: center; }
 .error-404-thumb-placeholder { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--vert), #3d7a4e); color: rgba(232,223,200,0.4); }
 .error-404-card-body { padding: 0.75rem 0.85rem; }
-.error-404-card-title { font-family: 'Abril Fatface', serif; font-size: 0.95rem; color: var(--accent); margin-bottom: 0.3rem; }
+.error-404-card-title { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 0.95rem; color: var(--accent); margin-bottom: 0.3rem; }
 .error-404-card-meta { font-size: 0.68rem; color: var(--gris); font-weight: 300; display: flex; align-items: center; gap: 0.3rem; }
 
 /* ══════════════════════ NEWSLETTER (bandeau au-dessus du footer) ══════════════════════ */
@@ -1026,7 +1087,7 @@ a.card-title { display: block; }
 
 /* ══════════════════════ FOOTER ══════════════════════ */
 .site-footer { background: var(--sombre); padding: 2.75rem 3rem; padding-inline: max(var(--gutter), calc((100% - var(--maxw)) / 2)); display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1.75rem; }
-.site-footer .logo { font-family: 'Abril Fatface', serif; color: var(--beige); font-size: 1.05rem; }
+.site-footer .logo { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; color: var(--beige); font-size: 1.05rem; }
 .site-footer .logo span { color: var(--orange); }
 /* Opacité 0.62 (et non 0.45) : sous ce seuil, ce texte clair sur fond
    --sombre tombe sous le ratio de contraste 4.5:1 requis par le WCAG AA
@@ -1052,7 +1113,7 @@ a.card-title { display: block; }
 .filter-group { display: flex; flex-direction: column; gap: 0.35rem; }
 .filter-group label { font-size: 0.65rem; color: var(--gris); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
 .filter-group input, .filter-group select {
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.85rem;
   padding: 0.55rem 0.75rem;
   border: 1px solid rgba(46,94,59,0.2);
@@ -1081,10 +1142,10 @@ a.card-title { display: block; }
   border: 1px solid rgba(46,94,59,0.2);
   box-shadow: var(--shadow-2);
 }
-.archive-map-popup { display: flex; flex-direction: column; width: 190px; font-family: 'Merriweather', serif; }
+.archive-map-popup { display: flex; flex-direction: column; width: 190px; font-family: 'Merriweather', 'Merriweather Repli', serif; }
 .archive-map-popup img { width: 100%; height: 100px; object-fit: cover; border-radius: 3px 3px 0 0; }
 .archive-map-popup .amp-body { padding: 0.6rem 0.15rem 0.15rem; }
-.archive-map-popup .amp-titre { font-family: 'Abril Fatface', serif; font-size: 0.95rem; color: var(--accent); margin-bottom: 0.2rem; line-height: 1.2; }
+.archive-map-popup .amp-titre { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 0.95rem; color: var(--accent); margin-bottom: 0.2rem; line-height: 1.2; }
 .archive-map-popup .amp-meta { font-size: 0.7rem; color: var(--gris); margin-bottom: 0.45rem; }
 .archive-map-popup .amp-link { font-size: 0.75rem; color: var(--orange-texte); font-weight: 700; text-decoration: underline; }
 
@@ -1158,7 +1219,7 @@ a.card-title { display: block; }
 }
 .nav-mobile-drawer.open { display: flex; }
 .nav-mobile-drawer a {
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.85rem; font-weight: 700;
   color: var(--text);
   padding: 0.65rem 1rem;
@@ -1208,3 +1269,105 @@ a.card-title { display: block; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── « Contacte-moi » de la section À propos ─────────────────────────
+   Le lien était posé en style inline avec --orange (3,00:1 sur fond clair),
+   dans un paragraphe porté à opacity:0.7 qui dégradait aussi le texte
+   environnant à 3,18:1. --orange-texte est le jeton prévu pour du texte
+   orange sur surface claire (5,86:1), et le gris s'écrit directement plutôt
+   que par une opacité qui affecte tout le bloc. */
+.apropos-contact {
+  font-size: 0.85rem;
+  margin-top: 1.25rem;
+  color: var(--gris);
+}
+.apropos-contact a {
+  color: var(--orange-texte);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Attribution des cartes Leaflet ──────────────────────────────────
+   La bibliothèque pose ses liens en #0078a8 sans soulignement, sur un texte
+   gris : 2,55:1 d'écart de teinte, sous les 3:1 nécessaires pour se passer
+   d'un autre indice (WCAG 1.4.1). On ne peut pas changer une couleur imposée
+   par Leaflet sans toucher à son CSS, mais un soulignement lève le critère.  */
+.leaflet-container .leaflet-control-attribution a {
+  text-decoration: underline;
+  text-underline-offset: 1px;
+}
+
+/* ── Repère d'échelle sur la pastille de difficulté ──────────────────
+   Les noms de difficulté sont des formules maison (« Simpliste », « Ça se
+   corse ») : rien n'indiquait comment les ordonner. Le « 2/4 » qui suit le
+   nom situe le niveau sans rien enlever au ton du site. */
+.badge-repere {
+  margin-left: 0.35rem;
+  padding-left: 0.35rem;
+  border-left: 1px solid rgba(255,255,255,0.45);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+/* La pastille mène désormais à l'archive du niveau — elle doit se comporter
+   comme un lien, sans hériter du soulignement du contenu rédactionnel. */
+a.badge-diff { text-decoration: none; }
+a.badge-diff:hover { filter: brightness(1.12); }
+a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* ── Archive d'un niveau de difficulté ───────────────────────────────── */
+.archive-count { color: var(--gris); font-size: 0.9rem; margin-bottom: 1.5rem; }
+.archive-vide { color: var(--gris); }
+
+/* ── Actions du hero ─────────────────────────────────────────────────
+   Le premier écran mobile n'offrait aucune action : il fallait faire défiler
+   à l'aveugle avant de trouver la première randonnée (1,1 écran) ou le bouton
+   vers l'archive (1,8 écran). */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.6rem;
+  /* Hauteur réservée : les libellés des boutons s'élargissent quand
+     Merriweather remplace la police système (font-display: swap), au point de
+     passer d'une ligne à deux — le contenu du hero remontait alors de 84 px et
+     le navigateur comptait un décalage de mise en page de 0,107, au-dessus du
+     seuil de 0,1. Réserver la place des deux lignes rend la bascule invisible. */
+  min-height: calc(2 * 48px + 0.7rem);
+}
+.hero-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Hauteur du bouton fixée et libellé insécable : sans cela le bouton lui-même
+     grandissait au changement de police, et la réservation de .hero-actions
+     devenait fausse. Les deux libellés sont courts, rien n'est tronqué. */
+  min-height: 48px;
+  white-space: nowrap;
+  /* line-height fixe : sans lui, la hauteur de la ligne de texte varie avec la
+     police et le bouton gagne encore quelques pixels à la bascule. */
+  line-height: 1;
+  padding-block: 0;
+}
+@media (min-width: 620px) {
+  /* Au-delà, les deux boutons tiennent côte à côte quelle que soit la police. */
+  .hero-actions { min-height: 48px; }
+}
+@media (max-width: 480px) {
+  .hero-actions { gap: 0.5rem; min-height: calc(2 * 48px + 0.5rem); }
+  .hero-actions .btn { flex: 1 1 auto; }
+}
+
+/* Le compteur est la cible de l'ancre du formulaire de filtres : un peu de
+   marge pour qu'il ne se retrouve pas collé sous le bandeau fixe. */
+#resultats { scroll-margin-top: 5rem; }
+
+/* ── Information au point de collecte (RGPD art. 13) ─────────────────
+   Une ligne discrète sous chaque formulaire : elle doit se lire sans
+   s'imposer, et rester au-dessus du seuil de contraste AA. */
+.form-legal {
+  margin-top: 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--gris);
+}
+.form-legal a { color: var(--orange-texte); text-decoration: underline; text-underline-offset: 2px; }

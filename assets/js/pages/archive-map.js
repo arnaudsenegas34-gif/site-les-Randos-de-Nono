@@ -42,7 +42,15 @@
         '</div>' +
       '</div>';
 
-      L.marker([m.lat, m.lon], { icon: icon }).addTo(map).bindPopup(popupHtml);
+      // `alt` et `title` donnent au marqueur un nom accessible : Leaflet le
+      // reporte sur l'élément interactif. Sans eux, chaque marqueur est un
+      // bouton muet pour un lecteur d'écran (axe-core : aria-command-name).
+      L.marker([m.lat, m.lon], {
+        icon: icon,
+        alt: m.titre,
+        title: m.titre,
+        keyboard: true
+      }).addTo(map).bindPopup(popupHtml);
     });
 
     if (bounds.length === 1) {

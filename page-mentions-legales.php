@@ -53,7 +53,8 @@ get_header();
     <hr>
 
     <h2>Données personnelles</h2>
-    <p>Ce site propose un <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>. Les informations que vous y transmettez (nom, e-mail, message) sont utilisées uniquement pour répondre à votre demande et ne sont ni conservées au-delà du nécessaire, ni transmises à des tiers.</p>
+    <p>Ce site propose un <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>. Les informations que vous y transmettez (nom, e-mail, message) sont utilisées uniquement pour répondre à votre demande et ne sont pas transmises à des tiers.
+      Les messages sont conservés au maximum <strong>douze mois</strong> après le dernier échange, puis supprimés.</p>
     <p>
       Le site propose également une <a href="#newsletter">newsletter</a> et un espace d'<a href="#avis">avis lecteurs</a>,
       décrits ci-dessous, qui impliquent la collecte de données personnelles (adresse e-mail pour la newsletter ;
@@ -80,6 +81,15 @@ get_header();
       utilisée exclusivement à cette fin ; elle n'est ni revendue ni transmise à des tiers.
     </p>
     <p>
+      L'inscription se fait en <strong>deux temps</strong> : après la saisie de l'adresse, un e-mail contenant un
+      lien de confirmation est envoyé. Tant que ce lien n'a pas été suivi, aucune newsletter n'est adressée, et
+      l'inscription non confirmée est automatiquement effacée au bout de <strong>trente jours</strong>.
+    </p>
+    <p>
+      Les adresses confirmées sont conservées tant que l'inscription reste active, et au plus
+      <strong>trois ans</strong> après le dernier envoi ou la dernière interaction.
+    </p>
+    <p>
       Vous pouvez vous désabonner à tout moment, sans justification, en cliquant sur le lien de désabonnement
       présent au bas de chaque e-mail reçu. Votre adresse est alors supprimée de la liste des abonnés.
     </p>
@@ -91,6 +101,11 @@ get_header();
       Le site permet de déposer un avis (note et commentaire, accompagnés du prénom renseigné) sur chaque fiche
       randonnée. Ces avis sont enregistrés dans la base de données du site puis vérifiés manuellement avant
       d'être publiés : ils ne sont donc visibles publiquement qu'après validation.
+      Seuls le prénom, la note et le commentaire sont enregistrés — <strong>ni adresse e-mail, ni adresse IP</strong>.
+    </p>
+    <p>
+      Un avis publié est conservé tant que la randonnée l'est. Un avis refusé à la modération est
+      automatiquement supprimé au bout de <strong>six mois</strong>.
     </p>
     <p>
       Le prénom et le commentaire associés à un avis publié sont visibles par tous les visiteurs du site.

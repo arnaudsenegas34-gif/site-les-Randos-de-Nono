@@ -315,3 +315,159 @@ Suunto externe ci-dessus.
 Le numéro de version dans l'en-tête de `style.css` (`Version: X.Y`) doit être
 incrémenté à chaque correctif livré, pour que l'utilisateur puisse vérifier
 après upload que la bonne version est en ligne.
+
+## Campagne de correction du 15/09/2026 — ce qui a changé et pourquoi
+
+Trois audits (technique, utilisateur, conformité) ont produit 60 constats ;
+cette version en corrige 48 dans le code. Les points ci-dessous documentent
+les décisions qui ne se lisent pas dans le diff.
+
+### Bascule `no-js` → `js` : ne pas la retirer
+
+`<html class="no-js">` est remplacé par `js` par un script en ligne, première
+instruction du `<head>` de `header.php`. **Tout le CSS d'apparition au
+défilement est conditionné à `.js`** (`.js .rando-card`, `.js .matos-card`,
+`.js .section-title`…). Sans cette bascule, 31 des 39 blocs de la page
+d'accueil restaient à `opacity: 0` quand JavaScript ne s'exécutait pas — page
+vide, sans message. Si on ajoute une nouvelle règle d'apparition, elle doit
+être préfixée `.js`, sinon le contenu redevient invisible sans JavaScript.
+
+### Service worker : la priorité 0 est indispensable
+
+`add_action( 'template_redirect', 'rando_nono_serve_sw', 0 )`. En priorité 10
+(le défaut), `redirect_canonical()` de WordPress passe avant et ajoute une
+barre finale : `/sw.js` répondait 301 vers `/sw.js/`. La spécification
+Service Worker interdit toute redirection sur le script d'enregistrement —
+l'installation échouait donc systématiquement, **et le mode hors-ligne n'a
+jamais fonctionné** depuis sa mise en place. Symptôme : « The script resource
+is behind a redirect, which is disallowed » dans la console, sur toutes les
+pages. Vérification après livraison : `curl -I https://…/sw.js` doit répondre
+`200`, sans redirection.
+
+### Énumération d'utilisateur : trois verrous, pas un
+
+Retirer `/wp/v2/users` de l'API REST et masquer le message d'erreur de
+connexion ne suffisait pas : `/?author=1` répondait 301 vers `/author/nono/`
+et `wp-sitemap-users-1.xml` publiait la même URL. L'identifiant de
+l'administrateur était donc public, ce qui réduit une attaque par force brute
+à la recherche du seul mot de passe. Les trois verrous sont maintenant posés
+(`rando_nono_bloquer_enumeration_auteur`, filtre `wp_sitemaps_add_provider`,
+filtre REST). **Ne pas en retirer un en pensant que les autres couvrent.**
+
+Le verrou de connexion (`rando_nono_login_verrou`) compte les échecs par IP
+dans un transient et refuse le formulaire au-delà de 5 essais pendant quinze
+minutes. Il ne remplace pas une extension dédiée — pas de liste noire
+durable, pas d'alerte — mais il ferme la porte la plus évidente.
+
+### Échelle de difficulté : un rang, pas un renommage
+
+Les noms restent les formules maison (« Simpliste », « Ça se corse »…) — c'est
+l'identité du site. Ce qui manquait était l'ordre : `get_terms()` les rendait
+par ordre alphabétique, ce qui plaçait « Ça se corse » après « Tu vas t'en
+souvenir » à cause de la cédille, et personne ne pouvait deviner lequel était
+le plus facile.
+
+Chaque terme porte une métadonnée `rando_difficulte_rang` (champ « Niveau »
+dans l'administration de la taxonomie, colonne « Niveau » dans la liste).
+`rando_nono_difficultes_ordonnees()` trie dessus,
+`rando_nono_difficulte_repere()` produit le « 2/4 » affiché à côté du nom.
+**Un terme sans rang passe en fin de liste et n'affiche pas de repère** — il
+faut donc penser à renseigner le champ à chaque nouveau niveau ; la colonne de
+la liste le signale en orange.
+
+### Pages de taxonomie : elles ont maintenant un gabarit ET des liens
+
+`taxonomy-difficulte.php` remplace le repli `index.php`, qui affichait jusqu'à
+dix `<h1>` et le contenu intégral de chaque randonnée. Ces pages étaient
+déclarées au sitemap sans recevoir le moindre lien interne ; les pastilles de
+difficulté des cartes pointent désormais vers elles.
+
+`categorie_matos` n'a toujours pas de gabarit dédié : si ces archives doivent
+vivre, elles ont besoin du même traitement. Sinon, les passer en
+`publicly_queryable => false`.
+
+### CLS : les hauteurs du hero sont réservées exprès
+
+`.hero-desc` et `.hero-actions` portent un `min-height` calculé. Ce n'est pas
+cosmétique : `font-display: swap` fait basculer d'une police système vers
+Merriweather, qui est plus large. Le sous-titre passait de deux à trois lignes
+et les boutons d'une ligne à deux, ce qui remontait le contenu du hero de
+84 px et portait le CLS à 0,107 — au-dessus du seuil de 0,1. Avec les hauteurs
+réservées et `line-height: 1` sur les boutons : **0,021**.
+
+Les `@font-face` de repli ajustés (`Abril Fatface Repli`, `Merriweather
+Repli`) dans `fonts.css` visent le même but par une autre voie, mais ils
+dépendent de polices système présentes (`local('Georgia')`) : **ils ne
+fonctionnent pas sous Linux** et ne suffisent donc pas seuls. Les
+`min-height`, eux, marchent partout.
+
+### Formulaire de contact : quatre causes, quatre messages
+
+`?contact=expire` (nonce périmé), `attente` (limitation 20 s), `champs`
+(saisie incomplète), `envoi` (échec `wp_mail`). Toutes ces situations
+renvoyaient auparavant « vérifiez les champs », y compris quand les champs
+étaient corrects.
+
+Le cas du nonce périmé n'est pas théorique : **W3 Total Cache sert `/contact/`
+depuis son cache disque avec le nonce figé dans le HTML**, et un nonce
+WordPress expire au bout de 12 à 24 h. À faire côté hébergement : exclure
+`/contact/` du cache de page (W3TC → Page Cache → Never cache the following
+pages).
+
+Les échecs d'envoi sont désormais journalisés (`wp_mail_failed` →
+option `rando_nono_dernier_echec_mail` + journal PHP).
+
+### Newsletter : double opt-in
+
+L'inscription crée une ligne en `statut = 'en_attente'` et envoie un lien de
+confirmation portant le `token` (la colonne existait déjà pour le
+désabonnement). Le passage en `actif` — et l'envoi de la checklist PDF — n'a
+lieu qu'au clic. Les inscriptions non confirmées sont purgées au bout de
+30 jours, les avis refusés au bout de 6 mois
+(`rando_nono_purger_donnees`, une fois par jour via transient).
+
+**Les envois filtrent déjà sur `statut = 'actif'`** : un abonné en attente ne
+reçoit rien. Ne pas relâcher ce filtre.
+
+### URL de filtres : 6 480 combinaisons, désormais hors index
+
+Le formulaire de l'archive passe ses critères en `GET` : 5 difficultés × 16
+valeurs de distance × 81 de dénivelé. La balise canonique les ramenait déjà
+toutes vers `/randonnee/` (le contenu n'était donc pas dupliqué dans l'index),
+mais Google les explorait quand même, sur un hébergement qui refuse déjà des
+connexions simultanées. `rando_nono_archive_filtree()` pose un `noindex` dès
+qu'un paramètre de filtre est présent, et le `robots.txt` virtuel les exclut
+du crawl.
+
+### Schema.org : `addressLocality` attend une commune
+
+Y verser le champ « lieu » entier produisait des valeurs de 100 caractères,
+valides mais inexploitables pour le référencement local.
+`rando_nono_lieu_commune()` extrait la commune par trois voies, de la plus
+sûre à la plus hasardeuse, et **ne renvoie rien plutôt qu'une valeur fausse**.
+`addressRegion` n'est renseigné que si le dernier segment ne ressemble pas à
+un parc ou un massif.
+
+### Ce qui reste à faire hors du code
+
+Ces points ne peuvent pas être réglés depuis le thème :
+
+1. **Rapatrier les traces GPX.** Elles pointent toutes vers l'API
+   Sports-Tracker : si elle change, la carte, le profil, le téléchargement et
+   la fiche imprimable tombent ensemble, rétroactivement. Le filtre
+   `upload_mimes` autorise déjà le `.gpx` dans la médiathèque — il suffit d'y
+   téléverser les fichiers et de coller leur URL dans le champ existant.
+2. **Sauvegarder la base entière**, pas l'export WordPress : les tables
+   `wp_rando_nono_newsletter` et `wp_rando_nono_avis` n'y figurent pas, et le
+   thème les recrée vides, ce qui rend la perte silencieuse. Les deux exports
+   CSV (abonnés, avis) sont un complément, pas une sauvegarde.
+3. **Exclure `/contact/` du cache W3TC** (voir plus haut).
+4. **Renseigner le niveau de chaque difficulté** dans
+   *Randonnées → Difficulté*.
+5. **Régénérer les miniatures** — la taille `rando-card-sm` n'existe que pour
+   les images téléversées après cette version.
+6. **Vérifier en production** que `/readme.html` répond 403 (le `.htaccess`
+   n'est pas appliqué par le serveur de test), que l'article `hello-world`
+   n'existe plus, et que `WP_DEBUG` vaut `false`.
+7. **Envisager une extension de limitation de connexion** si le verrou intégré
+   se révèle insuffisant.

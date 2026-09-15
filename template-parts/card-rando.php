@@ -42,7 +42,18 @@ $thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-car
       </picture>
     <?php endif; ?>
     <div class="card-badges">
-      <span class="badge badge-diff badge-diff-<?php echo esc_attr( $difficulte_slug ); ?>"><?php echo esc_html( $difficulte_nom ); ?></span>
+      <?php
+      // Le repère « 2/4 » situe la difficulté sur l'échelle : les noms sont des
+      // formules maison, rien n'indiquait lequel était le plus facile.
+      $diff_terme  = ( $diff_terms && ! is_wp_error( $diff_terms ) ) ? $diff_terms[0] : null;
+      $diff_repere = $diff_terme ? rando_nono_difficulte_repere( $diff_terme ) : '';
+      $diff_lien   = $diff_terme ? get_term_link( $diff_terme ) : '';
+      ?>
+      <?php if ( $diff_lien && ! is_wp_error( $diff_lien ) ) : ?>
+        <a class="badge badge-diff badge-diff-<?php echo esc_attr( $difficulte_slug ); ?>" href="<?php echo esc_url( $diff_lien ); ?>" title="Voir toutes les randonnées de ce niveau"><?php echo esc_html( $difficulte_nom ); ?><?php if ( $diff_repere ) : ?><span class="badge-repere"><?php echo esc_html( $diff_repere ); ?></span><?php endif; ?></a>
+      <?php else : ?>
+        <span class="badge badge-diff badge-diff-<?php echo esc_attr( $difficulte_slug ); ?>"><?php echo esc_html( $difficulte_nom ); ?><?php if ( $diff_repere ) : ?><span class="badge-repere"><?php echo esc_html( $diff_repere ); ?></span><?php endif; ?></span>
+      <?php endif; ?>
       <?php if ( $gpx_url ) : ?><span class="badge badge-gpx">GPX</span><?php endif; ?>
     </div>
     <button type="button" class="card-fav-btn js-favori-btn" data-id="<?php echo esc_attr( $id ); ?>" aria-pressed="false" aria-label="Ajouter aux favoris">
@@ -54,7 +65,15 @@ $thumb_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'rando-car
       <span class="meta-item meta-item-lieu"><?php echo rando_nono_icon( 'pin' ); ?> <span class="meta-text" title="<?php echo esc_attr( $lieu ); ?>"><?php echo esc_html( $lieu_court ); ?></span></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'calendar' ); ?> <?php echo esc_html( $date_sortie ); ?></span>
     </div>
-    <h3 class="card-title"><a class="card-title-link" href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php the_title(); ?></a></h3>
+    <?php
+    // Le niveau du titre dépend de ce qui précède la grille sur la page :
+    // h3 sous un h2 de section (accueil, page guide), h2 directement sous le
+    // h1 d'une archive. Un h1 suivi de h3 crée un saut de niveau qu'axe-core
+    // signale et qu'un lecteur d'écran restitue comme un trou dans le plan.
+    $rn_niveau = isset( $args['niveau'] ) && in_array( $args['niveau'], array( 'h2', 'h3', 'h4' ), true )
+        ? $args['niveau'] : 'h3';
+    ?>
+    <<?php echo $rn_niveau; ?> class="card-title"><a class="card-title-link" href="<?php echo esc_url( get_permalink( $id ) ); ?>"><?php the_title(); ?></a></<?php echo $rn_niveau; ?>>
     <div class="card-meta" style="margin-bottom:0.85rem">
       <span class="meta-item"><?php echo rando_nono_icon( 'ruler' ); ?> <?php echo esc_html( $distance ); ?></span>
       <span class="meta-item"><?php echo rando_nono_icon( 'trending-up' ); ?> <?php echo esc_html( $denivele ); ?></span>

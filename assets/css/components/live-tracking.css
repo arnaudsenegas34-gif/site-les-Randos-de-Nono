@@ -40,7 +40,7 @@
   gap: 0.15rem;
 }
 .sr-track-value {
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 1.05rem;
   font-weight: 700;
   color: #fff;
@@ -71,7 +71,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.78rem;
   font-weight: 700;
   padding: 0.6rem 1.2rem;
@@ -124,7 +124,7 @@
 }
 .sr-track-recap-value {
   display: block;
-  font-family: 'Abril Fatface', serif;
+  font-family: 'Abril Fatface', 'Abril Fatface Repli', serif;
   font-size: 1.3rem;
   color: var(--accent);
   margin-bottom: 0.25rem;

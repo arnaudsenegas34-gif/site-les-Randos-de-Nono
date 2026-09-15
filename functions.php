@@ -14,6 +14,32 @@ if ( is_admin() && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
     require_once get_template_directory() . '/inc/data-seeder.php';
 }
 
+/**
+ * Rendu du menu WordPress dans le tiroir mobile.
+ *
+ * Le tiroir affiche des liens à plat (pas de <ul>/<li>), avec les entrées de
+ * second niveau simplement décalées sous leur parent — même présentation que
+ * la liste écrite en dur qu'il utilisait avant. Ce walker produit ce balisage
+ * depuis un menu configuré dans l'administration, pour que les deux
+ * affichages ne puissent plus diverger.
+ */
+class Rando_Nono_Drawer_Walker extends Walker_Nav_Menu {
+    public function start_lvl( &$output, $depth = 0, $args = null ) {
+        $output .= '<div class="nav-drawer-sub">';
+    }
+    public function end_lvl( &$output, $depth = 0, $args = null ) {
+        $output .= '</div>';
+    }
+    public function start_el( &$output, $item, $depth = 0, $args = null, $id = 0 ) {
+        $courant = in_array( 'current-menu-item', (array) $item->classes, true )
+                || in_array( 'current_page_item', (array) $item->classes, true );
+        $output .= '<a href="' . esc_url( $item->url ) . '"'
+                 . ( $courant ? ' class="is-current" aria-current="page"' : '' )
+                 . '>' . esc_html( $item->title ) . '</a>';
+    }
+    public function end_el( &$output, $item, $depth = 0, $args = null ) {}
+}
+
 /* ──────────────────────────────────────────
    1. SETUP DU THÈME
    ────────────────────────────────────────── */
@@ -27,6 +53,12 @@ function rando_nono_setup() {
     // définition (au lieu du "large" générique) et permettre un vrai srcset
     // responsive sur les cartes, les héros et les galeries.
     add_image_size( 'rando-card', 640, 420, true );
+    // Seconde taille au MÊME rapport que rando-card : sans elle, WordPress ne
+    // peut construire aucun srcset pour les vignettes (il ne mélange pas les
+    // proportions), et le même fichier de 640 px partait vers tous les écrans.
+    // Rappel : add_image_size() ne vaut que pour l'avenir — il faut régénérer
+    // les miniatures pour que les images déjà en ligne en profitent.
+    add_image_size( 'rando-card-sm', 320, 210, true );
     add_image_size( 'rando-hero', 1600, 900, true );
     add_image_size( 'rando-gallery', 1000, 0, false );
 }
@@ -219,6 +251,18 @@ function rando_nono_alleger_front() {
 add_action( 'wp_enqueue_scripts', 'rando_nono_alleger_front', 100 );
 
 /**
+ * CSS des blocs Gutenberg — chargé à la demande plutôt qu'en bloc.
+ *
+ * wp-includes/css/dist/block-library/style.css pesait 122 Ko sur CHAQUE page,
+ * soit 36 % du poids d'une page simple, en ressource bloquant le rendu — pour
+ * un thème classique qui n'utilise presque aucun bloc. Ce filtre fait charger
+ * à WordPress le style des seuls blocs réellement présents dans le contenu :
+ * aucune mise en forme n'est perdue, y compris sur une page rédigée avec des
+ * colonnes ou une galerie.
+ */
+add_filter( 'should_load_separate_core_block_assets', '__return_true' );
+
+/**
  * Émojis WordPress — script inutile ici, et bruyant.
  *
  * Le thème n'affiche pas d'émoji dans son contenu, mais le chargeur de
@@ -241,6 +285,116 @@ add_action( 'init', 'rando_nono_desactiver_emojis' );
 /* ──────────────────────────────────────────
    3. CUSTOM POST TYPE "RANDONNÉE"
    ────────────────────────────────────────── */
+/* ──────────────────────────────────────────
+   ÉCHELLE DE DIFFICULTÉ — un ordre, enfin
+
+   Les noms sont des formules maison (« Simpliste », « Ça se corse », « Tu vas
+   t'en souvenir ») : c'est l'identité du site et il faut les garder. Mais rien
+   n'indiquait comment les ordonner. Le sélecteur de l'archive les listait par
+   ordre alphabétique — get_terms() sans orderby — avec « Ça » rejeté en fin de
+   liste par sa cédille : « Balade tranquille, Simpliste, Tu vas t'en souvenir,
+   Ça se corse ». Un visiteur qui arrive ne peut pas deviner lequel est le plus
+   facile, donc le filtre le plus utile du site demande de connaître le site.
+
+   Chaque terme porte maintenant un rang (métadonnée de terme, champ « Niveau »
+   dans l'administration). Le rang sert à trier les listes ET à afficher un
+   repère « 2/4 » à côté du nom : le nom garde sa personnalité, le chiffre
+   donne l'échelle.
+   ────────────────────────────────────────── */
+
+/**
+ * Rang d'un terme de difficulté (1 = le plus facile), 0 s'il n'est pas défini.
+ */
+function rando_nono_difficulte_rang( $terme ) {
+    if ( is_numeric( $terme ) ) $terme = get_term( (int) $terme, 'difficulte' );
+    if ( ! $terme || is_wp_error( $terme ) ) return 0;
+    return (int) get_term_meta( $terme->term_id, 'rando_difficulte_rang', true );
+}
+
+/**
+ * Nombre de niveaux de l'échelle — le dénominateur du repère « 2/4 ».
+ */
+function rando_nono_difficulte_total() {
+    $termes = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' => false ) );
+    return ( $termes && ! is_wp_error( $termes ) ) ? count( $termes ) : 0;
+}
+
+/**
+ * Termes de difficulté triés par rang croissant, les non classés à la fin.
+ */
+function rando_nono_difficultes_ordonnees( $hide_empty = true ) {
+    $termes = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' => $hide_empty ) );
+    if ( ! $termes || is_wp_error( $termes ) ) return array();
+    usort( $termes, function( $a, $b ) {
+        $ra = rando_nono_difficulte_rang( $a );
+        $rb = rando_nono_difficulte_rang( $b );
+        // Un terme sans rang passe après ceux qui en ont un.
+        if ( 0 === $ra ) $ra = PHP_INT_MAX;
+        if ( 0 === $rb ) $rb = PHP_INT_MAX;
+        if ( $ra === $rb ) return strnatcasecmp( $a->name, $b->name );
+        return $ra <=> $rb;
+    } );
+    return $termes;
+}
+
+/**
+ * Libellé du repère d'échelle : « 2/4 », ou chaîne vide si non classé.
+ */
+function rando_nono_difficulte_repere( $terme ) {
+    $rang  = rando_nono_difficulte_rang( $terme );
+    $total = rando_nono_difficulte_total();
+    return ( $rang && $total ) ? $rang . '/' . $total : '';
+}
+
+/* Champ « Niveau » dans l'administration des termes de difficulté. */
+add_action( 'difficulte_add_form_fields', function() {
+    ?>
+    <div class="form-field">
+      <label for="rando_difficulte_rang">Niveau sur l'échelle</label>
+      <input type="number" name="rando_difficulte_rang" id="rando_difficulte_rang" min="1" max="20" step="1" value="">
+      <p>1 = le plus facile. Ce nombre sert à ordonner le filtre de l'archive et à afficher un repère « 2/4 » à côté du nom — le nom lui-même ne change pas.</p>
+    </div>
+    <?php
+} );
+
+add_action( 'difficulte_edit_form_fields', function( $terme ) {
+    $rang = rando_nono_difficulte_rang( $terme );
+    ?>
+    <tr class="form-field">
+      <th scope="row"><label for="rando_difficulte_rang">Niveau sur l'échelle</label></th>
+      <td>
+        <input type="number" name="rando_difficulte_rang" id="rando_difficulte_rang" min="1" max="20" step="1" value="<?php echo $rang ? esc_attr( $rang ) : ''; ?>">
+        <p class="description">1 = le plus facile. Sert à ordonner le filtre de l'archive et à afficher le repère « <?php echo esc_html( rando_nono_difficulte_repere( $terme ) ?: '2/4' ); ?> » à côté du nom.</p>
+      </td>
+    </tr>
+    <?php
+} );
+
+function rando_nono_difficulte_save_rang( $term_id ) {
+    if ( ! current_user_can( 'manage_categories' ) ) return;
+    if ( ! isset( $_POST['rando_difficulte_rang'] ) ) return;
+    $rang = (int) $_POST['rando_difficulte_rang'];
+    if ( $rang > 0 ) {
+        update_term_meta( $term_id, 'rando_difficulte_rang', $rang );
+    } else {
+        delete_term_meta( $term_id, 'rando_difficulte_rang' );
+    }
+}
+add_action( 'created_difficulte', 'rando_nono_difficulte_save_rang' );
+add_action( 'edited_difficulte', 'rando_nono_difficulte_save_rang' );
+
+/* Colonne « Niveau » dans la liste des difficultés, pour voir l'ordre d'un
+   coup d'œil et repérer les termes non classés. */
+add_filter( 'manage_edit-difficulte_columns', function( $colonnes ) {
+    $colonnes['rando_rang'] = 'Niveau';
+    return $colonnes;
+} );
+add_filter( 'manage_difficulte_custom_column', function( $contenu, $colonne, $term_id ) {
+    if ( 'rando_rang' !== $colonne ) return $contenu;
+    $repere = rando_nono_difficulte_repere( get_term( $term_id, 'difficulte' ) );
+    return $repere ? esc_html( $repere ) : '<span style="color:#A85504">non classé</span>';
+}, 10, 3 );
+
 function rando_nono_register_cpt() {
     register_post_type( 'randonnee', array(
         'labels' => array(
@@ -761,13 +915,23 @@ function rando_nono_handle_contact_form() {
 
     $redirect = get_permalink();
 
+    // Quatre situations distinctes menaient toutes à `contact=error`, avec le
+    // même message « vérifiez les champs » — y compris quand les champs étaient
+    // corrects et que c'était l'envoi qui avait échoué. Chacune a désormais son
+    // code, et page-contact.php affiche le message qui correspond.
+    //
+    // Le cas du nonce périmé n'est pas théorique : W3 Total Cache sert
+    // /contact/ depuis son cache disque avec le nonce figé dans le HTML, et un
+    // nonce WordPress expire au bout de 12 à 24 h. Passé ce délai, tout
+    // visiteur anonyme échouait, et le message l'envoyait corriger des champs
+    // qui n'avaient rien de faux.
     if ( ! isset( $_POST['rando_nono_contact_nonce'] ) || ! wp_verify_nonce( $_POST['rando_nono_contact_nonce'], 'rando_nono_contact_form' ) ) {
-        wp_safe_redirect( add_query_arg( 'contact', 'error', $redirect ) );
+        wp_safe_redirect( add_query_arg( 'contact', 'expire', $redirect ) );
         exit;
     }
 
     if ( ! rando_nono_throttle_submission( 'contact' ) ) {
-        wp_safe_redirect( add_query_arg( 'contact', 'error', $redirect ) );
+        wp_safe_redirect( add_query_arg( 'contact', 'attente', $redirect ) );
         exit;
     }
 
@@ -782,21 +946,48 @@ function rando_nono_handle_contact_form() {
     $message = isset( $_POST['contact_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contact_message'] ) ) : '';
 
     if ( '' === $nom || ! is_email( $email ) || '' === $message ) {
-        wp_safe_redirect( add_query_arg( 'contact', 'error', $redirect ) );
+        wp_safe_redirect( add_query_arg( 'contact', 'champs', $redirect ) );
         exit;
     }
 
-    $to      = 'arnaud.senegas34@gmail.com';
+    // L'adresse de destination suit le réglage WordPress (Réglages > Général),
+    // au lieu d'être écrite en dur dans le thème : la changer ne demande plus
+    // de livrer une nouvelle version.
+    $to      = get_option( 'admin_email' );
     $subject = 'Nouveau message depuis Les Randos de Nono';
     $body    = "Nom : {$nom}\nEmail : {$email}\n\nMessage :\n{$message}";
     $headers = array( 'Reply-To: ' . $nom . ' <' . $email . '>' );
 
     $sent = wp_mail( $to, $subject, $body, $headers );
 
-    wp_safe_redirect( add_query_arg( 'contact', $sent ? 'ok' : 'error', $redirect ) );
+    wp_safe_redirect( add_query_arg( 'contact', $sent ? 'ok' : 'envoi', $redirect ) );
     exit;
 }
 add_action( 'template_redirect', 'rando_nono_handle_contact_form' );
+
+/**
+ * Échecs d'envoi de courriel — journalisés plutôt que silencieux.
+ *
+ * Rien ne remontait une panne d'envoi : ni au visiteur (qui lisait « vérifiez
+ * les champs »), ni à l'administrateur. Sur un mutualisé où l'envoi PHP est
+ * souvent restreint, c'est la panne la plus probable — et la plus coûteuse,
+ * puisqu'elle fait perdre des messages sans laisser de trace.
+ *
+ * La dernière erreur est conservée en option (consultable dans Réglages >
+ * Vérification SEO, ou via get_option) et écrite dans le journal PHP quand
+ * WP_DEBUG_LOG est actif.
+ */
+add_action( 'wp_mail_failed', function( $erreur ) {
+    if ( ! is_wp_error( $erreur ) ) return;
+    $message = $erreur->get_error_message();
+    update_option( 'rando_nono_dernier_echec_mail', array(
+        'date'    => current_time( 'mysql' ),
+        'message' => $message,
+    ), false );
+    if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+        error_log( '[rando-nono] Échec wp_mail : ' . $message );
+    }
+} );
 
 /* ──────────────────────────────────────────
    6. NETTOYAGE — sécurité & performance de base
@@ -821,11 +1012,24 @@ function rando_nono_security_headers() {
     }
 
     if ( headers_sent() ) return;
+
+    // PHP annonce sa version dans X-Powered-By. Le .htaccess la retire via
+    // `Header unset`, mais cela suppose mod_headers actif — or ce bloc existe
+    // justement pour le cas contraire. header_remove() agit côté PHP, donc
+    // quel que soit le serveur.
+    header_remove( 'X-Powered-By' );
+
     header( 'X-Content-Type-Options: nosniff' );
     header( 'X-Frame-Options: SAMEORIGIN' );
     header( 'Referrer-Policy: strict-origin-when-cross-origin' );
     header( 'Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(), browsing-topics=()' );
     header( 'Cross-Origin-Opener-Policy: same-origin' );
+    // HSTS : présent dans le .htaccess, il manquait ici. Conditionné à une
+    // connexion chiffrée — un HSTS servi sur HTTP est ignoré par les
+    // navigateurs, et poserait problème sur un environnement de test local.
+    if ( is_ssl() ) {
+        header( 'Strict-Transport-Security: max-age=31536000; includeSubDomains' );
+    }
     // Doit rester identique à la CSP posée par mod_headers dans .htaccess
     // (celle-ci ne sert que de filet de sécurité si mod_headers est absent :
     // avec "Header set", la valeur du .htaccess écrase celle-ci côté navigateur).
@@ -857,8 +1061,117 @@ add_filter( 'rest_endpoints', function( $endpoints ) {
     if ( is_user_logged_in() ) return $endpoints;
     unset( $endpoints['/wp/v2/users'] );
     unset( $endpoints['/wp/v2/users/(?P<id>[\d]+)'] );
+    // Les commentaires WordPress ne sont ni affichés ni utilisés (le thème a
+    // son propre système d'avis) : on ferme aussi leur porte d'entrée REST.
+    unset( $endpoints['/wp/v2/comments'] );
+    unset( $endpoints['/wp/v2/comments/(?P<id>[\d]+)'] );
     return $endpoints;
 } );
+
+/**
+ * Énumération d'utilisateur — la porte laissée ouverte par les deux mesures
+ * ci-dessus.
+ *
+ * Retirer /wp/v2/users et masquer le message d'erreur de connexion empêche de
+ * découvrir l'identifiant de l'administrateur… sauf par deux autres chemins que
+ * WordPress ouvre par défaut :
+ *   - /?author=1 répond 301 vers /author/<login>/ : le login est dans l'URL ;
+ *   - wp-sitemap-users-1.xml publie cette même URL, et l'annonce à Google.
+ * Connaître l'identifiant transforme une attaque par force brute en une
+ * recherche de mot de passe seul.
+ *
+ * Le site n'a qu'un auteur et n'affiche jamais de page d'auteur : les deux
+ * peuvent disparaître sans rien perdre.
+ */
+function rando_nono_bloquer_enumeration_auteur() {
+    if ( is_admin() || is_user_logged_in() ) return;
+    if ( is_author() || isset( $_GET['author'] ) ) {
+        wp_safe_redirect( home_url( '/' ), 301 );
+        exit;
+    }
+}
+add_action( 'template_redirect', 'rando_nono_bloquer_enumeration_auteur', 0 );
+
+add_filter( 'wp_sitemaps_add_provider', function( $provider, $name ) {
+    return 'users' === $name ? false : $provider;
+}, 10, 2 );
+
+/**
+ * Commentaires WordPress — fermés partout.
+ *
+ * Le thème ne fournit pas de comments.php et n'appelle jamais
+ * comments_template() : aucun commentaire n'a jamais été affiché. Mais
+ * default_comment_status valait 'open', donc /wp-comments-post.php et l'API
+ * REST les acceptaient quand même : un dépôt de spam invisible, qui gonfle
+ * wp_comments sans que personne ne le voie. Les avis de randonnée
+ * (rando_nono_avis_*) remplissent déjà ce rôle, avec modération.
+ */
+add_filter( 'comments_open', '__return_false', 20 );
+add_filter( 'pings_open', '__return_false', 20 );
+add_filter( 'feed_links_show_comments_feed', '__return_false' );
+
+/**
+ * Tentatives de connexion — WordPress n'en limite aucune.
+ *
+ * Cinq essais consécutifs sur wp-login.php passent sans blocage ni délai. Ce
+ * verrou minimal compte les échecs par IP et refuse l'accès au formulaire
+ * au-delà du seuil, le temps de la fenêtre. Il ne remplace pas une extension
+ * dédiée (pas de liste noire durable, pas d'alerte e-mail) mais ferme la porte
+ * ouverte par le couple « identifiant connu + essais illimités ».
+ *
+ * Les transients servent de compteur : ils expirent seuls, sans table ni cron.
+ */
+function rando_nono_login_cle_tentatives() {
+    $ip = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '';
+    return $ip ? 'rando_nono_login_' . md5( $ip ) : '';
+}
+
+function rando_nono_login_verrou() {
+    $cle = rando_nono_login_cle_tentatives();
+    if ( ! $cle ) return;
+    $tentatives = (int) get_transient( $cle );
+    if ( $tentatives < 5 ) return;
+    wp_die(
+        '<h1>Trop de tentatives</h1><p>Trop d\'essais de connexion depuis cette adresse. Réessaie dans quinze minutes.</p>',
+        'Connexion bloquée',
+        array( 'response' => 429 )
+    );
+}
+add_action( 'login_init', 'rando_nono_login_verrou' );
+
+add_action( 'wp_login_failed', function() {
+    $cle = rando_nono_login_cle_tentatives();
+    if ( ! $cle ) return;
+    $tentatives = (int) get_transient( $cle );
+    set_transient( $cle, $tentatives + 1, 15 * MINUTE_IN_SECONDS );
+} );
+
+add_action( 'wp_login', function() {
+    $cle = rando_nono_login_cle_tentatives();
+    if ( $cle ) delete_transient( $cle );
+} );
+
+/**
+ * Version de WordPress — retirée des URL de ressources.
+ *
+ * remove_action('wp_head','wp_generator') efface la balise <meta generator>,
+ * mais les scripts et styles du cœur gardent ?ver=6.8.2 : la version reste
+ * lisible dans le code source. Ce n'est pas une protection en soi — seules les
+ * mises à jour le sont — mais cela évite de figurer dans les listes de cibles
+ * constituées par scan automatique.
+ */
+add_filter( 'script_loader_src', 'rando_nono_retirer_version_core', 15 );
+add_filter( 'style_loader_src', 'rando_nono_retirer_version_core', 15 );
+function rando_nono_retirer_version_core( $src ) {
+    if ( ! $src || false === strpos( $src, 'ver=' ) ) return $src;
+    // Uniquement pour les ressources du cœur : celles du thème utilisent la
+    // date de modification du fichier comme version (rando_nono_asset_ver),
+    // indispensable pour invalider le cache après une mise à jour.
+    if ( false === strpos( $src, '/wp-includes/' ) && false === strpos( $src, '/wp-admin/' ) ) {
+        return $src;
+    }
+    return remove_query_arg( 'ver', $src );
+}
 
 /**
  * Anti-flood minimal sur les formulaires publics (contact, newsletter, avis) :
@@ -961,6 +1274,11 @@ function rando_nono_document_title_parts( $title ) {
         $title['title'] = rando_nono_trim_title( get_the_title() . ' — matériel testé', $budget );
     } elseif ( is_page() ) {
         $title['title'] = rando_nono_trim_title( get_the_title(), $budget );
+    } elseif ( is_singular( 'post' ) ) {
+        // Les articles passaient sans troncature : « Bien choisir ses
+        // chaussures de randonnée | Les Randos de Nono » faisait 61 caractères,
+        // au-delà de ce que Google affiche.
+        $title['title'] = rando_nono_trim_title( get_the_title(), $budget );
     }
     return $title;
 }
@@ -975,6 +1293,14 @@ add_filter( 'document_title_parts', 'rando_nono_document_title_parts' );
  * « /?i=1 » comme l'adresse de référence de la page d'accueil.
  */
 function rando_nono_canonical_url() {
+    // Une page de résultats ou une 404 n'a pas d'adresse canonique : elle est
+    // déjà en noindex, et pointer vers l'accueil envoyait deux signaux
+    // contradictoires — « ignore cette page » et « attribue-lui la valeur de
+    // l'accueil ». Mieux vaut n'en émettre aucune.
+    if ( is_search() || is_404() ) {
+        return '';
+    }
+
     if ( is_front_page() ) {
         $url = home_url( '/' );
     } elseif ( is_singular() ) {
@@ -1051,8 +1377,24 @@ function rando_nono_seo_meta_tags() {
         $title = get_bloginfo( 'name' ) . ' — Carnet de randonnée, traces GPX & Hérault';
 
     } elseif ( is_page() ) {
+        // Les pages de service n'ont presque pas de contenu : le repli
+        // « Titre — Les Randos de Nono. » produisait des descriptions de 29 à
+        // 40 caractères, sans un mot sur ce qu'on y trouve. Une phrase écrite
+        // pour chacune vaut mieux qu'un gabarit.
+        $descriptions_pages = array(
+            'contact'          => 'Une question sur une randonnée, une trace GPX à signaler, une suggestion d\'itinéraire ? Écris à Nono, la réponse arrive vite.',
+            'mentions-legales' => 'Mentions légales des Randos de Nono : éditeur, hébergement, données personnelles, cookies, newsletter, avis et géolocalisation.',
+            'favoris'          => 'Retrouve les randonnées que tu as mises de côté, enregistrées sur cet appareil et prêtes pour ta prochaine sortie.',
+            'guides'           => 'Guides et sélections de randonnées : équipement, préparation du sac, lecture de carte et itinéraires regroupés par thème.',
+        );
+        $slug_page    = get_post_field( 'post_name', get_the_ID() );
         $content_desc = wp_strip_all_tags( get_the_content() );
-        $description  = rando_nono_meta_description_trim( $content_desc ?: get_the_title() . ' — ' . get_bloginfo( 'name' ) . '.' );
+
+        if ( isset( $descriptions_pages[ $slug_page ] ) ) {
+            $description = rando_nono_meta_description_trim( $descriptions_pages[ $slug_page ] );
+        } else {
+            $description = rando_nono_meta_description_trim( $content_desc ?: get_the_title() . ' — ' . get_bloginfo( 'name' ) . '.' );
+        }
         $title = get_the_title() . ' | ' . get_bloginfo( 'name' );
 
     } elseif ( is_singular( 'post' ) ) {
@@ -1080,7 +1422,10 @@ function rando_nono_seo_meta_tags() {
     echo '<meta property="og:title" content="' . esc_attr( $title ) . '">' . "\n";
     echo '<meta property="og:description" content="' . esc_attr( $description ) . '">' . "\n";
     echo '<meta property="og:type" content="' . ( is_singular( 'randonnee' ) || is_singular( 'post' ) ? 'article' : 'website' ) . '">' . "\n";
-    echo '<meta property="og:url" content="' . esc_url( $url ) . '">' . "\n";
+    // og:url sert à identifier la page pour les partages : sur la recherche et
+    // le 404 (sans canonique), on retombe sur l'adresse courante nue.
+    $og_url = $url ? $url : home_url( wp_parse_url( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/', PHP_URL_PATH ) );
+    echo '<meta property="og:url" content="' . esc_url( $og_url ) . '">' . "\n";
     echo '<meta property="og:image" content="' . esc_url( $image ) . '">' . "\n";
     echo '<meta property="og:site_name" content="' . esc_attr( get_bloginfo( 'name' ) ) . '">' . "\n";
     echo '<meta property="og:locale" content="fr_FR">' . "\n";
@@ -1090,7 +1435,10 @@ function rando_nono_seo_meta_tags() {
     echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '">' . "\n";
     echo '<meta name="twitter:image" content="' . esc_url( $image ) . '">' . "\n";
 
-    echo '<link rel="canonical" href="' . esc_url( $url ) . '">' . "\n";
+    // $url est vide sur la recherche et le 404 : pas de balise du tout.
+    if ( $url ) {
+        echo '<link rel="canonical" href="' . esc_url( $url ) . '">' . "\n";
+    }
 }
 add_action( 'wp_head', 'rando_nono_seo_meta_tags', 1 );
 
@@ -1106,8 +1454,26 @@ add_action( 'wp_head', 'rando_nono_seo_meta_tags', 1 );
  * identique pour tout le monde côté serveur) : aucune valeur pour un moteur,
  * on évite le contenu pauvre dans l'index.
  */
+/**
+ * Les URL de filtres de l'archive ne doivent pas être indexées.
+ *
+ * Le formulaire passe ses critères en GET : 5 difficultés × 16 valeurs de
+ * distance × 81 de dénivelé font 6 480 URL distinctes servant le même contenu,
+ * sans compter la recherche libre. La balise canonique les ramène toutes vers
+ * /randonnee/ — le contenu n'est donc pas dupliqué dans l'index — mais Google
+ * les visite quand même avant de les consolider, sur un hébergement mutualisé
+ * qui refuse déjà des connexions simultanées.
+ */
+function rando_nono_archive_filtree() {
+    if ( ! is_post_type_archive( 'randonnee' ) ) return false;
+    foreach ( array( 'recherche', 'difficulte', 'distance_max', 'denivele_max' ) as $param ) {
+        if ( isset( $_GET[ $param ] ) && '' !== $_GET[ $param ] ) return true;
+    }
+    return false;
+}
+
 function rando_nono_robots( $robots ) {
-    if ( is_search() || is_page( 'favoris' ) ) {
+    if ( is_search() || is_page( 'favoris' ) || rando_nono_archive_filtree() ) {
         $robots['noindex'] = true;
         $robots['follow']  = true;
         unset( $robots['index'] );
@@ -1160,6 +1526,48 @@ function rando_nono_lieu_region( $lieu ) {
  * rouvertes une par une ; la colonne « Lieu (cartes) » de la liste des
  * randonnées signale celles qui méritent encore un libellé écrit à la main.
  */
+/**
+ * Les N premiers mots d'une chaîne — sert à repérer qu'un libellé de lieu
+ * recopie le début du titre de la randonnée.
+ */
+function rando_nono_premiers_mots( $texte, $n = 3 ) {
+    $mots = preg_split( '/\s+/u', trim( (string) $texte ), -1, PREG_SPLIT_NO_EMPTY );
+    if ( ! $mots ) return '';
+    return implode( ' ', array_slice( $mots, 0, $n ) );
+}
+
+/**
+ * Commune de la randonnée, pour addressLocality du schema.org.
+ *
+ * schema.org attend UNE commune ; le champ « lieu » est libre et contient
+ * parfois l'itinéraire complet. Trois sources, de la plus sûre à la plus
+ * hasardeuse — et aucune valeur plutôt qu'une valeur fausse, qui ferait plus
+ * de mal que de bien au référencement local.
+ */
+function rando_nono_lieu_commune( $post_id ) {
+    // 1. Le champ « Lieu court » : c'est Nono qui a tranché.
+    $court = trim( (string) get_post_meta( $post_id, 'rando_lieu_court', true ) );
+    if ( '' !== $court ) {
+        // « Pic Saint-Loup (34) » → « Pic Saint-Loup »
+        return trim( preg_replace( '/\s*\(\d{2,3}[AB]?\)\s*$/u', '', $court ) );
+    }
+
+    $lieu = trim( (string) get_post_meta( $post_id, 'rando_lieu', true ) );
+    if ( '' === $lieu ) return '';
+    $premier = trim( explode( ',', $lieu )[0] );
+
+    // 2. Ce qui suit un code de département entre parenthèses est presque
+    //    toujours la commune : « … Savoie (73) Val-d'Isère » → « Val-d'Isère ».
+    if ( preg_match( '/\(\d{2,3}[AB]?\)\s*(.+)$/u', $premier, $m ) ) {
+        $candidat = trim( $m[1] );
+        if ( '' !== $candidat && mb_strlen( $candidat ) <= 40 ) return $candidat;
+    }
+
+    // 3. Un premier segment court est en général déjà la commune
+    //    (« Mourèze, Hérault »). Au-delà, on ne devine pas.
+    return ( mb_strlen( $premier ) <= 40 ) ? $premier : '';
+}
+
 function rando_nono_lieu_court( $post_id, $max = 34 ) {
     $court = trim( (string) get_post_meta( $post_id, 'rando_lieu_court', true ) );
     if ( '' !== $court ) {
@@ -1173,6 +1581,19 @@ function rando_nono_lieu_court( $post_id, $max = 34 ) {
 
     $parts = explode( ',', $lieu );
     $court = trim( $parts[0] );
+
+    // Quand le lieu commence par le nom du site remarquable, la troncature ne
+    // garde que ce qui est déjà dans le titre : la carte de « Cascade du
+    // Fornet et vallon de la Sassière » affichait « Cascade du Fornet… » et
+    // perdait la seule information qui aide à choisir — la région. Dans ce
+    // cas, on préfère le dernier segment (souvent le massif ou le département).
+    $titre_mots = rando_nono_premiers_mots( get_the_title( $post_id ), 3 );
+    if ( $titre_mots && 0 === mb_stripos( $court, $titre_mots ) ) {
+        $repli = trim( end( $parts ) );
+        if ( '' !== $repli && mb_strlen( $repli ) <= $max ) {
+            return $repli;
+        }
+    }
 
     // mb_substr / mb_strlen : WordPress les fournit lui-même (wp-includes/
     // compat.php) si mbstring manque sur l'hébergement. Interdiction de
@@ -1226,6 +1647,43 @@ function rando_nono_schema_jsonld() {
 
         echo '<script type="application/ld+json">' . wp_json_encode( $website,      JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
         echo '<script type="application/ld+json">' . wp_json_encode( $organization, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+        return;
+    }
+
+    // ── Article de blog : BlogPosting ──
+    // Les articles étaient le seul type de contenu sans données structurées :
+    // zéro bloc JSON-LD, donc aucun résultat enrichi possible sur des sujets
+    // qui s'y prêtent (« comment choisir ses chaussures »), et ni date ni
+    // auteur transmis à Google.
+    if ( is_singular( 'post' ) ) {
+        $id_art  = get_the_ID();
+        $img_art = get_the_post_thumbnail_url( $id_art, 'rando-hero' );
+        $article = array(
+            '@context'         => 'https://schema.org',
+            '@type'            => 'BlogPosting',
+            'headline'         => rando_nono_trim_title( get_the_title( $id_art ), 110 ),
+            'description'      => rando_nono_meta_description_trim( get_the_excerpt( $id_art ) ),
+            'url'              => get_permalink( $id_art ),
+            'mainEntityOfPage' => array( '@type' => 'WebPage', '@id' => get_permalink( $id_art ) ),
+            'datePublished'    => get_the_date( 'c', $id_art ),
+            'dateModified'     => get_the_modified_date( 'c', $id_art ),
+            'inLanguage'       => 'fr-FR',
+            'author'           => array(
+                '@type' => 'Person',
+                'name'  => ( $a = get_userdata( (int) get_post_field( 'post_author', $id_art ) ) ) ? $a->display_name : get_bloginfo( 'name' ),
+            ),
+            'publisher'        => array(
+                '@type' => 'Organization',
+                'name'  => get_bloginfo( 'name' ),
+                'logo'  => array(
+                    '@type' => 'ImageObject',
+                    'url'   => get_template_directory_uri() . '/assets/img/favicon-512.png',
+                ),
+            ),
+        );
+        if ( $img_art ) $article['image'] = $img_art;
+
+        echo '<script type="application/ld+json">' . wp_json_encode( $article, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
         return;
     }
 
@@ -1310,7 +1768,33 @@ function rando_nono_schema_jsonld() {
     );
     if ( $image ) $trail['image'] = $image;
     if ( $lieu ) {
-        $trail['address'] = array( '@type' => 'PostalAddress', 'addressLocality' => $lieu, 'addressCountry' => 'FR' );
+        // addressLocality attend UNE commune. Y verser le champ « lieu » entier
+        // produisait des valeurs de 100 caractères (« Cascade du Fornet
+        // Auvergne-Rhône-Alpes Savoie (73) Val-d'Isère, hameau du Fornet, Parc
+        // national de la Vanoise ») : balisage valide, mais inexploitable pour
+        // le référencement local — précisément l'usage pour lequel la fiche
+        // conserve le lieu complet. On découpe : la commune d'un côté, la
+        // région de l'autre, le libellé entier restant dans description.
+        $adresse = array( '@type' => 'PostalAddress', 'addressCountry' => 'FR' );
+
+        $commune = rando_nono_lieu_commune( $id );
+        if ( $commune ) $adresse['addressLocality'] = $commune;
+
+        // Le dernier segment du lieu est souvent le département ou la région,
+        // mais parfois un massif ou un parc : « Parc national de la Vanoise »
+        // n'est pas une addressRegion, et une valeur trompeuse dessert plus le
+        // référencement local qu'une valeur absente.
+        $region_schema = rando_nono_lieu_region( $lieu );
+        if ( $region_schema && ! preg_match( '/\b(parc|massif|réserve|forêt|vallée|sentier|GR\s?\d+)\b/iu', $region_schema ) ) {
+            $adresse['addressRegion'] = $region_schema;
+        }
+
+        // Sans commune identifiable, mieux vaut le libellé brut que rien.
+        if ( ! isset( $adresse['addressLocality'] ) ) {
+            $adresse['addressLocality'] = rando_nono_lieu_court( $id );
+        }
+
+        $trail['address'] = $adresse;
     }
     if ( $lat && $lon ) {
         $trail['geo'] = array( '@type' => 'GeoCoordinates', 'latitude' => (float) $lat, 'longitude' => (float) $lon );
@@ -1321,6 +1805,28 @@ function rando_nono_schema_jsonld() {
     if ( $denivele )   $props[] = array( '@type' => 'PropertyValue', 'name' => 'Dénivelé positif', 'value' => $denivele );
     if ( $duree )      $props[] = array( '@type' => 'PropertyValue', 'name' => 'Durée',            'value' => $duree );
     if ( $props ) $trail['additionalProperty'] = $props;
+
+    // La distance a une propriété dédiée dans schema.org : la laisser dans le
+    // fourre-tout additionalProperty la rendait beaucoup moins exploitable.
+    // On conserve la difficulté en PropertyValue — c'est une échelle maison
+    // qui n'a pas d'équivalent normalisé.
+    $distance_km = rando_nono_extract_number( $distance );
+    if ( $distance_km > 0 ) {
+        $trail['distance'] = array(
+            '@type'    => 'QuantitativeValue',
+            'value'    => $distance_km,
+            'unitCode' => 'KMT',
+        );
+    }
+
+    // Dates et auteur : disponibles sans effort, attendus par Google, et
+    // absents jusqu'ici.
+    $trail['datePublished'] = get_the_date( 'c', $id );
+    $trail['dateModified']  = get_the_modified_date( 'c', $id );
+    $auteur = get_userdata( (int) get_post_field( 'post_author', $id ) );
+    if ( $auteur ) {
+        $trail['author'] = array( '@type' => 'Person', 'name' => $auteur->display_name );
+    }
 
     $avis_stats = rando_nono_get_avis_stats( $id );
     if ( $avis_stats['total'] > 0 ) {
@@ -1494,6 +2000,18 @@ add_filter( 'robots_txt', function( $output, $public ) {
     $output .= "Allow: /\n";
     $output .= "Disallow: /wp-admin/\n";
     $output .= "Allow: /wp-admin/admin-ajax.php\n";
+    // Les combinaisons de filtres de l'archive : des milliers d'URL pour un
+    // seul contenu. Le noindex (voir rando_nono_robots) les sort de l'index ;
+    // ces lignes évitent en plus de les faire explorer.
+    $output .= "Disallow: /*?recherche=\n";
+    $output .= "Disallow: /*&recherche=\n";
+    $output .= "Disallow: /*?difficulte=\n";
+    $output .= "Disallow: /*&difficulte=\n";
+    $output .= "Disallow: /*?distance_max=\n";
+    $output .= "Disallow: /*&distance_max=\n";
+    $output .= "Disallow: /*?denivele_max=\n";
+    $output .= "Disallow: /*&denivele_max=\n";
+    $output .= "Disallow: /*?s=\n";
     $output .= "\n";
     $output .= 'Sitemap: ' . home_url( '/wp-sitemap.xml' ) . "\n";
     return $output;
@@ -2029,7 +2547,7 @@ function rando_nono_cookie_banner() {
     ?>
     <div class="cookie-consent" id="cookie-consent" role="dialog" aria-live="polite" aria-label="Consentement aux cookies">
       <p>
-        <?php echo esc_html( $texte ); ?> Ces cookies ne sont déposés qu'avec votre accord.
+        <?php echo esc_html( $texte ); ?> Ces cookies ne sont déposés qu'avec ton accord.
         <a href="<?php echo esc_url( home_url( '/mentions-legales/#cookies' ) ); ?>">En savoir plus</a>
       </p>
       <div class="cookie-consent-actions">
@@ -2104,23 +2622,97 @@ function rando_nono_handle_newsletter_form() {
         exit;
     }
 
+    // ── Double opt-in ────────────────────────────────────────────────────
+    // L'inscription passait directement en `actif`, sans confirmation :
+    // n'importe qui pouvait inscrire l'adresse d'un tiers, qui recevait un
+    // e-mail qu'il n'avait pas demandé. La CNIL recommande fortement le double
+    // opt-in pour la prospection par courriel — sans lui, aucune preuve du
+    // consentement en cas de réclamation.
+    //
+    // La colonne `token` existait déjà pour le désabonnement : elle sert
+    // maintenant aussi au lien de confirmation. La checklist PDF récompense la
+    // confirmation plutôt que la simple saisie, ce qui améliore au passage la
+    // qualité de la liste.
     global $wpdb;
     $table    = rando_nono_newsletter_table_name();
-    $existing = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE email = %s", $email ) );
-    if ( ! $existing ) {
+    $existant = $wpdb->get_row( $wpdb->prepare( "SELECT id, statut, token FROM $table WHERE email = %s", $email ) );
+
+    if ( ! $existant ) {
+        $token = wp_generate_password( 32, false );
         $wpdb->insert( $table, array(
             'email'            => $email,
-            'token'            => wp_generate_password( 32, false ),
+            'token'            => $token,
             'date_inscription' => current_time( 'mysql' ),
-            'statut'           => 'actif',
+            'statut'           => 'en_attente',
         ) );
-        rando_nono_send_newsletter_welcome_email( $email );
+        rando_nono_send_newsletter_confirmation_email( $email, $token );
+        wp_safe_redirect( add_query_arg( 'newsletter', 'confirme', $redirect ) );
+        exit;
     }
 
+    // Déjà inscrit mais jamais confirmé : on renvoie le lien plutôt que de
+    // laisser la personne devant un « c'est fait » qui ne l'est pas.
+    if ( 'en_attente' === $existant->statut ) {
+        rando_nono_send_newsletter_confirmation_email( $email, $existant->token );
+        wp_safe_redirect( add_query_arg( 'newsletter', 'confirme', $redirect ) );
+        exit;
+    }
+
+    // Déjà actif : rien à faire, et on ne le dit pas (savoir qu'une adresse
+    // est inscrite est déjà une information sur la personne).
     wp_safe_redirect( add_query_arg( 'newsletter', 'ok', $redirect ) );
     exit;
 }
 add_action( 'template_redirect', 'rando_nono_handle_newsletter_form' );
+
+/**
+ * Confirmation d'inscription (double opt-in) — c'est ce clic qui vaut
+ * consentement, et lui seul déclenche l'envoi de la checklist.
+ */
+function rando_nono_confirmer_newsletter() {
+    if ( ! isset( $_GET['newsletter_confirmer'] ) ) return;
+
+    $token = sanitize_text_field( wp_unslash( $_GET['newsletter_confirmer'] ) );
+    if ( '' === $token ) return;
+
+    global $wpdb;
+    $table = rando_nono_newsletter_table_name();
+    $ligne = $wpdb->get_row( $wpdb->prepare( "SELECT id, email, statut FROM $table WHERE token = %s", $token ) );
+
+    if ( ! $ligne ) {
+        wp_safe_redirect( add_query_arg( 'newsletter', 'lien_invalide', home_url( '/' ) ) );
+        exit;
+    }
+
+    if ( 'actif' !== $ligne->statut ) {
+        $wpdb->update( $table, array( 'statut' => 'actif' ), array( 'id' => $ligne->id ) );
+        rando_nono_send_newsletter_welcome_email( $ligne->email );
+    }
+
+    wp_safe_redirect( add_query_arg( 'newsletter', 'confirme_ok', home_url( '/' ) ) );
+    exit;
+}
+add_action( 'template_redirect', 'rando_nono_confirmer_newsletter', 1 );
+
+/**
+ * E-mail de confirmation — un lien, une phrase, rien d'autre.
+ */
+function rando_nono_send_newsletter_confirmation_email( $email, $token ) {
+    $lien = add_query_arg( 'newsletter_confirmer', rawurlencode( $token ), home_url( '/' ) );
+
+    $subject  = 'Confirme ton inscription aux Randos de Nono';
+    $message  = "Tu viens de demander à recevoir la newsletter des Randos de Nono.\n\n";
+    $message .= "Clique sur ce lien pour confirmer — c'est la dernière étape :\n";
+    $message .= $lien . "\n\n";
+    $message .= "Tu recevras alors ta checklist du sac à dos, puis un e-mail à chaque nouvelle randonnée publiée.\n\n";
+    $message .= "Si tu n'es à l'origine d'aucune inscription, ignore simplement ce message : sans ce clic, ton adresse ne sera pas utilisée.\n\n";
+    $message .= get_bloginfo( 'name' );
+
+    $domain  = wp_parse_url( home_url(), PHP_URL_HOST );
+    $headers = array( 'From: ' . get_bloginfo( 'name' ) . ' <no-reply@' . $domain . '>' );
+
+    return wp_mail( $email, $subject, $message, $headers );
+}
 
 /**
  * E-mail de bienvenue envoyé à chaque nouvel inscrit — contient le lien vers
@@ -2447,6 +3039,13 @@ function rando_nono_avis_page() {
     <div class="wrap">
         <h1>Avis lecteurs</h1>
         <p>Chaque avis déposé sur une fiche randonnée apparaît ici en attente de validation avant d'être visible publiquement.</p>
+        <p>
+          <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=rando_nono_avis_export' ), 'rando_nono_avis_export' ) ); ?>" class="button">Exporter en CSV</a>
+          <span class="description" style="margin-left:.6rem">
+            Les avis vivent dans une table propre au thème : un export WordPress (Outils&nbsp;→&nbsp;Exporter) ne les contient pas.
+            Cet export, ou une sauvegarde de la base entière, est le seul moyen de les conserver.
+          </span>
+        </p>
         <?php if ( empty( $avis ) ) : ?>
             <p><em>Aucun avis pour le moment.</em></p>
         <?php else : ?>
@@ -2499,6 +3098,88 @@ function rando_nono_avis_delete() {
     exit;
 }
 add_action( 'admin_post_rando_nono_avis_delete', 'rando_nono_avis_delete' );
+
+/**
+ * Export CSV des avis — l'équivalent de celui des abonnés.
+ *
+ * Les avis n'étaient accessibles qu'en base : répondre à une demande d'accès
+ * ou d'effacement demandait une intervention SQL, et ils échappaient à toute
+ * sauvegarde qui ne porte pas sur la base entière (l'export WordPress ne
+ * couvre pas les tables créées par un thème).
+ */
+function rando_nono_avis_export() {
+    if ( ! current_user_can( 'moderate_comments' ) ) wp_die( 'Accès refusé' );
+    check_admin_referer( 'rando_nono_avis_export' );
+
+    global $wpdb;
+    $table = rando_nono_avis_table_name();
+    $avis  = $wpdb->get_results( "SELECT id, rando_id, nom, note, commentaire, date_avis, statut FROM $table ORDER BY date_avis ASC" );
+
+    nocache_headers();
+    header( 'Content-Type: text/csv; charset=utf-8' );
+    header( 'Content-Disposition: attachment; filename=avis-randos-de-nono.csv' );
+
+    // Même protection que l'export des abonnés : une valeur commençant par
+    // =, +, - ou @ serait interprétée comme une formule par un tableur.
+    $csv_safe = function( $value ) {
+        $value = (string) $value;
+        if ( preg_match( '/^[=+\-@\t]/', $value ) ) {
+            $value = "'" . $value;
+        }
+        return $value;
+    };
+
+    $out = fopen( 'php://output', 'w' );
+    fputcsv( $out, array( 'id', 'randonnee', 'url', 'prenom', 'note', 'commentaire', 'date', 'statut' ) );
+    foreach ( $avis as $a ) {
+        fputcsv( $out, array(
+            (int) $a->id,
+            $csv_safe( get_the_title( $a->rando_id ) ),
+            $csv_safe( get_permalink( $a->rando_id ) ),
+            $csv_safe( $a->nom ),
+            (int) $a->note,
+            $csv_safe( $a->commentaire ),
+            $csv_safe( $a->date_avis ),
+            $csv_safe( $a->statut ),
+        ) );
+    }
+    fclose( $out );
+    exit;
+}
+add_action( 'admin_post_rando_nono_avis_export', 'rando_nono_avis_export' );
+
+/* ──────────────────────────────────────────
+   DURÉES DE CONSERVATION — annoncées ET tenues
+
+   Les mentions légales disaient « ni conservées au-delà du nécessaire » : une
+   formulation honnête, mais la CNIL attend une durée précise, et rien ne
+   purgeait quoi que ce soit. Ces deux règles suffisent au périmètre du site :
+
+   - un avis refusé n'a plus de raison d'être après six mois ;
+   - une inscription jamais confirmée (double opt-in) n'est pas un
+     consentement : elle ne doit pas rester en base.
+
+   Les abonnés désinscrits ne sont pas concernés : leur ligne est supprimée
+   immédiatement au clic de désabonnement, pas seulement marquée.
+   ────────────────────────────────────────── */
+function rando_nono_purger_donnees() {
+    global $wpdb;
+
+    $avis = rando_nono_avis_table_name();
+    $wpdb->query( $wpdb->prepare(
+        "DELETE FROM $avis WHERE statut = %s AND date_avis < %s",
+        'refuse',
+        gmdate( 'Y-m-d H:i:s', time() - 6 * MONTH_IN_SECONDS )
+    ) );
+
+    $nl = rando_nono_newsletter_table_name();
+    $wpdb->query( $wpdb->prepare(
+        "DELETE FROM $nl WHERE statut = %s AND date_inscription < %s",
+        'en_attente',
+        gmdate( 'Y-m-d H:i:s', time() - 30 * DAY_IN_SECONDS )
+    ) );
+}
+rando_nono_run_once_daily( 'rando_nono_purge_faite', 'rando_nono_purger_donnees' );
 
 /* ──────────────────────────────────────────
    11. PWA HORS-LIGNE — service worker servi à la racine du site
@@ -2564,7 +3245,14 @@ function rando_nono_serve_sw() {
     echo $sw_js;
     exit;
 }
-add_action( 'template_redirect', 'rando_nono_serve_sw' );
+// Priorité 0 : redirect_canonical() est accroché à template_redirect en
+// priorité 10 depuis default-filters.php, donc AVANT cette fonction si elle
+// utilise la même priorité. Il ajoutait une barre finale à /sw.js — et la
+// spécification Service Worker interdit toute redirection sur le script
+// d'enregistrement : l'installation échouait systématiquement
+// (« The script resource is behind a redirect, which is disallowed »),
+// rendant tout le mode hors-ligne inopérant sans le moindre message.
+add_action( 'template_redirect', 'rando_nono_serve_sw', 0 );
 
 function rando_nono_serve_offline_page() {
     if ( ! get_query_var( 'rando_nono_offline' ) ) return;
@@ -2593,4 +3281,4 @@ function rando_nono_serve_offline_page() {
     <?php
     exit;
 }
-add_action( 'template_redirect', 'rando_nono_serve_offline_page' );
+add_action( 'template_redirect', 'rando_nono_serve_offline_page', 0 );

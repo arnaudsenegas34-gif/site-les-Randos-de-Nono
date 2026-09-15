@@ -15,7 +15,7 @@
 }
 
 .matos-filter-btn {
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.74rem;
   font-weight: 700;
   padding: 0.45rem 1.05rem;
@@ -34,9 +34,11 @@
   background: rgba(217, 119, 6, 0.06);
 }
 
+/* Texte blanc sur --orange mesurait 3,19:1 : --orange-fond est le jeton
+   prévu pour un fond orange portant du blanc (5,29:1). */
 .matos-filter-btn.active {
-  background: var(--orange);
-  border-color: var(--orange);
+  background: var(--orange-fond);
+  border-color: var(--orange-fond);
   color: #fff;
 }
 
@@ -62,9 +64,12 @@
   position: relative;
   transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
               filter 0.32s ease;
+}
+.matos-card { height: 100%; }
+/* Apparition au défilement — conditionnée à JavaScript (header.php). */
+.js .matos-card {
   opacity: 0;
   transform: translateY(14px);
-  height: 100%;
 }
 
 .matos-card.is-visible {
@@ -162,8 +167,31 @@
 
 /* ── Nom visible en permanence sur tactile : pas de hover pour révéler
    l'overlay "+", donc les cartes seraient sinon anonymes ── */
+/* Sur grand écran, la mosaïque ne montrait que des photos : 25 vignettes sans
+   un mot, qu'il fallait ouvrir une par une pour savoir ce qu'elles
+   contiennent (`display: none` sur le nom). Le nom apparaît maintenant au
+   survol, par-dessus la photo assombrie — la mosaïque reste une mosaïque, mais
+   on peut la parcourir du regard. Sur mobile, où le survol n'existe pas, le
+   nom est affiché en permanence (voir la requête média en bas de ce fichier). */
 .matos-name {
-  display: none;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 3;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff;
+  background: linear-gradient(to top, rgba(26,46,31,0.92), rgba(26,46,31,0));
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: none;
+}
+.matos-card:hover .matos-name,
+.matos-card:focus-visible .matos-name {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ══════════════════════════════════════════════
@@ -276,7 +304,7 @@
 }
 
 .matos-panel-name {
-  font-family: 'Abril Fatface', serif;
+  font-family: 'Abril Fatface', 'Abril Fatface Repli', serif;
   color: var(--accent);
   font-size: 1.6rem;
   line-height: 1.15;
@@ -284,7 +312,7 @@
 }
 
 .matos-panel-poids {
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.75rem;
   color: var(--gris);
   font-weight: 300;
@@ -336,7 +364,7 @@
   gap: 0.45rem;
   background: var(--vert);
   color: var(--beige);
-  font-family: 'Merriweather', serif;
+  font-family: 'Merriweather', 'Merriweather Repli', serif;
   font-size: 0.78rem;
   font-weight: 700;
   padding: 0.7rem 1.3rem;

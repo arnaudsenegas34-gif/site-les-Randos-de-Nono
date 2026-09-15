@@ -77,11 +77,29 @@
       .on('error', function (e) {
         console.warn('[Randonnée] Impossible de charger la trace GPX (réseau, CORS ou Content-Security-Policy) :', gpxUrl, e);
         L.marker([lat, lon], { icon: startIcon }).addTo(map);
+        // La météo sait dire qu'elle est indisponible, le profil altimétrique
+        // se masque — la carte, elle, restait un rectangle gris de 425 px sans
+        // un mot : impossible de savoir s'il fallait recharger, attendre, ou
+        // si la randonnée n'avait tout simplement pas de trace.
+        srMessageCarte('Trace GPX indisponible pour le moment — le point de départ reste affiché. Recharge la page si tu viens de retrouver du réseau.');
       })
       .addTo(map);
     } else {
       L.marker([lat, lon], { icon: startIcon }).addTo(map);
     }
+
+    // Les tuiles viennent des serveurs d'OpenStreetMap : sans réseau, la carte
+    // reste vide et silencieuse. Un seul échec suffit à le dire.
+    var tuilesEnEchec = false;
+    map.eachLayer(function (couche) {
+      if (couche instanceof L.TileLayer) {
+        couche.on('tileerror', function () {
+          if (tuilesEnEchec) return;
+          tuilesEnEchec = true;
+          srMessageCarte('Fond de carte indisponible — vérifie ta connexion. La trace et le point de départ restent utilisables.');
+        });
+      }
+    });
 
     setTimeout(function () { map.invalidateSize(); }, 300);
 
@@ -92,6 +110,21 @@
      Relié à la carte dans les deux sens : survoler le graphique déplace un
      repère sur la trace, et survoler la trace met en évidence le point
      correspondant sur le graphique. */
+  /**
+   * Affiche un message dans le cadre de la carte. Un seul à la fois : le
+   * premier problème rencontré est le plus informatif, les suivants en
+   * découlent généralement.
+   */
+  function srMessageCarte(texte) {
+    var conteneur = document.getElementById('sr-map');
+    if (!conteneur || conteneur.querySelector('.sr-map-message')) return;
+    var bloc = document.createElement('p');
+    bloc.className = 'sr-map-message';
+    bloc.setAttribute('role', 'status');
+    bloc.textContent = texte;
+    conteneur.appendChild(bloc);
+  }
+
   function buildAltitudeChart(gpxLayer, map) {
     var section = document.getElementById('sr-altitude-section');
     var canvas = document.getElementById('sr-altitude-chart');
