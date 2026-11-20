@@ -147,12 +147,22 @@ function rando_nono_seo_meta_tags() {
         $difficulte = $diff_terms && ! is_wp_error( $diff_terms ) ? strtolower( $diff_terms[0]->name ) : '';
 
         // Description générée automatiquement : nom + lieu + difficulté + stats + appel à l'action.
-        $phrase = 'Randonnée ' . get_the_title();
+        // Pas de « Randonnée Randonnée … » quand le titre commence déjà par « Randonnée »/« Rando ».
+        $titre  = get_the_title();
+        $phrase = preg_match( '/^rando/iu', $titre ) ? $titre : 'Randonnée ' . $titre;
         if ( $lieu )       $phrase .= ' à ' . $lieu;
         if ( $difficulte ) $phrase .= ', niveau ' . $difficulte;
         $stats = array_filter( array( $distance, $duree ) );
         if ( $stats )      $phrase .= ' (' . implode( ', ', $stats ) . ')';
-        $phrase .= '. Découvrez le récit complet, les photos et la trace GPX à télécharger.';
+        // Le site tutoie ; on n'annonce un récit que si la fiche a du texte ou un article lié.
+        $a_recit = '' !== trim( wp_strip_all_tags( (string) $post->post_content ) );
+        if ( ! $a_recit ) {
+            $lies    = get_posts( array( 'post_type' => 'post', 'posts_per_page' => 1, 'fields' => 'ids', 'meta_key' => 'article_rando_id', 'meta_value' => $post->ID, 'no_found_rows' => true ) );
+            $a_recit = ! empty( $lies );
+        }
+        $phrase .= $a_recit
+            ? '. Découvre le récit, les photos et la trace GPX à télécharger.'
+            : '. Distance, dénivelé, photos et trace GPX à télécharger.';
 
         $description = rando_nono_meta_description_trim( $phrase );
         $title = get_the_title() . ( $lieu ? ' — ' . $lieu : '' ) . ' | ' . get_bloginfo( 'name' );

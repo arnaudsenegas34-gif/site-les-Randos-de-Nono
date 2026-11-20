@@ -93,9 +93,14 @@
       const target   = parseInt(el.dataset.count, 10) || 0;
       const suffix   = el.dataset.suffix || '';
       const duration = 1400;
-      const start    = performance.now();
+      // Départ pris sur le premier temps d'image : le timestamp de
+      // requestAnimationFrame peut précéder performance.now(), ce qui donnait
+      // une progression négative et des compteurs affichés en négatif
+      // (ex. « -83 » au lieu de 9) quand l'animation s'interrompait.
+      let start = null;
       function tick(now) {
-        const progress = Math.min((now - start) / duration, 1);
+        if (start === null) start = now;
+        const progress = Math.max(0, Math.min((now - start) / duration, 1));
         const eased    = 1 - Math.pow(1 - progress, 3);
         el.textContent = Math.round(target * eased).toLocaleString('fr-FR') + suffix;
         if (progress < 1) requestAnimationFrame(tick);

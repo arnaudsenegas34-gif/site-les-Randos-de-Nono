@@ -281,23 +281,23 @@ $regions_count    = $rando_nono_stats['regions_count'];
 
   <div class="stats-grid stats-grid-5">
     <div class="stat-block">
-      <div class="big-num" data-count="<?php echo esc_attr( $randos_count ); ?>">0</div>
+      <div class="big-num" data-count="<?php echo esc_attr( $randos_count ); ?>"><?php echo esc_html( number_format_i18n( $randos_count ) ); ?></div>
       <div class="big-label">Randonnées</div>
     </div>
     <div class="stat-block">
-      <div class="big-num" data-count="<?php echo esc_attr( round( $total_km ) ); ?>" data-suffix=" km">0</div>
+      <div class="big-num" data-count="<?php echo esc_attr( round( $total_km ) ); ?>" data-suffix=" km"><?php echo esc_html( number_format_i18n( round( $total_km ) ) ); ?> km</div>
       <div class="big-label">Kilomètres parcourus</div>
     </div>
     <div class="stat-block">
-      <div class="big-num" data-count="<?php echo esc_attr( round( $total_deniv_pos ) ); ?>" data-suffix=" m">0</div>
+      <div class="big-num" data-count="<?php echo esc_attr( round( $total_deniv_pos ) ); ?>" data-suffix=" m"><?php echo esc_html( number_format_i18n( round( $total_deniv_pos ) ) ); ?> m</div>
       <div class="big-label">Dénivelé positif cumulé</div>
     </div>
     <div class="stat-block">
-      <div class="big-num" data-count="<?php echo esc_attr( round( $total_deniv_neg ) ); ?>" data-suffix=" m">0</div>
+      <div class="big-num" data-count="<?php echo esc_attr( round( $total_deniv_neg ) ); ?>" data-suffix=" m"><?php echo esc_html( number_format_i18n( round( $total_deniv_neg ) ) ); ?> m</div>
       <div class="big-label">Dénivelé négatif cumulé</div>
     </div>
     <div class="stat-block">
-      <div class="big-num" data-count="<?php echo esc_attr( $regions_count ); ?>">0</div>
+      <div class="big-num" data-count="<?php echo esc_attr( $regions_count ); ?>"><?php echo esc_html( number_format_i18n( $regions_count ) ); ?></div>
       <div class="big-label">Régions parcourues</div>
     </div>
   </div>
