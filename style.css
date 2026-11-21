@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.6.1
+Version: 6.7
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1456,3 +1456,54 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   background: #FAF8F3; color: #2E5E3B; padding: 0.25rem 0.65rem; border-radius: var(--r-pill);
 }
 @media (prefers-reduced-motion: reduce) { .region-card-img { transition: none; } }
+
+/* ══════════════════════ REFONTE « TOUTES LES RANDOS » (v6.7) ══════════════════════ */
+/* Filtre par département en un clic */
+.archive-regions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.2rem; }
+.archive-region {
+  font-size: 0.82rem; font-weight: 700; padding: 0.45rem 0.9rem; border-radius: var(--r-pill);
+  border: 1.5px solid var(--ligne); color: var(--accent); background: var(--surface-alt); text-decoration: none;
+}
+.archive-region:hover { border-color: var(--accent); }
+.archive-region.is-active { background: var(--vert); border-color: var(--vert); color: #fff; }
+
+/* Carte d'ensemble repliable */
+.archive-map-details { margin-bottom: 1.5rem; }
+.archive-map-summary {
+  display: flex; align-items: center; gap: 0.5rem; cursor: pointer; list-style: none;
+  font-weight: 700; color: var(--accent); padding: 0.8rem 1rem; margin-bottom: 0.8rem;
+  border: 1.5px dashed var(--ligne); border-radius: var(--r-md);
+}
+.archive-map-summary::-webkit-details-marker { display: none; }
+.archive-map-summary::after { content: '▾'; margin-left: auto; transition: transform .2s; }
+.archive-map-details[open] .archive-map-summary::after { transform: rotate(180deg); }
+.archive-map-summary .icon-svg { width: 18px; height: 18px; }
+
+/* Cartes compactes sur mobile (liste et recherche) : photo à gauche, l'essentiel
+   à droite — deux fois plus de randos visibles à l'écran. */
+@media (max-width: 600px) {
+  .post-type-archive-randonnee .randos-grid .rando-card,
+  .search .randos-grid .rando-card { display: grid; grid-template-columns: 118px 1fr; align-items: stretch; }
+  .post-type-archive-randonnee .randos-grid .card-photo,
+  .search .randos-grid .card-photo,
+  .post-type-archive-randonnee .randos-grid .card-photo-placeholder,
+  .search .randos-grid .card-photo-placeholder { height: 100%; max-height: none; aspect-ratio: auto; min-height: 120px; }
+  .post-type-archive-randonnee .randos-grid .card-body,
+  .search .randos-grid .card-body { padding: 0.75rem 0.8rem; }
+  .post-type-archive-randonnee .randos-grid .card-desc,
+  .post-type-archive-randonnee .randos-grid .card-actions,
+  .search .randos-grid .card-desc,
+  .search .randos-grid .card-actions { display: none; }
+  .post-type-archive-randonnee .randos-grid .card-title,
+  .search .randos-grid .card-title { font-size: 1.05rem; margin: 0.2rem 0 0.4rem; }
+  .post-type-archive-randonnee .randos-grid .card-badges .badge-gpx,
+  .search .randos-grid .card-badges .badge-gpx { display: none; }
+  .post-type-archive-randonnee .randos-grid .card-badges,
+  .search .randos-grid .card-badges { padding: 0.4rem; }
+  .post-type-archive-randonnee .randos-grid .badge,
+  .search .randos-grid .badge { font-size: 0.6rem; padding: 0.2rem 0.45rem; }
+  .post-type-archive-randonnee .randos-grid .card-fav-btn,
+  .search .randos-grid .card-fav-btn { width: 30px; height: 30px; top: auto; bottom: 0.4rem; right: 0.4rem; }
+  .post-type-archive-randonnee .randos-grid .card-meta,
+  .search .randos-grid .card-meta { font-size: 0.72rem; gap: 0.25rem 0.6rem; }
+}

@@ -17,6 +17,11 @@
     }
     if (!markers.length) return;
 
+    // Carte dans un bloc repliable : ouverte d'office sur grand écran (avant
+    // de créer la carte, pour qu'elle se mesure correctement).
+    var details = el.closest('details');
+    if (details && window.matchMedia('(min-width: 901px)').matches) details.open = true;
+
     var map = L.map(el, { zoomControl: true, scrollWheelZoom: false });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap', maxZoom: 18
@@ -60,6 +65,18 @@
     }
 
     setTimeout(function () { map.invalidateSize(); }, 300);
+
+    // Leaflet ne sait pas mesurer une carte cachée : on la recale à l'ouverture.
+    if (details) {
+      details.addEventListener('toggle', function () {
+        if (!details.open) return;
+        setTimeout(function () {
+          map.invalidateSize();
+          if (bounds.length === 1) map.setView(bounds[0], 11);
+          else if (bounds.length > 1) map.fitBounds(bounds, { padding: [30, 30] });
+        }, 60);
+      });
+    }
   }
 
   function esc(s) {

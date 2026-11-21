@@ -11,6 +11,12 @@ rando_nono_breadcrumb();
 
 $selected_diff = isset( $_GET['difficulte'] ) ? sanitize_text_field( $_GET['difficulte'] ) : '';
 $search_term   = isset( $_GET['recherche'] ) ? sanitize_text_field( $_GET['recherche'] ) : '';
+// Filtre par département (« Hérault », « Savoie »…), lu dans le lieu court.
+$archive_stats = rando_nono_get_homepage_stats();
+$departements  = isset( $archive_stats['departements'] ) ? $archive_stats['departements'] : array();
+arsort( $departements );
+$selected_dep  = isset( $_GET['departement'] ) ? sanitize_text_field( wp_unslash( $_GET['departement'] ) ) : '';
+if ( $selected_dep && ! isset( $departements[ $selected_dep ] ) ) $selected_dep = '';
 
 // Bornes réelles (calculées sur les randos publiées) pour les curseurs —
 // le curseur part toujours du maximum tant qu'on n'y a pas touché.
@@ -44,6 +50,9 @@ if ( $selected_diff ) {
 // chaîne (comportement standard MySQL), sans avoir à dupliquer ces champs
 // dans un format numérique séparé.
 $meta_query = array();
+if ( $selected_dep ) {
+    $meta_query[] = array( 'key' => 'rando_lieu_court', 'value' => '(' . $selected_dep . ')', 'compare' => 'LIKE' );
+}
 if ( $distance_filter_active ) {
     $meta_query[] = array( 'key' => 'rando_distance', 'value' => $selected_distance_max, 'compare' => '<=', 'type' => 'DECIMAL(10,1)' );
 }
@@ -101,7 +110,19 @@ if ( $map_query->have_posts() ) {
   <div class="section-eyebrow">Le carnet complet</div>
   <h1 class="section-title">Toutes les randonnées</h1>
   <div class="divider"></div>
-  <p class="section-sub">Filtre par difficulté, distance ou dénivelé, ou recherche une randonnée par son nom ou son lieu.</p>
+  <p class="section-sub">Choisis une région, filtre par difficulté, distance ou dénivelé, ou recherche une randonnée par son nom ou son lieu.</p>
+
+  <?php
+  // Filtre par département en un clic, avec le nombre de randos de chacun.
+  if ( count( $departements ) > 1 ) :
+      $base_url = get_post_type_archive_link( 'randonnee' ); ?>
+  <nav class="archive-regions" aria-label="Filtrer par département">
+    <a class="archive-region<?php echo $selected_dep ? '' : ' is-active'; ?>" href="<?php echo esc_url( $base_url . '#resultats' ); ?>"<?php echo $selected_dep ? '' : ' aria-current="true"'; ?>>Toutes · <?php echo esc_html( array_sum( $departements ) ); ?></a>
+    <?php foreach ( $departements as $dep => $nb ) : ?>
+      <a class="archive-region<?php echo $selected_dep === $dep ? ' is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'departement', rawurlencode( $dep ), $base_url ) . '#resultats' ); ?>"<?php echo $selected_dep === $dep ? ' aria-current="true"' : ''; ?>><?php echo esc_html( $dep . ' · ' . $nb ); ?></a>
+    <?php endforeach; ?>
+  </nav>
+  <?php endif; ?>
 
   <!-- ════════ FILTRES ════════ -->
   <?php
@@ -141,17 +162,26 @@ if ( $map_query->have_posts() ) {
       <input type="range" id="denivele_max" name="denivele_max" min="0" max="<?php echo esc_attr( $denivele_max_cap ); ?>" step="10" value="<?php echo esc_attr( $selected_denivele_max ); ?>">
     </div>
 
+    <?php if ( $selected_dep ) : ?><input type="hidden" name="departement" value="<?php echo esc_attr( $selected_dep ); ?>"><?php endif; ?>
     <button type="submit" class="btn btn-sm">Filtrer</button>
-    <?php if ( $selected_diff || $search_term || $distance_filter_active || $denivele_filter_active ) : ?>
+    <?php if ( $selected_diff || $search_term || $distance_filter_active || $denivele_filter_active || $selected_dep ) : ?>
       <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="filter-reset">Réinitialiser</a>
     <?php endif; ?>
   </form>
 
   <!-- ════════ CARTE D'ENSEMBLE ════════ -->
   <?php if ( ! empty( $map_markers ) ) : ?>
-    <div class="archive-map-wrap">
-      <div class="archive-map" id="archive-map" data-markers='<?php echo esc_attr( wp_json_encode( $map_markers ) ); ?>'></div>
-    </div>
+    <?php
+    // Sur mobile, la carte prenait tout l'écran avant la liste : elle est
+    // repliée par défaut (un toucher l'ouvre). Sur ordinateur elle reste
+    // ouverte (attribut « open » ajouté par le script selon la largeur).
+    ?>
+    <details class="archive-map-details" id="archive-map-details">
+      <summary class="archive-map-summary"><?php echo rando_nono_icon( 'map' ); ?> Voir les <?php echo esc_html( count( $map_markers ) ); ?> départs sur la carte</summary>
+      <div class="archive-map-wrap">
+        <div class="archive-map" id="archive-map" data-markers='<?php echo esc_attr( wp_json_encode( $map_markers ) ); ?>'></div>
+      </div>
+    </details>
   <?php endif; ?>
 
   <!-- ════════ RÉSULTATS ════════ -->
