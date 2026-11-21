@@ -259,12 +259,13 @@ function rando_nono_schema_jsonld() {
         array( '@type' => 'ListItem', 'position' => 1, 'name' => 'Accueil',    'item' => home_url( '/' ) ),
         array( '@type' => 'ListItem', 'position' => 2, 'name' => 'Randonnées', 'item' => get_post_type_archive_link( 'randonnee' ) ),
     );
-    if ( $region ) {
+    $fil = rando_nono_fil_region( get_the_ID() );
+    if ( $fil ) {
         $crumbs[] = array(
             '@type'    => 'ListItem',
             'position' => 3,
-            'name'     => $region,
-            'item'     => add_query_arg( 'recherche', $region, get_post_type_archive_link( 'randonnee' ) ),
+            'name'     => $fil['nom'],
+            'item'     => $fil['url'],
         );
     }
     $crumbs[] = array( '@type' => 'ListItem', 'position' => count( $crumbs ) + 1, 'name' => $titre, 'item' => $url );

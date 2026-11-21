@@ -190,13 +190,17 @@ function rando_nono_departements_libelle( $stats ) {
  * page de synthèse si elle existe, sinon vers la liste des randonnées. Une
  * région sans rando publiée n'est pas affichée.
  */
-function rando_nono_regions_accueil( $stats ) {
-    $deps = isset( $stats['departements'] ) ? $stats['departements'] : array();
-    $defs = array(
+function rando_nono_regions_defs() {
+    return array(
         array( 'titre' => 'Hérault', 'deps' => array( 'Hérault' ), 'texte' => 'Garrigue, cirques et bivouacs', 'page' => 'les-plus-belles-randonnees-de-lherault', 'type' => 'page', 'mot' => 'randos' ),
         array( 'titre' => 'Val-d’Isère et Tignes', 'deps' => array( 'Savoie' ), 'texte' => 'Lacs d’altitude en famille', 'page' => 'randonnees-faciles-val-d-isere-tignes', 'type' => 'post', 'mot' => 'balades' ),
         array( 'titre' => 'Gard et Larzac', 'deps' => array( 'Gard', 'Aveyron' ), 'texte' => 'Camargue, Mer des Rochers, Canalettes', 'page' => 'etang-du-scamandrenie', 'type' => 'randonnee', 'mot' => 'randos', 'liste' => true ),
     );
+}
+
+function rando_nono_regions_accueil( $stats ) {
+    $deps = isset( $stats['departements'] ) ? $stats['departements'] : array();
+    $defs = rando_nono_regions_defs();
     $out = array();
     foreach ( $defs as $d ) {
         $n = 0;
@@ -255,3 +259,23 @@ add_action( 'before_delete_post', function( $post_id ) {
     }
 } );
 
+
+/**
+ * Niveau « région » du fil d'Ariane d'une fiche : le département (lu dans le
+ * lieu court) et, s'il a un guide, le lien vers ce guide ; sinon la liste
+ * des randos filtrée sur ce département. Remplace l'ancien lien vers une
+ * recherche texte, que robots.txt interdit et que Google n'indexe pas.
+ */
+function rando_nono_fil_region( $post_id ) {
+    $lc = (string) get_post_meta( $post_id, 'rando_lieu_court', true );
+    if ( ! preg_match( '/\(([^)]+)\)\s*$/u', $lc, $m ) ) return null;
+    $dep = trim( $m[1] );
+    foreach ( rando_nono_regions_defs() as $d ) {
+        if ( ! in_array( $dep, $d['deps'], true ) || ! empty( $d['liste'] ) ) continue;
+        $cible = get_page_by_path( $d['page'], OBJECT, $d['type'] );
+        if ( $cible && 'publish' === get_post_status( $cible ) ) {
+            return array( 'nom' => $dep, 'url' => get_permalink( $cible ) );
+        }
+    }
+    return array( 'nom' => $dep, 'url' => add_query_arg( 'departement', rawurlencode( $dep ), get_post_type_archive_link( 'randonnee' ) ) );
+}

@@ -33,10 +33,10 @@ function rando_nono_breadcrumb() {
     } elseif ( is_singular( 'randonnee' ) ) {
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<a href="' . esc_url( get_post_type_archive_link( 'randonnee' ) ) . '">Randonnées</a>';
-        $region = rando_nono_lieu_region( get_post_meta( get_the_ID(), 'rando_lieu', true ) );
-        if ( $region ) {
+        $fil = rando_nono_fil_region( get_the_ID() );
+        if ( $fil ) {
             echo '<span class="breadcrumb-sep">›</span>';
-            echo '<a href="' . esc_url( add_query_arg( 'recherche', $region, get_post_type_archive_link( 'randonnee' ) ) ) . '">' . esc_html( $region ) . '</a>';
+            echo '<a href="' . esc_url( $fil['url'] ) . '">' . esc_html( $fil['nom'] ) . '</a>';
         }
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<span class="breadcrumb-current">' . esc_html( get_the_title() ) . '</span>';
