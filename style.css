@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.7
+Version: 6.8
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1519,3 +1519,47 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .post-type-archive-randonnee .randos-grid .card-photo-wrap .card-photo-placeholder,
   .search .randos-grid .card-photo-wrap .card-photo-placeholder { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; }
 }
+
+/* ══════════════════════ TABLEAUX DES GUIDES EN CARTES (v6.8) ══════════════════════ */
+@media (max-width: 600px) {
+  .wp-block-table { overflow: visible; }
+  .table-cartes, .table-cartes tbody, .table-cartes tr, .table-cartes td { display: block; width: 100%; }
+  .table-cartes thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .table-cartes tr {
+    background: var(--surface-alt); border-radius: var(--r-md); box-shadow: var(--hairline);
+    padding: 0.75rem 0.9rem; margin-bottom: 0.7rem; border: 0;
+  }
+  .table-cartes td { border: 0 !important; padding: 0.15rem 0 !important; display: flex; justify-content: space-between; gap: 1rem; font-size: 0.9rem; }
+  .table-cartes td::before { content: attr(data-label); color: var(--gris); font-size: 0.78rem; }
+  .table-cartes td:first-child { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 1.15rem; margin-bottom: 0.3rem; }
+  .table-cartes td:first-child::before { content: none; }
+}
+
+/* ══════════════════════ PAGE MATOS (v6.8) ══════════════════════ */
+.matos-photo { background: var(--surface-alt); border-radius: var(--r-md); padding: 1.2rem; margin: 0.5rem 0 1.5rem; display: flex; justify-content: center; box-shadow: var(--hairline); }
+.matos-photo img { max-height: 360px; width: auto; height: auto; object-fit: contain; }
+.matos-pourquoi { font-size: 1rem; line-height: 1.7; }
+.matos-carac { margin: 1.2rem 0; }
+.matos-randos { display: grid; gap: 0.6rem; margin: 0.6rem 0 1.4rem; }
+.matos-rando { display: flex; align-items: center; gap: 0.8rem; background: var(--surface-alt); border-radius: var(--r-md); padding: 0.5rem; box-shadow: var(--hairline); text-decoration: none; color: inherit; }
+.matos-rando img { width: 64px; height: 52px; object-fit: cover; border-radius: var(--r-sm); }
+.matos-rando b { display: block; color: var(--accent); }
+.matos-rando small { color: var(--gris); }
+.matos-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.5rem; }
+.btn-outline-vert { background: transparent; color: var(--accent); border: 1.5px solid var(--ligne); }
+
+/* ══════════════════════ FAVORIS VIDES (v6.8) ══════════════════════ */
+.favoris-vide { background: var(--surface); border-radius: var(--r-lg); padding: 1.6rem 1.2rem; text-align: center; margin: 1rem 0 1.6rem; }
+.favoris-vide-coeur .icon-svg { width: 40px; height: 40px; color: var(--orange); }
+.favoris-vide-titre { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 1.4rem; color: var(--accent); margin: 0.4rem 0; }
+.favoris-sugg-titre { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-weight: 400; color: var(--accent); font-size: 1.4rem; margin: 0 0 0.8rem; }
+.favoris-sugg { display: grid; gap: 0.6rem; }
+.favoris-sugg-item { display: flex; align-items: center; gap: 0.6rem; background: var(--surface-alt); border-radius: var(--r-md); padding: 0.5rem; box-shadow: var(--hairline); }
+.favoris-sugg-lien { display: flex; align-items: center; gap: 0.8rem; flex: 1; text-decoration: none; color: inherit; }
+.favoris-sugg-lien img { width: 72px; height: 56px; object-fit: cover; border-radius: var(--r-sm); }
+.favoris-sugg-lien b { display: block; color: var(--accent); }
+.favoris-sugg-lien small { color: var(--gris); }
+.favoris-sugg-coeur { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--ligne); background: transparent; color: var(--accent); display: grid; place-items: center; cursor: pointer; flex-shrink: 0; }
+.favoris-sugg-coeur .icon-svg { width: 20px; height: 20px; }
+.favoris-sugg-coeur.is-favori { background: var(--orange); color: #fff; border-color: transparent; }
+.favoris-sugg-coeur.is-favori .icon-svg { fill: currentColor; }

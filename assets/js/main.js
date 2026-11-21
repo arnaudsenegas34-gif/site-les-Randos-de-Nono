@@ -120,6 +120,23 @@
   }
 
   /* ══════════════════════════════════════════════
+     TABLEAUX EN CARTES SUR MOBILE
+     Chaque cellule reçoit le nom de sa colonne (data-label) : sur petit
+     écran, le CSS empile les lignes en cartes « Distance : 7 km » au lieu
+     d'un tableau qui déborde à droite.
+  ══════════════════════════════════════════════ */
+  document.querySelectorAll('.wp-block-table table').forEach(function (table) {
+    var heads = Array.prototype.map.call(table.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); });
+    if (!heads.length) return;
+    table.classList.add('table-cartes');
+    table.querySelectorAll('tbody tr').forEach(function (tr) {
+      Array.prototype.forEach.call(tr.children, function (td, i) {
+        if (heads[i]) td.setAttribute('data-label', heads[i]);
+      });
+    });
+  });
+
+  /* ══════════════════════════════════════════════
      NAV ACTIVE — mise en avant du bouton de la section visible
      Sur la page d'accueil, "Accueil" reste actif tant qu'aucune
      des sections ancrées (Matos, Statistiques, À propos) n'est

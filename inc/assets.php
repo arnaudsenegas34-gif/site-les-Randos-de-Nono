@@ -75,7 +75,7 @@ function rando_nono_assets() {
     // ── Single randonnée (CSS + JS chargés uniquement sur la fiche) ──
     // Les articles (post) réutilisent le même CSS pour la navigation précédent/suivant,
     // mais n'ont pas besoin de la carte Leaflet.
-    if ( is_singular( 'randonnee' ) || is_singular( 'post' ) ) {
+    if ( is_singular( 'randonnee' ) || is_singular( 'post' ) || is_singular( 'matos' ) ) {
         wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/single-randonnee.css' ) );
     }
     if ( is_singular( 'randonnee' ) ) {
