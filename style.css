@@ -1,9 +1,9 @@
 /*
 Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
-Author URI: mailto:arnaud.senegas34@gmail.com
+Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.4.2
+Version: 6.5
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -773,7 +773,7 @@ a.card-title { display: block; }
 .meteo-slot { background: var(--surface); border-radius: var(--r-sm); padding: 0.65rem 0.3rem; text-align: center; }
 .meteo-slot.active { background: var(--vert); color: #fff; }
 .slot-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gris); margin-bottom: 0.25rem; }
-.meteo-slot.active .slot-label { color: rgba(232,223,200,0.7); }
+.meteo-slot.active .slot-label { color: rgba(232,223,200,0.95); }
 .slot-icon { font-size: 1.3rem; margin-bottom: 0.15rem; }
 .slot-temp { font-weight: 700; font-size: 0.85rem; color: var(--text); }
 .meteo-slot.active .slot-temp { color: #fff; }
@@ -788,7 +788,7 @@ a.card-title { display: block; }
 .meteo-day .temp-min { font-weight: 400; color: var(--gris); font-size: 0.6rem; }
 .meteo-day.today { background: var(--orange-fond); color: #fff; }
 .meteo-day.today .temp-max { color: #fff; }
-.meteo-day.today .temp-min { color: rgba(255,255,255,0.7); }
+.meteo-day.today .temp-min { color: rgba(255,255,255,0.95); }
 .meteo-loading { font-size: 0.8rem; color: var(--gris); font-style: italic; padding: 1rem 0; }
 
 /* Squelette animé affiché pendant le chargement de la météo (Open-Meteo). */

@@ -14,7 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function rando_nono_head_extra() {
     $theme_uri = get_template_directory_uri();
-    echo '<link rel="manifest" href="' . esc_url( $theme_uri . '/manifest.json' ) . '">' . "\n";
+    // crossorigin="use-credentials" : sans lui, le navigateur charge le manifeste
+    // sans cookie, et l'anti-robots d'InfinityFree renvoie sa page HTML de test
+    // (erreur « Manifest: Syntax error » dans la console).
+    echo '<link rel="manifest" href="' . esc_url( $theme_uri . '/manifest.json' ) . '" crossorigin="use-credentials">' . "\n";
     echo '<meta name="theme-color" content="#2E5E3B">' . "\n";
     echo '<link rel="preload" href="' . esc_url( $theme_uri . '/assets/fonts/abril-fatface.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
     echo '<link rel="preload" href="' . esc_url( $theme_uri . '/assets/fonts/merriweather-regular.woff2' ) . '" as="font" type="font/woff2" crossorigin>' . "\n";

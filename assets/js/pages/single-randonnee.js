@@ -52,8 +52,8 @@
 
     var startIcon = L.divIcon({
       className: '',
-      html: '<div style="background:#2E5E3B;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
-      iconSize: [14, 14], iconAnchor: [7, 7]
+      html: '<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center"><div style="background:#2E5E3B;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div></div>',
+      iconSize: [24, 24], iconAnchor: [12, 12]
     });
 
     if (gpxUrl && typeof L.GPX !== 'undefined') {
@@ -69,14 +69,14 @@
           var pts = layers[0].getLatLngs ? layers[0].getLatLngs() : null;
           if (pts && pts.length) {
             var start = Array.isArray(pts[0]) ? pts[0][0] : pts[0];
-            L.marker([start.lat, start.lng], { icon: startIcon }).bindTooltip('Départ', { permanent: false }).addTo(map);
+            L.marker([start.lat, start.lng], { icon: startIcon, alt: 'Départ de la randonnée', title: 'Départ de la randonnée' }).bindTooltip('Départ', { permanent: false }).addTo(map);
           }
         }
         buildAltitudeChart(e.target, map);
       })
       .on('error', function (e) {
         console.warn('[Randonnée] Impossible de charger la trace GPX (réseau, CORS ou Content-Security-Policy) :', gpxUrl, e);
-        L.marker([lat, lon], { icon: startIcon }).addTo(map);
+        L.marker([lat, lon], { icon: startIcon, alt: 'Départ de la randonnée', title: 'Départ de la randonnée' }).addTo(map);
         // La météo sait dire qu'elle est indisponible, le profil altimétrique
         // se masque — la carte, elle, restait un rectangle gris de 425 px sans
         // un mot : impossible de savoir s'il fallait recharger, attendre, ou
@@ -85,7 +85,7 @@
       })
       .addTo(map);
     } else {
-      L.marker([lat, lon], { icon: startIcon }).addTo(map);
+      L.marker([lat, lon], { icon: startIcon, alt: 'Départ de la randonnée', title: 'Départ de la randonnée' }).addTo(map);
     }
 
     // Les tuiles viennent des serveurs d'OpenStreetMap : sans réseau, la carte

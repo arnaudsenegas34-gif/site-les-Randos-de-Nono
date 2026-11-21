@@ -278,7 +278,7 @@ function rando_nono_schema_jsonld() {
     // HikingTrail / TouristAttraction — type dédié aux itinéraires de randonnée
     $trail = array(
         '@context'    => 'https://schema.org',
-        '@type'       => array( 'HikingTrail', 'TouristAttraction' ),
+        '@type'       => 'TouristAttraction',
         'name'        => $titre,
         'url'         => $url,
         'description' => $desc,

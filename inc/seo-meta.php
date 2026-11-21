@@ -182,11 +182,13 @@ function rando_nono_seo_meta_tags() {
             : '. Distance, dénivelé, photos et trace GPX à télécharger.';
 
         $description = rando_nono_meta_description_trim( $phrase );
-        $title = get_the_title() . ( $lieu ? ' — ' . $lieu : '' ) . ' | ' . get_bloginfo( 'name' );
+        // Titre de partage (Open Graph) : lieu court seulement s'il manque au titre,
+        // au lieu du lieu complet qui doublait la longueur.
+        $title = get_the_title() . ( ( $lieu_court && false === mb_stripos( $titre, $lieu_court ) ) ? ' — ' . $lieu_court : '' ) . ' | ' . get_bloginfo( 'name' );
         $thumb = get_the_post_thumbnail_url( $post->ID, 'large' );
         if ( $thumb ) $image = $thumb;
 
-        $keywords = implode( ', ', array_filter( array( 'randonnée', $lieu, $difficulte ? 'randonnée ' . $difficulte : '', 'trace GPX', 'Hérault' ) ) );
+        $keywords = implode( ', ', array_filter( array( 'randonnée', $lieu, $difficulte ? 'randonnée ' . $difficulte : '', 'trace GPX', $lieu_court ) ) );
 
     } elseif ( is_singular( 'matos' ) ) {
         $content_desc = wp_strip_all_tags( get_the_content() );

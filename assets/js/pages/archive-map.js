@@ -24,8 +24,8 @@
 
     var icon = L.divIcon({
       className: '',
-      html: '<div style="background:#2E5E3B;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
-      iconSize: [14, 14], iconAnchor: [7, 7]
+      html: '<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center"><div style="background:#2E5E3B;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div></div>',
+      iconSize: [24, 24], iconAnchor: [12, 12]
     });
 
     var bounds = [];
