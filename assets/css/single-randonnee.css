@@ -782,3 +782,7 @@
 .art-sommaire a { color: var(--accent); }
 .article-content h2[id] { scroll-margin-top: 90px; }
 @media (max-width: 400px) { .art-bref-chiffres b { font-size: 1.25rem; } }
+.art-bref .btn.art-bref-fiche, .art-bref .btn.art-bref-fiche:visited { background: #FAF8F3; color: #2E5E3B; }
+.art-bref .btn.art-bref-gpx, .art-bref .btn.art-bref-gpx:visited { color: #fff; }
+.art-bref-chiffres b { white-space: nowrap; }
+@media (max-width: 380px) { .art-bref-chiffres b { font-size: 1.08rem; } .art-bref { padding: 1rem; } }
