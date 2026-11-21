@@ -222,3 +222,42 @@ function rando_nono_desactiver_emojis() {
 }
 add_action( 'init', 'rando_nono_desactiver_emojis' );
 
+
+/**
+ * Feuilles de style : moins de requêtes bloquantes au premier affichage.
+ *
+ * Lighthouse (21/11/2026) comptait 1,2 à 1,3 s de CSS bloquant le rendu sur
+ * mobile. Deux traitements :
+ * - les petites feuilles utiles dès le haut de page (polices, bandeau
+ *   cookies) sont écrites directement dans la page : une requête de moins
+ *   chacune. Les chemins relatifs (../fonts/) sont réécrits en absolu ;
+ * - les feuilles qui ne servent que plus bas ou pour des éléments créés par
+ *   script (carte Leaflet, suivi GPS, panneau Matos) se chargent sans
+ *   bloquer (media="print" puis "all" au chargement ; repli <noscript>).
+ */
+function rando_nono_css_non_bloquant( $html, $handle, $href, $media ) {
+    if ( is_admin() ) return $html;
+
+    $a_integrer = array(
+        'rando-nono-fonts'          => '/assets/css/fonts.css',
+        'rando-nono-cookie-consent' => '/assets/css/components/cookie-consent.css',
+    );
+    if ( isset( $a_integrer[ $handle ] ) ) {
+        $fichier = get_template_directory() . $a_integrer[ $handle ];
+        if ( is_readable( $fichier ) ) {
+            $css = (string) file_get_contents( $fichier );
+            $base = trailingslashit( dirname( get_template_directory_uri() . $a_integrer[ $handle ] ) );
+            $css = preg_replace( "#url\((['\"]?)\.\./#", 'url($1' . $base . '../', $css );
+            return '<style id="' . esc_attr( $handle ) . '-inline-css">' . $css . "</style>\n";
+        }
+        return $html;
+    }
+
+    $differes = array( 'leaflet', 'rando-nono-live-tracking', 'rando-nono-matos' );
+    if ( in_array( $handle, $differes, true ) ) {
+        return '<link rel="stylesheet" id="' . esc_attr( $handle ) . '-css" href="' . esc_url( $href ) . '" media="print" onload="this.media=\'all\'">'
+            . '<noscript><link rel="stylesheet" href="' . esc_url( $href ) . '"></noscript>' . "\n";
+    }
+    return $html;
+}
+add_filter( 'style_loader_tag', 'rando_nono_css_non_bloquant', 10, 4 );
