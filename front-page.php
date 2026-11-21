@@ -88,7 +88,12 @@ if ( ! $featured_query->have_posts() ) {
     $f_thumb     = has_post_thumbnail( $fid ) ? get_the_post_thumbnail( $fid, 'rando-hero', array(
         'alt'           => get_the_title( $fid ),
         'decoding'      => 'async',
-        'fetchpriority' => 'high',
+        // Sous le hero : pas prioritaire, chargée au défilement, et à la taille
+        // affichée (pleine largeur sous 900 px, ~1,1/2,1 de 1 320 px au-delà).
+        // Sans « sizes », le mobile recevait la version 1 200 px (245 Ko).
+        'loading'       => 'lazy',
+        'fetchpriority' => 'low',
+        'sizes'         => '(max-width: 900px) 100vw, min(52vw, 700px)',
         'style'         => 'width:100%;height:100%;object-fit:cover;position:absolute;inset:0',
     ) ) : '';
     ?>
@@ -105,7 +110,7 @@ if ( ! $featured_query->have_posts() ) {
           <?php else : ?>
             <picture>
               <source type="image/webp" srcset="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/placeholder-rando-800.webp' ); ?>">
-              <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/placeholder-rando-800.jpg' ); ?>" alt="Photo à venir" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" decoding="async" fetchpriority="high">
+              <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/placeholder-rando-800.jpg' ); ?>" alt="Photo à venir" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" decoding="async" loading="lazy">
             </picture>
           <?php endif; ?>
         </div>
