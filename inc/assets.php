@@ -31,12 +31,9 @@ function rando_nono_assets() {
     // La carte interactive n'existe plus que sur la fiche complète d'une randonnée
     // et sur la carte d'ensemble de l'archive : inutile de charger Leaflet sur
     // l'accueil, les mentions légales, le 404, etc.
-    // Un article lié à une rando affiche aussi la fiche complète (carte,
-    // profil, météo) : il a besoin des mêmes bibliothèques que la fiche.
-    $article_avec_fiche = is_singular( 'post' ) && get_post_meta( get_queried_object_id(), 'article_rando_id', true );
-    $needs_leaflet = is_singular( 'randonnee' ) || is_post_type_archive( 'randonnee' ) || $article_avec_fiche;
-    // Le profil altimétrique (Chart.js) : fiche complète, et articles liés.
-    $needs_chart   = is_singular( 'randonnee' ) || $article_avec_fiche;
+    $needs_leaflet = is_singular( 'randonnee' ) || is_post_type_archive( 'randonnee' );
+    // Le profil altimétrique (Chart.js) n'est affiché que sur la fiche complète d'une randonnée.
+    $needs_chart   = is_singular( 'randonnee' );
     // La grille de cartes (animations au scroll, filtre Matos, "voir plus") vit
     // sur l'accueil, l'archive, les résultats de recherche et les pages
     // "Article — Guide de randos" (elles réutilisent .rando-card, qui reste
@@ -80,9 +77,6 @@ function rando_nono_assets() {
     // mais n'ont pas besoin de la carte Leaflet.
     if ( is_singular( 'randonnee' ) || is_singular( 'post' ) ) {
         wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/single-randonnee.css' ) );
-    }
-    if ( $article_avec_fiche ) {
-        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/pages/single-randonnee.js' ), true );
     }
     if ( is_singular( 'randonnee' ) ) {
         wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/pages/single-randonnee.js' ), true );

@@ -37,13 +37,6 @@ if ( $rando_id ) {
     <?php endif; ?>
     <h1><?php the_title(); ?></h1>
     <p style="font-size:0.8rem;color:var(--gris);margin-top:-0.3rem"><?php echo esc_html( get_the_date( 'j F Y' ) ); ?></p>
-    <?php
-    // Fiche complète de la rando liée, tout de suite visible (carte, chiffres,
-    // GPX, profil, météo, sac, conseils), puis le récit.
-    if ( $rando && 'publish' === get_post_status( $rando ) ) :
-        get_template_part( 'template-parts/fiche-rando-article', null, array( 'rando_id' => $rando->ID ) ); ?>
-      <h2 class="sr-section-title fa-recit-titre">Le r&eacute;cit</h2>
-    <?php endif; ?>
     <div class="article-content"><?php the_content(); ?></div>
   </article>
 
