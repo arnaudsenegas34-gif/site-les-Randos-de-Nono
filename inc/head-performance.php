@@ -44,18 +44,11 @@ function rando_nono_resource_hints() {
         echo '<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>' . "\n";
         echo '<link rel="dns-prefetch" href="https://api.open-meteo.com">' . "\n";
     }
-    // GA4/pixel Facebook ne se chargent qu'après consentement (voir
-    // rando_nono_ga_assets()), mais la préconnexion peut démarrer plus tôt
-    // sans rien télécharger : elle ne fait qu'accélérer la négociation
-    // DNS/TLS si le visiteur accepte les cookies.
-    if ( $ga_id ) {
-        echo '<link rel="preconnect" href="https://www.googletagmanager.com">' . "\n";
-        echo '<link rel="dns-prefetch" href="https://www.googletagmanager.com">' . "\n";
-    }
-    if ( $fb_id ) {
-        echo '<link rel="preconnect" href="https://connect.facebook.net">' . "\n";
-        echo '<link rel="dns-prefetch" href="https://connect.facebook.net">' . "\n";
-    }
+    // Pas de préconnexion à Google ni à Facebook (retirée le 21/11/2026) :
+    // même sans rien télécharger, elle ouvrait une connexion vers leurs
+    // serveurs, donc leur transmettait l'adresse IP du visiteur AVANT tout
+    // consentement. GA4 et le pixel ne contactent ces serveurs qu'après le
+    // clic sur « Accepter » (voir cookie-consent.js).
 }
 add_action( 'wp_head', 'rando_nono_resource_hints', 1 );
 

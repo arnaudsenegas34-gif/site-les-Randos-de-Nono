@@ -50,7 +50,8 @@
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { dataLayer.push( arguments ); };
     gtag( 'js', new Date() );
-    gtag( 'config', window.randoNonoGA.id );
+    // Cookies de mesure limités à 13 mois (recommandation CNIL ; 2 ans par défaut chez Google).
+    gtag( 'config', window.randoNonoGA.id, { cookie_expires: 13 * 30 * 24 * 60 * 60 } );
   }
 
   function loadFB() {
@@ -72,6 +73,21 @@
   function showBanner() {
     var banner = document.getElementById( 'cookie-consent' );
     if ( banner ) banner.classList.add( 'is-visible' );
+  }
+
+  // Retrait du consentement : efface les cookies déjà posés par Google
+  // Analytics (_ga, _ga_XXXX, _gid) et le pixel Facebook (_fbp), sur le
+  // domaine du site et son domaine parent, où GA les dépose souvent.
+  function effacerCookiesTraceurs() {
+    var noms = document.cookie.split( ';' ).map( function ( c ) { return c.split( '=' )[0].trim(); } )
+      .filter( function ( n ) { return /^(_ga|_gid|_gat|_fbp|_fbc)/.test( n ); } );
+    var hote = window.location.hostname;
+    var parent = hote.split( '.' ).slice( -2 ).join( '.' );
+    noms.forEach( function ( n ) {
+      [ '', '; domain=' + hote, '; domain=.' + hote, '; domain=.' + parent ].forEach( function ( d ) {
+        document.cookie = n + '=; max-age=0; path=/' + d;
+      } );
+    } );
   }
 
   function hideBanner() {
@@ -105,6 +121,7 @@
     if ( refuseBtn ) {
       refuseBtn.addEventListener( 'click', function () {
         storeConsent( '0' );
+        effacerCookiesTraceurs();
         hideBanner();
       } );
     }
