@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.13
+Version: 6.13.1
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1628,17 +1628,14 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ══════════════════════ ERGONOMIE (v6.13) ══════════════════════ */
 /* Accueil : flèche pour descendre sous la grande photo */
-.hero { position: relative; }
 .hero-suite {
-  position: absolute; left: 50%; bottom: 1.1rem; transform: translateX(-50%); z-index: 3;
-  display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.1rem; width: max-content; margin: 1rem auto 0;
   color: #FAF8F3; text-decoration: none; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em;
   text-shadow: 0 1px 6px rgba(0,0,0,.5); padding: 0.4rem 0.8rem; min-height: 44px;
 }
 .hero-suite .icon-svg { width: 26px; height: 26px; animation: hero-suite-rebond 2.2s ease-in-out infinite; }
 @keyframes hero-suite-rebond { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
 @media (prefers-reduced-motion: reduce) { .hero-suite .icon-svg { animation: none; } }
-@media (max-height: 560px) { .hero-suite { display: none; } }
 
 /* Toutes les randos : filtres repliables (bouton sur mobile, ouverts sur ordinateur) */
 .archive-filtres-details { margin-bottom: 1.2rem; }
