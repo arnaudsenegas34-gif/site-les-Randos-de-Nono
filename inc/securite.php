@@ -145,6 +145,10 @@ function rando_nono_login_cle_tentatives() {
 }
 
 function rando_nono_login_verrou() {
+    // Un administrateur déjà connecté ne doit pas être bloqué : le test de la
+    // connexion Google (Loginizer → Test Now) repasse par wp-login.php, et les
+    // essais ratés pendant un réglage l'enfermaient dehors pour quinze minutes.
+    if ( is_user_logged_in() ) return;
     $cle = rando_nono_login_cle_tentatives();
     if ( ! $cle ) return;
     $tentatives = (int) get_transient( $cle );
