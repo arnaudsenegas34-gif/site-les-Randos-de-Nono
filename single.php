@@ -115,6 +115,7 @@ $date_sortie = $rando_ok ? get_post_meta( $rando->ID, 'rando_date', true ) : '';
     <?php endif; ?>
 
     <div class="article-content"><?php echo $contenu; // phpcs:ignore WordPress.Security.EscapeOutput -- contenu filtré par the_content ?></div>
+    <?php get_template_part( 'template-parts/cta', 'newsletter', array( 'type' => 'article' ) ); ?>
   </article>
 
   <?php if ( $rando ) : ?>

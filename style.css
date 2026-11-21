@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.10.2
+Version: 6.11
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1612,3 +1612,16 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .post-type-archive-randonnee .randos-grid .card-meta:nth-of-type(2) .icon-svg,
   .search .randos-grid .card-meta:nth-of-type(2) .icon-svg { display: none; }
 }
+
+/* ══════════════════════ INVITATION À S'ABONNER (v6.11) ══════════════════════ */
+.cta-newsletter {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  background: var(--surface); border-radius: var(--r-lg); padding: 1.1rem 1.3rem; margin: 2rem 0 1.5rem;
+  box-shadow: var(--hairline); border-left: 4px solid var(--orange);
+}
+.cta-newsletter-icone .icon-svg { width: 32px; height: 32px; color: var(--orange); }
+.cta-newsletter-texte { flex: 1; min-width: 200px; }
+.cta-newsletter-texte p { margin: 0; font-size: 0.92rem; }
+.cta-newsletter-titre { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; color: var(--accent); font-size: 1.2rem !important; margin-bottom: 0.2rem !important; }
+.cta-newsletter-btn { flex-shrink: 0; }
+#newsletter-heading { scroll-margin-top: 90px; }

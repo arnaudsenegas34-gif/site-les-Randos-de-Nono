@@ -457,6 +457,8 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     </div>
 
     <!-- NAVIGATION PRÉCÉDENT / SUIVANT -->
+    <?php get_template_part( 'template-parts/cta', 'newsletter', array( 'type' => 'rando' ) ); ?>
+
     <?php
     $prev_rando = get_previous_post();
     $next_rando = get_next_post();
