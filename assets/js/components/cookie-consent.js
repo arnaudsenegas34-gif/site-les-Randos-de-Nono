@@ -125,6 +125,16 @@
         hideBanner();
       } );
     }
+    // Bouton des mentions légales et lien « Cookies » du pied de page.
+    document.querySelectorAll( '.js-cookie-manage' ).forEach( function ( el ) {
+      if ( el === manageBtn ) return;
+      el.addEventListener( 'click', function ( e ) {
+        e.preventDefault();
+        showBanner();
+        var b = document.getElementById( 'cookie-consent-refuse' );
+        if ( b ) b.focus();
+      } );
+    } );
     if ( manageBtn ) {
       manageBtn.addEventListener( 'click', function () {
         showBanner();

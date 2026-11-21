@@ -75,6 +75,13 @@ $rando_nono_nl_status = isset( $_GET['newsletter'] ) ? sanitize_key( $_GET['news
       $ml_url = $ml_page ? get_permalink( $ml_page ) : home_url( '/mentions-legales/' );
       ?>
       · <a href="<?php echo esc_url( $ml_url ); ?>">Mentions légales</a>
+      <?php
+      // Retrait du consentement accessible à tout moment, sur toutes les pages
+      // (CNIL : aussi simple de retirer son accord que de le donner). Sans
+      // script, le lien mène à la section Cookies des mentions légales.
+      if ( function_exists( 'rando_nono_ga_valid_id' ) && rando_nono_ga_valid_id() ) : ?>
+      · <a href="<?php echo esc_url( $ml_url . '#cookies' ); ?>" class="js-cookie-manage">Cookies</a>
+      <?php endif; ?>
     </p>
     <a class="social-instagram" href="https://www.instagram.com/a._.sng?igsh=MWpyYWVyazh6NWJ6dw==" target="_blank" rel="noopener noreferrer" aria-label="Suivre Nono sur Instagram">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">

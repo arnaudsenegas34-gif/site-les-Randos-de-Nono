@@ -16,13 +16,20 @@ get_header();
       <strong>Responsable de la publication :</strong> Arnaud SENEGAS<br>
       <strong>Contact :</strong> via le <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>
     </p>
-    <p>Le site est édité à titre personnel et non professionnel.</p>
+    <p>
+      Le site est édité à titre personnel et non professionnel. Conformément à l'article 1-1, II de la loi
+      n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN), les éléments
+      d'identification de l'éditeur ont été communiqués à l'hébergeur.
+    </p>
 
     <hr>
 
     <h2>Hébergement</h2>
-    <p>Le site est hébergé par InfinityFree.</p>
-    <p>Pour plus d'informations sur l'hébergeur, consultez leur site officiel : <a href="https://www.infinityfree.com" target="_blank" rel="noopener">https://www.infinityfree.com</a></p>
+    <p>
+      <strong>InfinityFree</strong>, société immatriculée aux Pays-Bas<br>
+      Kwikstaartlaan 42, Unit G1517, 3704 GS Zeist, Pays-Bas<br>
+      Téléphone : non communiqué par l'hébergeur ; contact : <a href="https://forum.infinityfree.com" target="_blank" rel="noopener">forum.infinityfree.com</a> — <a href="https://www.infinityfree.com/terms/" target="_blank" rel="noopener">conditions d'utilisation</a>
+    </p>
 
     <hr>
 
@@ -52,25 +59,43 @@ get_header();
 
     <hr>
 
-    <h2>Données personnelles</h2>
+    <h2 id="donnees-personnelles">Données personnelles</h2>
+    <p>
+      <strong>Responsable du traitement :</strong> Arnaud SENEGAS, éditeur du site, joignable via le
+      <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>.
+    </p>
     <p>Ce site propose un <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>. Les informations que vous y transmettez (nom, e-mail, message) sont utilisées uniquement pour répondre à votre demande et ne sont pas transmises à des tiers.
-      Les messages sont conservés au maximum <strong>douze mois</strong> après le dernier échange, puis supprimés.</p>
+      Elles ne sont pas enregistrées sur le site : votre message est envoyé par e-mail dans la boîte de réception
+      de l'éditeur (messagerie Gmail, Google), où il est conservé au maximum <strong>douze mois</strong> après
+      le dernier échange, puis supprimé.</p>
+    <p><strong>Bases légales :</strong></p>
+    <ul>
+      <li>formulaire de contact : intérêt légitime de l'éditeur à répondre aux messages qui lui sont adressés ;</li>
+      <li>newsletter : votre consentement, donné en confirmant votre inscription, et retirable à tout moment par le lien de désabonnement ;</li>
+      <li>avis lecteurs : votre consentement, donné en envoyant l'avis ;</li>
+      <li>mesure d'audience (Google Analytics) : votre consentement, donné dans le bandeau cookies et retirable à tout moment.</li>
+    </ul>
     <p>
       Le site propose également une <a href="#newsletter">newsletter</a> et un espace d'<a href="#avis">avis lecteurs</a>,
       décrits ci-dessous, qui impliquent la collecte de données personnelles (adresse e-mail pour la newsletter ;
       nom et commentaire pour les avis).
     </p>
     <p>
-      Avec votre consentement, des données de mesure d'audience (Google Analytics) et publicitaires (pixel Facebook)
-      peuvent également être collectées ; voir la section <a href="#cookies">Cookies</a> ci-dessous. Les données
+      Avec votre consentement, des données de mesure d'audience (Google Analytics) peuvent également être
+      collectées ; voir la section <a href="#cookies">Cookies</a> ci-dessous. Les données
       de géolocalisation utilisées par le suivi GPS en direct, ainsi que vos favoris et le contenu mis en cache pour
       la consultation hors ligne, restent quant à eux uniquement sur votre appareil (voir <a href="#stockage-local">Stockage local</a>).
     </p>
     <p>
-      Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez d'un droit d'accès,
-      de rectification et de suppression des données vous concernant.
+      Conformément au Règlement général sur la protection des données (RGPD) et à la loi « Informatique et
+      Libertés », vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement,
+      d'opposition et de portabilité des données vous concernant, ainsi que du droit de retirer votre consentement
+      à tout moment.
     </p>
-    <p>Pour toute demande relative à vos données personnelles, utilisez le <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a>.</p>
+    <p>Pour exercer ces droits, utilisez le <a href="<?php echo esc_url( home_url( '/contact/' ) ); ?>">formulaire de contact</a> ; une réponse vous sera apportée dans un délai d'un mois.
+      Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous pouvez adresser une
+      réclamation à la CNIL (<a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener">www.cnil.fr/fr/plaintes</a>).</p>
+    <p>Aucune décision automatisée ni aucun profilage n'est réalisé à partir de vos données.</p>
 
     <hr>
 
@@ -86,8 +111,8 @@ get_header();
       l'inscription non confirmée est automatiquement effacée au bout de <strong>trente jours</strong>.
     </p>
     <p>
-      Les adresses confirmées sont conservées tant que l'inscription reste active, et au plus
-      <strong>trois ans</strong> après le dernier envoi ou la dernière interaction.
+      Les adresses confirmées sont conservées jusqu'à votre désinscription. Si le site cessait de publier,
+      la liste des abonnés serait supprimée.
     </p>
     <p>
       Vous pouvez vous désabonner à tout moment, sans justification, en cliquant sur le lien de désabonnement
@@ -128,21 +153,27 @@ get_header();
     <hr>
 
     <h2 id="cookies">Cookies</h2>
-    <p>Le site peut utiliser des cookies techniques nécessaires à son bon fonctionnement.</p>
     <p>
-      Avec votre accord, le site utilise également <strong>Google Analytics</strong> pour mesurer son audience
-      (pages consultées, provenance des visites, type d'appareil) et le <strong>pixel Facebook (Meta)</strong>
-      à des fins de mesure publicitaire. Ces services ne déposent un cookie que si vous cliquez sur « Accepter »
-      dans le bandeau proposé lors de votre première visite. Vous pouvez à tout moment revenir sur votre choix :
+      Avec votre accord, le site utilise <strong>Google Analytics</strong> pour mesurer son audience (pages
+      consultées, provenance des visites, type d'appareil). Ce service n'est chargé, et ne dépose de cookie, que si
+      vous cliquez sur « Accepter » dans le bandeau proposé lors de votre première visite. Refuser est aussi simple
+      qu'accepter, et votre choix est conservé six mois. Le site n'utilise aucun traceur publicitaire.
     </p>
-    <p><button type="button" id="cookie-consent-manage" class="btn-nav">Gérer mes préférences cookies</button></p>
-    <p>Des services tiers intégrés au site peuvent également déposer des cookies, notamment :</p>
+    <p>Vous pouvez à tout moment revenir sur votre choix, ici ou par le lien « Cookies » en bas de chaque page :</p>
+    <p><button type="button" id="cookie-consent-manage" class="btn-nav js-cookie-manage">Gérer mes préférences cookies</button></p>
+    <p>Cookies et stockages utilisés :</p>
     <ul>
-      <li>les services de cartographie OpenStreetMap / Leaflet ;</li>
-      <li>le service météo Open-Meteo ;</li>
-      <li>les boutons ou liens de partage vers les réseaux sociaux.</li>
+      <li><strong>__test</strong> : cookie technique déposé par l'hébergeur pour protéger le site contre les robots ; indispensable au fonctionnement, il ne nécessite pas votre consentement ;</li>
+      <li><strong>rando_nono_ga_consent</strong> (cookie et stockage local) : mémorise votre choix sur les cookies, pendant six mois ;</li>
+      <li><strong>_ga</strong> et <strong>_ga_…</strong> (Google Analytics) : uniquement si vous acceptez, pour une durée de treize mois au plus ; ils sont effacés si vous retirez votre accord ;</li>
+      <li>favoris, mode hors ligne et suivi GPS : stockage local de votre navigateur, voir ci-dessus.</li>
     </ul>
-    <p>L'utilisateur peut configurer son navigateur afin de refuser tout ou partie des cookies.</p>
+    <p>
+      Les données de Google Analytics peuvent être transférées aux États-Unis. Google LLC est certifiée au titre
+      du cadre de protection des données UE–États-Unis (Data Privacy Framework), reconnu par la Commission européenne
+      le 10 juillet 2023 comme offrant un niveau de protection adéquat.
+    </p>
+    <p>Vous pouvez aussi configurer votre navigateur afin de refuser tout ou partie des cookies.</p>
 
     <hr>
 
@@ -162,12 +193,18 @@ get_header();
     <h2>Services tiers</h2>
     <p>Le site utilise des services externes pour certaines fonctionnalités :</p>
     <ul>
-      <li>OpenStreetMap et Leaflet pour l'affichage des cartes interactives ;</li>
+      <li>OpenStreetMap pour le fond des cartes interactives (la bibliothèque Leaflet est hébergée sur le site) ;</li>
       <li>Open-Meteo pour l'affichage des prévisions météo ;</li>
-      <li>Google Analytics pour les statistiques de fréquentation (avec consentement) ;</li>
-      <li>le pixel Facebook (Meta) pour la mesure publicitaire (avec consentement) ;</li>
-      <li>des plateformes de réseaux sociaux (Instagram) via des liens de partage.</li>
+      <li>Suunto / Sports Tracker, qui héberge la trace GPX de certaines randonnées ;</li>
+      <li>Google Analytics pour les statistiques de fréquentation (avec votre consentement uniquement) ;</li>
+      <li>Instagram, Google Maps et Suunto via de simples liens, qui ne transmettent rien tant que vous ne cliquez pas.</li>
     </ul>
+    <p>
+      Lorsqu'une carte, la météo ou une trace GPX hébergée chez Suunto s'affiche, votre navigateur contacte
+      directement ces services, qui reçoivent alors votre adresse IP, comme pour toute page web. Ils ne
+      déposent pas de cookie sur ce site. Les polices de caractères et les scripts du site sont hébergés
+      sur le site lui-même.
+    </p>
     <p>Ces services disposent de leurs propres politiques de confidentialité et conditions d'utilisation.</p>
 
     <hr>
