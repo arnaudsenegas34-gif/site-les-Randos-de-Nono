@@ -789,3 +789,7 @@
 .art-bref .btn.art-bref-gpx, .art-bref .btn.art-bref-gpx:visited { color: #fff; }
 .art-bref-chiffres b { white-space: nowrap; }
 @media (max-width: 380px) { .art-bref-chiffres b { font-size: 1.08rem; } .art-bref { padding: 1rem; } }
+
+/* L'image d'en-tête est maintenant dans un <picture> (version mobile légère) :
+   le wrapper ne doit pas changer la mise en page de l'image. */
+.sr-hero-picture { display: contents; }

@@ -47,30 +47,30 @@ function rando_nono_assets() {
     // visite et le risque d'un CDN tiers compromis servant du JS modifié)
     if ( $needs_leaflet ) {
         wp_enqueue_style( 'leaflet', $theme_uri . '/assets/vendor/leaflet/leaflet.css', array(), '1.9.4' );
-        wp_enqueue_script( 'leaflet', $theme_uri . '/assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true );
-        wp_enqueue_script( 'leaflet-gpx', $theme_uri . '/assets/vendor/leaflet-gpx/gpx.min.js', array( 'leaflet' ), '1.7.0', true );
+        wp_enqueue_script( 'leaflet', $theme_uri . '/assets/vendor/leaflet/leaflet.js', array(), '1.9.4', array( 'in_footer' => true, 'strategy' => 'defer' ) );
+        wp_enqueue_script( 'leaflet-gpx', $theme_uri . '/assets/vendor/leaflet-gpx/gpx.min.js', array( 'leaflet' ), '1.7.0', array( 'in_footer' => true, 'strategy' => 'defer' ) );
     }
 
     // ── Chart.js (profil altimétrique) — hébergé localement ──
     if ( $needs_chart ) {
-        wp_enqueue_script( 'chartjs', $theme_uri . '/assets/vendor/chartjs/chart.umd.min.js', array(), '4.4.0', true );
+        wp_enqueue_script( 'chartjs', $theme_uri . '/assets/vendor/chartjs/chart.umd.min.js', array(), '4.4.0', array( 'in_footer' => true, 'strategy' => 'defer' ) );
     }
 
     if ( $needs_randos_js ) {
-        wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array(), rando_nono_asset_ver( '/assets/js/pages/randos.js' ), true );
+        wp_enqueue_script( 'rando-nono-randos', $theme_uri . '/assets/js/pages/randos.js', array(), rando_nono_asset_ver( '/assets/js/pages/randos.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
         $main_deps[] = 'rando-nono-randos';
     }
 
     // Le panneau "Matos de Nono" n'existe que sur l'accueil.
     if ( is_front_page() ) {
         wp_enqueue_style( 'rando-nono-matos', $theme_uri . '/assets/css/components/matos.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/components/matos.css' ) );
-        wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), rando_nono_asset_ver( '/assets/js/components/matos.js' ), true );
+        wp_enqueue_script( 'rando-nono-matos', $theme_uri . '/assets/js/components/matos.js', array(), rando_nono_asset_ver( '/assets/js/components/matos.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
     }
 
     // ── Favoris (localStorage) — boutons cœur présents sur les cartes, la fiche randonnée et la page /favoris/ ──
-    wp_enqueue_script( 'rando-nono-favoris', $theme_uri . '/assets/js/components/favoris.js', array(), rando_nono_asset_ver( '/assets/js/components/favoris.js' ), true );
+    wp_enqueue_script( 'rando-nono-favoris', $theme_uri . '/assets/js/components/favoris.js', array(), rando_nono_asset_ver( '/assets/js/components/favoris.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
 
-    wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', $main_deps, rando_nono_asset_ver( '/assets/js/main.js' ), true );
+    wp_enqueue_script( 'rando-nono-main', $theme_uri . '/assets/js/main.js', $main_deps, rando_nono_asset_ver( '/assets/js/main.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
 
     // ── Single randonnée (CSS + JS chargés uniquement sur la fiche) ──
     // Les articles (post) réutilisent le même CSS pour la navigation précédent/suivant,
@@ -79,16 +79,16 @@ function rando_nono_assets() {
         wp_enqueue_style( 'rando-nono-single', $theme_uri . '/assets/css/single-randonnee.css', array( 'rando-nono-style' ), rando_nono_asset_ver( '/assets/css/single-randonnee.css' ) );
     }
     if ( is_singular( 'randonnee' ) ) {
-        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/pages/single-randonnee.js' ), true );
+        wp_enqueue_script( 'rando-nono-single', $theme_uri . '/assets/js/pages/single-randonnee.js', array( 'leaflet', 'leaflet-gpx', 'chartjs' ), rando_nono_asset_ver( '/assets/js/pages/single-randonnee.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
 
         // ── Suivi GPS en direct (démarrer / suivre la randonnée depuis le téléphone) ──
         wp_enqueue_style( 'rando-nono-live-tracking', $theme_uri . '/assets/css/components/live-tracking.css', array( 'rando-nono-single' ), rando_nono_asset_ver( '/assets/css/components/live-tracking.css' ) );
-        wp_enqueue_script( 'rando-nono-live-tracking', $theme_uri . '/assets/js/components/live-tracking.js', array( 'rando-nono-single' ), rando_nono_asset_ver( '/assets/js/components/live-tracking.js' ), true );
+        wp_enqueue_script( 'rando-nono-live-tracking', $theme_uri . '/assets/js/components/live-tracking.js', array( 'rando-nono-single' ), rando_nono_asset_ver( '/assets/js/components/live-tracking.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
     }
 
     // ── Carte d'ensemble (page "Toutes les randonnées") ──
     if ( is_post_type_archive( 'randonnee' ) ) {
-        wp_enqueue_script( 'rando-nono-archive-map', $theme_uri . '/assets/js/pages/archive-map.js', array( 'leaflet' ), rando_nono_asset_ver( '/assets/js/pages/archive-map.js' ), true );
+        wp_enqueue_script( 'rando-nono-archive-map', $theme_uri . '/assets/js/pages/archive-map.js', array( 'leaflet' ), rando_nono_asset_ver( '/assets/js/pages/archive-map.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
     }
 }
 add_action( 'wp_enqueue_scripts', 'rando_nono_assets' );
@@ -169,6 +169,23 @@ function rando_nono_alleger_front() {
     // gardent : la barre d'admin en a besoin.
     if ( ! is_user_logged_in() ) {
         wp_dequeue_style( 'dashicons' );
+    }
+
+    // SocialFeeds (et sa version Pro) charge sur TOUTES les pages ses
+    // styles, ses scripts et jQuery + jQuery Migrate (37 Ko bloquant le
+    // rendu, ~1,3 s sur mobile d'après Lighthouse, 21/11/2026), alors
+    // qu'aucun contenu du site n'affiche de flux. On ne les garde que sur une
+    // page dont le contenu contient un bloc ou un shortcode SocialFeeds.
+    $contenu = is_singular() ? (string) get_post_field( 'post_content', get_queried_object_id() ) : '';
+    if ( false === stripos( $contenu, 'socialfeeds' ) ) {
+        foreach ( array( 'socialfeeds-frontend', 'socialfeeds-pro-frontend' ) as $handle ) {
+            wp_dequeue_script( $handle );
+            wp_dequeue_style( $handle );
+        }
+        // jQuery ne partira que si plus aucun script ne le demande.
+        if ( ! is_user_logged_in() ) {
+            wp_dequeue_script( 'jquery' );
+        }
     }
 }
 add_action( 'wp_enqueue_scripts', 'rando_nono_alleger_front', 100 );

@@ -170,7 +170,7 @@ function rando_nono_ga_assets() {
     $theme_version = wp_get_theme()->get( 'Version' );
 
     wp_enqueue_style( 'rando-nono-cookie-consent', $theme_uri . '/assets/css/components/cookie-consent.css', array( 'rando-nono-style' ), $theme_version );
-    wp_enqueue_script( 'rando-nono-cookie-consent', $theme_uri . '/assets/js/components/cookie-consent.js', array(), $theme_version, true );
+    wp_enqueue_script( 'rando-nono-cookie-consent', $theme_uri . '/assets/js/components/cookie-consent.js', array(), $theme_version, array( 'in_footer' => true, 'strategy' => 'defer' ) );
     wp_localize_script( 'rando-nono-cookie-consent', 'randoNonoGA', array(
         'id'        => $ga_id,
         'fbPixelId' => $fb_id,

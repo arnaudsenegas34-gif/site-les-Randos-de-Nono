@@ -37,6 +37,9 @@ if ( $photos_raw ) {
             'loading'    => 'lazy',
             'decoding'   => 'async',
             'data-index' => $photo_index,
+            // Vignettes de la galerie : 3 colonnes. Le navigateur prend une
+            // petite taille du srcset ; la visionneuse garde l'attribut src (grand).
+            'sizes'      => '(max-width: 600px) 34vw, (max-width: 1000px) 30vw, 320px',
         ) );
         if ( $tag ) {
             $photos_urls[] = $tag;
@@ -78,7 +81,21 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
 <!-- HERO -->
 <section class="sr-hero">
   <?php if ( $thumb_large_tag ) : ?>
-    <?php echo $thumb_large_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
+    <?php
+    // Sur mobile, le srcset de « rando-hero » (16:9) ne contient que le
+    // 1600 px : les autres tailles générées sont en 4:3 et WordPress les écarte.
+    // Le téléphone téléchargeait donc 300 Ko pour une image de 412 px (LCP
+    // 8,2 s). L'en-tête est recadré en CSS (object-fit: cover) : une taille 4:3
+    // de 768 px convient très bien sous 800 px de large.
+    $hero_mobile = has_post_thumbnail( $id ) ? wp_get_attachment_image_src( get_post_thumbnail_id( $id ), 'medium_large' ) : false;
+    if ( $hero_mobile && ! empty( $hero_mobile[0] ) ) : ?>
+      <picture class="sr-hero-picture">
+        <source media="(max-width: 800px)" srcset="<?php echo esc_url( $hero_mobile[0] ); ?>">
+        <?php echo $thumb_large_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
+      </picture>
+    <?php else : ?>
+      <?php echo $thumb_large_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par get_the_post_thumbnail(), déjà échappé par WordPress ?>
+    <?php endif; ?>
   <?php else : ?>
     <div class="sr-hero-img sr-hero-placeholder"></div>
   <?php endif; ?>

@@ -27,8 +27,23 @@
   };
   var JOURS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 
+  // Le suivi GPS en direct peut demander la carte avant qu'on ait fait
+  // défiler jusqu'à elle.
+  window.srEnsureMap = function () { initMap(); };
+
   function init() {
-    initMap();
+    // La carte (tuiles + trace GPX, parfois 500 Ko) et le profil ne sont
+    // chargés qu'à l'approche de la section : la photo d'en-tête et le texte
+    // passent d'abord.
+    var mapEl = document.getElementById('sr-map');
+    if (mapEl && 'IntersectionObserver' in window) {
+      var obs = new IntersectionObserver(function (entries) {
+        if (entries.some(function (e) { return e.isIntersecting; })) { obs.disconnect(); initMap(); }
+      }, { rootMargin: '600px 0px' });
+      obs.observe(mapEl);
+    } else {
+      initMap();
+    }
     initMeteo();
     initLightbox();
     initShare();
@@ -36,9 +51,12 @@
   }
 
   /* ── Carte Leaflet ── */
+  var mapLancee = false;
   function initMap() {
+    if (mapLancee) return;
     var mapEl = document.getElementById('sr-map');
     if (!mapEl || typeof L === 'undefined') return;
+    mapLancee = true;
 
     var lat = parseFloat(mapEl.dataset.lat);
     var lon = parseFloat(mapEl.dataset.lon);

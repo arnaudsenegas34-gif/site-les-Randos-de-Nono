@@ -321,6 +321,7 @@
 
   /* ── Carte Leaflet ── */
   function redrawPath() {
+    if (!window.srMap && window.srEnsureMap) window.srEnsureMap();
     if (typeof L === 'undefined' || !window.srMap || !state.points.length) return;
     var latlngs = state.points.map(function (p) { return [p.lat, p.lon]; });
 
@@ -335,6 +336,7 @@
   }
 
   function moveMeMarker(lat, lon) {
+    if (!window.srMap && window.srEnsureMap) window.srEnsureMap();
     if (typeof L === 'undefined' || !window.srMap) return;
     if (!state.meMarker) {
       var icon = L.divIcon({ className: '', html: '<div class="sr-track-me-marker"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
