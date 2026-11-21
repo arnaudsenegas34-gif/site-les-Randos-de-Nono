@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.12.1
+Version: 6.13
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1503,7 +1503,7 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .post-type-archive-randonnee .randos-grid .badge,
   .search .randos-grid .badge { font-size: 0.6rem; padding: 0.2rem 0.45rem; }
   .post-type-archive-randonnee .randos-grid .card-fav-btn,
-  .search .randos-grid .card-fav-btn { width: 30px; height: 30px; top: auto; bottom: 0.4rem; right: 0.4rem; }
+  .search .randos-grid .card-fav-btn { width: 44px; height: 44px; top: auto; bottom: 0.3rem; right: 0.3rem; }
   .post-type-archive-randonnee .randos-grid .card-meta,
   .search .randos-grid .card-meta { font-size: 0.72rem; gap: 0.25rem 0.6rem; }
 }
@@ -1625,3 +1625,34 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .cta-newsletter-titre { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; color: var(--accent); font-size: 1.2rem !important; margin-bottom: 0.2rem !important; }
 .cta-newsletter-btn { flex-shrink: 0; }
 #newsletter-heading { scroll-margin-top: 90px; }
+
+/* ══════════════════════ ERGONOMIE (v6.13) ══════════════════════ */
+/* Accueil : flèche pour descendre sous la grande photo */
+.hero { position: relative; }
+.hero-suite {
+  position: absolute; left: 50%; bottom: 1.1rem; transform: translateX(-50%); z-index: 3;
+  display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+  color: #FAF8F3; text-decoration: none; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em;
+  text-shadow: 0 1px 6px rgba(0,0,0,.5); padding: 0.4rem 0.8rem; min-height: 44px;
+}
+.hero-suite .icon-svg { width: 26px; height: 26px; animation: hero-suite-rebond 2.2s ease-in-out infinite; }
+@keyframes hero-suite-rebond { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .hero-suite .icon-svg { animation: none; } }
+@media (max-height: 560px) { .hero-suite { display: none; } }
+
+/* Toutes les randos : filtres repliables (bouton sur mobile, ouverts sur ordinateur) */
+.archive-filtres-details { margin-bottom: 1.2rem; }
+.archive-filtres-summary {
+  display: flex; align-items: center; gap: 0.5rem; cursor: pointer; list-style: none;
+  font-weight: 700; color: var(--accent); padding: 0.8rem 1rem; min-height: 44px;
+  border: 1.5px solid var(--ligne); border-radius: var(--r-md); background: var(--surface-alt);
+}
+.archive-filtres-summary::-webkit-details-marker { display: none; }
+.archive-filtres-summary::after { content: '▾'; margin-left: auto; transition: transform .2s; }
+.archive-filtres-details[open] .archive-filtres-summary { margin-bottom: 0.8rem; }
+.archive-filtres-details[open] .archive-filtres-summary::after { transform: rotate(180deg); }
+.archive-filtres-summary .icon-svg { width: 18px; height: 18px; }
+.archive-filtres-nb { background: var(--orange); color: #fff; border-radius: var(--r-pill); font-size: 0.75rem; min-width: 1.4rem; text-align: center; padding: 0.05rem 0.4rem; }
+@media (min-width: 901px) {
+  .archive-filtres-summary { display: none; }
+}

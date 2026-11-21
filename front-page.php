@@ -57,6 +57,8 @@ $hero_id      = rando_nono_hero_attachment_id();
       <a class="btn btn-outline" href="#matos">Le matos de Nono</a>
     </div>
   </div>
+  <?php // Sur téléphone, la photo occupe tout l'écran : une flèche invite à descendre. ?>
+  <a class="hero-suite" href="#regions"><span>Par où commencer</span> <?php echo rando_nono_icon( 'chevron-down' ); ?></a>
 </section>
 
 <!-- ════════ PREUVE SOCIALE ════════ -->

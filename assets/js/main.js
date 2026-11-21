@@ -127,6 +127,9 @@
       if (e.target.name === 'difficulte' || e.target.name === 'tri') filtres.submit();
     });
   }
+  // Filtres repliés sur mobile seulement : ouverts d'office sur grand écran.
+  var filtresDetails = document.getElementById('archive-filtres-details');
+  if (filtresDetails && window.matchMedia('(min-width: 901px)').matches) filtresDetails.open = true;
 
   /* Page Guides & récits : filtre des récits par département, sans recharger. */
   var guidesFiltre = document.querySelector('.guides-filtre');

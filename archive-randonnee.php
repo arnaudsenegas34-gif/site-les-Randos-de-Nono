@@ -145,6 +145,14 @@ if ( $map_query->have_posts() ) {
       // qu'on venait de demander, en repassant devant le formulaire et la
       // carte. L'ancre y ramène directement.
       ?>
+      <?php
+      // Sur mobile, les filtres (recherche, pastilles, deux curseurs, tri)
+      // passaient avant le premier résultat : ils sont repliés derrière un
+      // bouton qui indique combien sont actifs. Ouverts d'office sur ordinateur.
+      $nb_filtres = (int) (bool) $selected_diff + (int) (bool) $search_term + (int) $distance_filter_active + (int) $denivele_filter_active + (int) ( 'recent' !== $selected_tri );
+      ?>
+      <details class="archive-filtres-details" id="archive-filtres-details"<?php echo $nb_filtres ? ' open' : ''; ?>>
+      <summary class="archive-filtres-summary"><?php echo rando_nono_icon( 'search' ); ?> Filtrer et trier<?php if ( $nb_filtres ) : ?> <span class="archive-filtres-nb"><?php echo esc_html( $nb_filtres ); ?></span><?php endif; ?></summary>
       <form method="get" action="#resultats" class="archive-filters">
     <div class="filter-group">
       <label for="recherche">Recherche</label>
@@ -189,6 +197,7 @@ if ( $map_query->have_posts() ) {
       <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="filter-reset">Réinitialiser</a>
     <?php endif; ?>
   </form>
+      </details>
 
   <!-- ════════ CARTE D'ENSEMBLE ════════ -->
   <?php if ( ! empty( $map_markers ) ) : ?>

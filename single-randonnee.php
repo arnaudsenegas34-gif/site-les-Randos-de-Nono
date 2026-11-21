@@ -189,6 +189,23 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       <?php endif; ?>
     </div>
 
+    <?php
+    // Sommaire : la fiche fait une dizaine d'écrans sur mobile. Un lien par
+    // section présente, pour sauter directement aux photos, au sac ou à la carte.
+    $sommaire_fiche = array();
+    if ( ! empty( $photos_urls ) )    $sommaire_fiche['photos']   = 'Photos';
+    if ( ! empty( $sac_items ) )      $sommaire_fiche['sac']      = 'Dans le sac';
+    if ( ! empty( $conseils_items ) ) $sommaire_fiche['conseils'] = 'Conseils';
+    if ( $lat && $lon )               $sommaire_fiche['carte']    = 'Carte';
+    if ( $lat && $lon )               $sommaire_fiche['meteo']    = 'Météo';
+    $sommaire_fiche['avis'] = 'Avis';
+    ?>
+    <nav class="sr-sommaire sr-no-print" aria-label="Aller à une section de la fiche">
+      <?php foreach ( $sommaire_fiche as $ancre => $libelle ) : ?>
+        <a href="#<?php echo esc_attr( $ancre ); ?>"><?php echo esc_html( $libelle ); ?></a>
+      <?php endforeach; ?>
+    </nav>
+
     <!-- FICHE IMPRIMABLE / PDF -->
     <div class="sr-print-bar sr-no-print">
       <button type="button" class="btn btn-sm sr-btn-outline" id="sr-print-btn">
@@ -201,6 +218,18 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     <?php if ( get_the_content() ) : ?>
     <div class="sr-content">
       <?php the_content(); ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- GALERIE PHOTOS -->
+    <?php if ( ! empty( $photos_urls ) ) : ?>
+    <div class="sr-photos-section" id="photos">
+      <h2 class="sr-section-title">Photos</h2>
+      <div class="sr-photos-grid">
+        <?php foreach ( $photos_urls as $photo_tag ) : ?>
+          <?php echo $photo_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par wp_get_attachment_image(), déjà échappé par WordPress ?>
+        <?php endforeach; ?>
+      </div>
     </div>
     <?php endif; ?>
 
@@ -229,7 +258,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     ?>
     <!-- SAC -->
     <?php if ( ! empty( $sac_items ) ) : ?>
-    <div class="sr-sac-section">
+    <div class="sr-sac-section" id="sac">
       <h2 class="sr-section-title"><?php echo rando_nono_icon( 'backpack' ); ?> Dans le sac</h2>
       <ul class="sr-sac-list">
         <?php foreach ( $sac_items as $item ) : ?>
@@ -241,7 +270,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
 
     <!-- CONSEILS -->
     <?php if ( ! empty( $conseils_items ) ) : ?>
-    <div class="sr-conseils-section">
+    <div class="sr-conseils-section" id="conseils">
       <h2 class="sr-section-title"><?php echo rando_nono_icon( 'lightbulb' ); ?> Conseils</h2>
       <ul class="sr-conseils-list">
         <?php foreach ( $conseils_items as $conseil ) : ?>
@@ -252,7 +281,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     <?php endif; ?>
 
     <?php if ( $lat && $lon ) : ?>
-    <div class="sr-map-section">
+    <div class="sr-map-section" id="carte">
       <h2 class="sr-section-title"><?php echo rando_nono_icon( 'map' ); ?> Localisation</h2>
       <div class="sr-map" id="sr-map"
            data-lat="<?php echo esc_attr( $lat ); ?>"
@@ -355,21 +384,9 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
       </div>
     </div>
 
-    <!-- GALERIE PHOTOS -->
-    <?php if ( ! empty( $photos_urls ) ) : ?>
-    <div class="sr-photos-section">
-      <h2 class="sr-section-title">Photos</h2>
-      <div class="sr-photos-grid">
-        <?php foreach ( $photos_urls as $photo_tag ) : ?>
-          <?php echo $photo_tag; // phpcs:ignore WordPress.Security.EscapeOutput -- généré par wp_get_attachment_image(), déjà échappé par WordPress ?>
-        <?php endforeach; ?>
-      </div>
-    </div>
-    <?php endif; ?>
-
     <!-- METEO -->
     <?php if ( $lat && $lon ) : ?>
-    <div class="sr-meteo-section">
+    <div class="sr-meteo-section" id="meteo">
       <h2 class="sr-section-title"><?php echo rando_nono_icon( 'thermometer' ); ?> M&eacute;t&eacute;o en temps r&eacute;el</h2>
       <div id="sr-meteo" data-lat="<?php echo esc_attr( $lat ); ?>" data-lon="<?php echo esc_attr( $lon ); ?>" data-lieu="<?php echo esc_attr( $lieu ); ?>" aria-busy="true" aria-label="Chargement de la m&eacute;t&eacute;o">
         <div class="meteo-skeleton">
