@@ -231,3 +231,36 @@ function rando_nono_force_pretty_permalinks() {
 }
 add_action( 'after_switch_theme', 'rando_nono_force_pretty_permalinks' );
 
+
+/**
+ * Loginizer — validation unique du fournisseur Google (21/11/2026).
+ *
+ * Avec ses propres clés Google, Loginizer laisse Google en « Pending » tant que
+ * son bouton « Test Now » n'a pas abouti, et n'affiche alors aucun bouton sur
+ * la page de connexion. Sur cet hébergement, le test perd son drapeau en route
+ * (stockage de 60 s) : la connexion Google réussit, mais Loginizer la traite
+ * comme une connexion normale et ne marque jamais le fournisseur « testé ».
+ *
+ * Cette fonction pose ce marqueur une seule fois, pour un administrateur
+ * connecté, si Google est activé avec un ID client et un secret. Elle ne
+ * repasse plus ensuite (option rando_nono_lz_google_valide) : si les clés
+ * changent plus tard, Loginizer redemandera un test comme prévu.
+ * À retirer quand le bouton Google est revenu sur la page de connexion.
+ */
+function rando_nono_valider_google_loginizer() {
+    if ( get_option( 'rando_nono_lz_google_valide' ) ) return;
+    if ( ! current_user_can( 'manage_options' ) ) return;
+
+    $reglages = get_option( 'loginizer_provider_settings', array() );
+    if ( ! is_array( $reglages ) ) return;
+
+    foreach ( $reglages as $cle => $fournisseur ) {
+        if ( 'google' !== strtolower( (string) $cle ) || ! is_array( $fournisseur ) ) continue;
+        if ( empty( $fournisseur['enabled'] ) || empty( $fournisseur['client_id'] ) || empty( $fournisseur['client_secret'] ) ) return;
+        $reglages[ $cle ]['tested'] = true;
+        update_option( 'loginizer_provider_settings', $reglages );
+        update_option( 'rando_nono_lz_google_valide', current_time( 'mysql' ), false );
+        return;
+    }
+}
+add_action( 'admin_init', 'rando_nono_valider_google_loginizer' );
