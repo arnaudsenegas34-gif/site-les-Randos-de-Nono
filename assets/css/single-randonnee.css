@@ -758,7 +758,7 @@
   font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: var(--r-pill);
   border: 1.5px solid var(--ligne); color: var(--accent);
 }
-.art-etiquette-recit { background: #F7E6CF; border-color: transparent; color: var(--orange-texte); }
+.art-etiquette-recit { background: #F7E6CF; background: color-mix(in srgb, var(--orange-texte) 14%, transparent); border-color: transparent; color: var(--orange-texte); }
 .art-meta { font-size: 0.8rem; color: var(--gris); margin: -0.2rem 0 1.2rem; }
 .art-photo { width: 100%; height: auto; border-radius: var(--r-md); margin-bottom: 1.2rem; display: block; }
 
