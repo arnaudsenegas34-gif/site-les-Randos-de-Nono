@@ -55,28 +55,40 @@ function rando_nono_document_title_parts( $title ) {
     $overhead = mb_strlen( ' | ' . get_bloginfo( 'name' ) );
     $budget   = max( 25, 60 - $overhead );
 
+    // Titre long : on retire « | Les Randos de Nono » plutôt que de couper le
+    // titre à 39 caractères. Un titre tronqué (« Lac de la Sassière (Tignes) :… »)
+    // perd ses mots-clés ; le nom du site, lui, apparaît déjà dans l'URL et le
+    // nom de site affiché par Google.
+    $sans_nom_si_long = function( $texte ) use ( &$title, $budget ) {
+        if ( mb_strlen( $texte ) <= $budget ) return $texte;
+        unset( $title['site'] );
+        return rando_nono_trim_title( $texte, 60 );
+    };
+
     if ( is_singular( 'randonnee' ) ) {
         global $post;
-        $lieu       = get_post_meta( $post->ID, 'rando_lieu', true );
+        $lieu_court = get_post_meta( $post->ID, 'rando_lieu_court', true );
         $base_title = get_the_title();
-        $with_lieu  = $lieu ? $base_title . ' — ' . $lieu : $base_title;
+        // Le lieu n'est ajouté que s'il manque au titre et qu'il tient dans le budget.
+        $with_lieu  = ( $lieu_court && false === mb_stripos( $base_title, $lieu_court ) )
+            ? $base_title . ' — ' . $lieu_court
+            : $base_title;
         $title['title'] = ( mb_strlen( $with_lieu ) <= $budget )
             ? $with_lieu
-            : rando_nono_trim_title( $base_title, $budget );
+            : $sans_nom_si_long( $base_title );
     } elseif ( is_front_page() ) {
         $title['title']   = 'Les Randos de Nono';
         $title['tagline'] = 'carnet de randonnée & traces GPX';
     } elseif ( is_post_type_archive( 'randonnee' ) ) {
         $title['title'] = rando_nono_trim_title( 'Toutes les randonnées avec trace GPX', $budget );
     } elseif ( is_singular( 'matos' ) ) {
-        $title['title'] = rando_nono_trim_title( get_the_title() . ' — matériel testé', $budget );
+        $title['title'] = $sans_nom_si_long( get_the_title() . ' — matériel testé' );
     } elseif ( is_page() ) {
-        $title['title'] = rando_nono_trim_title( get_the_title(), $budget );
+        $title['title'] = $sans_nom_si_long( get_the_title() );
     } elseif ( is_singular( 'post' ) ) {
-        // Les articles passaient sans troncature : « Bien choisir ses
-        // chaussures de randonnée | Les Randos de Nono » faisait 61 caractères,
-        // au-delà de ce que Google affiche.
-        $title['title'] = rando_nono_trim_title( get_the_title(), $budget );
+        // Budget de 60 caractères au total : nom du site si ça tient, sinon
+        // le titre seul (jamais un titre coupé à 39 caractères).
+        $title['title'] = $sans_nom_si_long( get_the_title() );
     }
     return $title;
 }
@@ -150,7 +162,12 @@ function rando_nono_seo_meta_tags() {
         // Pas de « Randonnée Randonnée … » quand le titre commence déjà par « Randonnée »/« Rando ».
         $titre  = get_the_title();
         $phrase = preg_match( '/^rando/iu', $titre ) ? $titre : 'Randonnée ' . $titre;
-        if ( $lieu )       $phrase .= ' à ' . $lieu;
+        // Lieu court (« Tignes (Savoie) ») de préférence : le lieu complet
+        // répétait le titre et la région (« à Lac de la Sassière, Tignes, Savoie,
+        // Auvergne-Rhône-Alpes »). Rien n'est ajouté si le titre le contient déjà.
+        $lieu_court = get_post_meta( $post->ID, 'rando_lieu_court', true );
+        $lieu_desc  = $lieu_court ? $lieu_court : $lieu;
+        if ( $lieu_desc && false === mb_stripos( $titre, $lieu_court ? $lieu_court : '§' ) ) $phrase .= ' à ' . $lieu_desc;
         if ( $difficulte ) $phrase .= ', niveau ' . $difficulte;
         $stats = array_filter( array( $distance, $duree ) );
         if ( $stats )      $phrase .= ' (' . implode( ', ', $stats ) . ')';
