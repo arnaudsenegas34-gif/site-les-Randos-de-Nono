@@ -81,13 +81,13 @@ function rando_nono_preload_hero_image() {
 
 /**
  * Photo du hero de l'accueil : une vraie photo de sortie prise dans la
- * médiathèque (par défaut le lac de la Sassière, n° 287), à la place de
- * l'illustration livrée avec le thème. Modifiable sans toucher au code :
+ * médiathèque, à la place de
+ * l'image d'origine du thème, que garde Arnaud (21/11/2026). Activable sans code :
  * option « rando_nono_hero_id » (n° de la photo dans Médias). Si la photo
  * n'existe plus, le thème revient à l'illustration d'origine.
  */
 function rando_nono_hero_attachment_id() {
-    $id = (int) get_option( 'rando_nono_hero_id', 287 );
+    $id = (int) get_option( 'rando_nono_hero_id', 0 );
     return ( $id && wp_attachment_is_image( $id ) ) ? $id : 0;
 }
 add_action( 'wp_head', 'rando_nono_preload_hero_image', 1 );
