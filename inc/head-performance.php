@@ -67,9 +67,28 @@ add_action( 'wp_head', 'rando_nono_resource_hints', 1 );
  */
 function rando_nono_preload_hero_image() {
     if ( ! is_front_page() ) return;
-    $theme_uri = get_template_directory_uri();
+    $hero_id = rando_nono_hero_attachment_id();
+    if ( $hero_id ) {
+        $srcset = wp_get_attachment_image_srcset( $hero_id, 'full' );
+        if ( $srcset ) {
+            echo '<link rel="preload" as="image" imagesrcset="' . esc_attr( $srcset ) . '" imagesizes="100vw" fetchpriority="high">' . "\n";
+            return;
+        }
+    }
     $srcset = rando_nono_hero_srcset( 'webp' );
     echo '<link rel="preload" as="image" imagesrcset="' . esc_attr( $srcset ) . '" imagesizes="100vw" fetchpriority="high" type="image/webp">' . "\n";
+}
+
+/**
+ * Photo du hero de l'accueil : une vraie photo de sortie prise dans la
+ * médiathèque (par défaut le lac de la Sassière, n° 287), à la place de
+ * l'illustration livrée avec le thème. Modifiable sans toucher au code :
+ * option « rando_nono_hero_id » (n° de la photo dans Médias). Si la photo
+ * n'existe plus, le thème revient à l'illustration d'origine.
+ */
+function rando_nono_hero_attachment_id() {
+    $id = (int) get_option( 'rando_nono_hero_id', 287 );
+    return ( $id && wp_attachment_is_image( $id ) ) ? $id : 0;
 }
 add_action( 'wp_head', 'rando_nono_preload_hero_image', 1 );
 

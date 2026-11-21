@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.5.1
+Version: 6.6
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1399,3 +1399,60 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
    remplace pas le contraste du texte. */
 .newsletter-band .form-legal { color: var(--beige); }
 .newsletter-band .form-legal a { color: var(--beige); font-weight: 600; }
+
+/* ══════════════════════ REFONTE ACCUEIL (v6.6) ══════════════════════ */
+/* Bandeau du hero lisible sur une vraie photo : plus gras, plus clair, et un
+   voile plus marqué en bas, là où se trouve le texte. */
+.hero-eyebrow { font-weight: 700; color: var(--orange-clair); text-shadow: 0 1px 8px rgba(0,0,0,0.45); }
+.hero::after {
+  background:
+    linear-gradient(180deg,
+      rgba(26,46,31,0.25) 0%,
+      rgba(26,46,31,0) 28%,
+      rgba(26,46,31,0.35) 58%,
+      rgba(26,46,31,0.88) 100%);
+}
+@media (min-width: 900px) {
+  .hero::after {
+    background:
+      linear-gradient(90deg, rgba(26,46,31,0.80) 0%, rgba(26,46,31,0.45) 38%, rgba(26,46,31,0) 68%),
+      linear-gradient(180deg, rgba(26,46,31,0.25) 0%, rgba(26,46,31,0) 30%);
+  }
+}
+.hero-credit {
+  position: absolute; z-index: 2; right: 1rem; top: 1rem; margin: 0;
+  font-size: 0.68rem; color: #fff; background: rgba(26,46,31,0.6);
+  padding: 0.25rem 0.7rem; border-radius: var(--r-pill);
+}
+@media (min-width: 900px) { .hero-credit { top: auto; bottom: 1.2rem; right: 1.5rem; } }
+
+/* Bande de chiffres réels */
+.trust-bar { background: var(--vert); color: #fff; border-bottom: 0; gap: 0.6rem 2.6rem; }
+.trust-chiffre { gap: 0.45rem; align-items: baseline; }
+.trust-chiffre strong { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-weight: 400; font-size: 1.45rem; color: var(--orange-clair); }
+.trust-bar .trust-instagram, .trust-bar .trust-stars { color: #fff; }
+@media (max-width: 600px) {
+  .trust-bar { gap: 0.4rem 1.2rem; padding-block: 0.9rem; }
+  .trust-chiffre { flex-direction: column; align-items: center; gap: 0; font-size: 0.72rem; }
+  .trust-bar .trust-instagram { flex-basis: 100%; justify-content: center; }
+}
+
+/* Randonner par région */
+.regions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; }
+@media (max-width: 900px) { .regions-grid { grid-template-columns: 1fr; } }
+.region-card {
+  position: relative; display: flex; align-items: flex-end; min-height: 170px;
+  border-radius: var(--r-md); overflow: hidden; color: #fff; text-decoration: none;
+  background: var(--sombre); box-shadow: var(--shadow-1);
+}
+.region-card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+.region-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(26,46,31,0.88) 0%, rgba(26,46,31,0.1) 75%); }
+.region-card:hover .region-card-img, .region-card:focus-visible .region-card-img { transform: scale(1.04); }
+.region-card-body { position: relative; z-index: 1; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.region-card-title { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 1.5rem; line-height: 1.1; }
+.region-card-text { font-size: 0.8rem; opacity: 0.95; }
+.region-card-count {
+  position: absolute; z-index: 1; top: 0.75rem; right: 0.75rem; font-size: 0.72rem; font-weight: 700;
+  background: #FAF8F3; color: #2E5E3B; padding: 0.25rem 0.65rem; border-radius: var(--r-pill);
+}
+@media (prefers-reduced-motion: reduce) { .region-card-img { transition: none; } }

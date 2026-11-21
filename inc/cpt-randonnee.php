@@ -37,6 +37,17 @@ function rando_nono_difficulte_rang( $terme ) {
 }
 
 /**
+ * Rang du terme, ou rang par défaut d'après son nom si le champ « Niveau »
+ * n'a pas été rempli dans l'admin (échelle maison du plus facile au plus dur).
+ */
+function rando_nono_difficulte_rang_ou_defaut( $terme ) {
+    $rang = rando_nono_difficulte_rang( $terme );
+    if ( $rang ) return $rang;
+    $defaut = array( 'simpliste' => 1, 'ca-pique-un-peu' => 2, 'ca-se-corse' => 3, 'tu-vas-ten-souvenir' => 4, 'pourquoi-tu-tinfliges-ca' => 5 );
+    return ( is_object( $terme ) && isset( $defaut[ $terme->slug ] ) ) ? $defaut[ $terme->slug ] : 0;
+}
+
+/**
  * Nombre de niveaux de l'échelle — le dénominateur du repère « 2/4 ».
  */
 function rando_nono_difficulte_total() {

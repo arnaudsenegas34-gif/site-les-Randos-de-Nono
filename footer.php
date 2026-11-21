@@ -53,7 +53,7 @@ $rando_nono_nl_status = isset( $_GET['newsletter'] ) ? sanitize_key( $_GET['news
 <footer class="site-footer">
   <div class="footer-col footer-brand">
     <div class="logo">Les Randos de <span>Nono</span></div>
-    <p>Traces GPX & récits de rando · Hérault, France</p>
+    <p>Traces GPX & récits de rando · <?php echo esc_html( rando_nono_departements_libelle( rando_nono_get_homepage_stats() ) ); ?></p>
   </div>
 
   <nav class="footer-nav" aria-label="Liens rapides">

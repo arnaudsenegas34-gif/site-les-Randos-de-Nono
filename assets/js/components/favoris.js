@@ -53,7 +53,9 @@
         e.preventDefault();
         e.stopPropagation();
         var added = toggleFavori(id);
-        updateBtnState(btn, added);
+        // Plusieurs boutons pour la même rando (cœur de la photo et barre
+        // mobile) : ils changent tous ensemble.
+        document.querySelectorAll('.js-favori-btn[data-id="' + id + '"]').forEach(function (b) { updateBtnState(b, added); });
       });
     });
   }

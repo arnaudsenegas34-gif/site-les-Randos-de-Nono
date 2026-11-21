@@ -697,3 +697,47 @@
   text-align: center;
   box-shadow: 0 6px 18px -6px rgba(0,0,0,0.5);
 }
+
+/* ══════════ REFONTE FICHE (v6.6) ══════════ */
+/* Jauge de difficulté */
+.sr-diff-jauge {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--surface-alt); border-radius: var(--r-md);
+  padding: 0.85rem 1.1rem; margin-bottom: 1.2rem; box-shadow: var(--hairline);
+}
+.sr-diff-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris); }
+.sr-diff-nom { font-weight: 700; color: var(--accent); text-decoration: none; font-size: 1.02rem; }
+.sr-diff-nom:hover { text-decoration: underline; }
+.sr-diff-barres { display: flex; gap: 5px; margin-left: auto; }
+.sr-diff-barres span { width: 26px; height: 8px; border-radius: var(--r-pill); background: var(--ligne); }
+.sr-diff-barres span.on { background: var(--accent); }
+.sr-diff-n { font-size: 0.85rem; color: var(--gris); min-width: 2.2em; text-align: right; }
+
+/* Barre d'actions fixe en bas, sur mobile uniquement */
+.sr-barre-mobile { display: none; }
+@media (max-width: 900px) {
+  .sr-barre-mobile {
+    display: flex; gap: 0.6rem; position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+    padding: 0.7rem 0.9rem calc(0.7rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--bg) 96%, transparent);
+    box-shadow: 0 -6px 20px rgba(26,46,31,0.15);
+    backdrop-filter: blur(6px);
+  }
+  body:has(.sr-barre-mobile) { padding-bottom: 76px; }
+  .sr-barre-btn {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    padding: 0.8rem 0.5rem; border-radius: var(--r-sm); font-weight: 700; font-size: 0.88rem;
+    color: #fff; text-decoration: none; min-height: 48px;
+  }
+  .sr-barre-btn .icon-svg { width: 18px; height: 18px; }
+  .sr-barre-gpx { background: var(--vert); }
+  .sr-barre-go { background: var(--orange-fond); }
+  .sr-barre-fav {
+    flex: 0 0 48px; height: 48px; border-radius: var(--r-sm); border: 1.5px solid var(--ligne);
+    background: transparent; color: var(--accent); display: grid; place-items: center; cursor: pointer;
+  }
+  .sr-barre-fav .icon-svg { width: 20px; height: 20px; }
+  .sr-barre-fav.is-favori { background: var(--orange); color: #fff; border-color: transparent; }
+  .sr-barre-fav.is-favori .icon-svg { fill: currentColor; }
+}
+@media print { .sr-barre-mobile { display: none !important; } }

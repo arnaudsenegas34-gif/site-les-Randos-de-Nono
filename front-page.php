@@ -5,12 +5,31 @@ get_header();
 // la barre de confiance juste en dessous.
 $randos_count = wp_count_posts( 'randonnee' )->publish;
 $global_avis  = rando_nono_get_avis_stats_global();
+$home_stats   = rando_nono_get_homepage_stats();
+$hero_id      = rando_nono_hero_attachment_id();
 ?>
 
 <main id="main-content">
 
 <!-- ════════ HERO ════════ -->
 <section class="hero" id="hero">
+  <?php if ( $hero_id ) :
+      // Vraie photo de sortie (médiathèque) : le srcset WordPress fournit la
+      // bonne largeur à chaque écran, en WebP.
+      $hero_caption = wp_get_attachment_caption( $hero_id );
+      ?>
+    <picture class="hero-bg-layer" id="hero-bg-layer">
+      <?php echo wp_get_attachment_image( $hero_id, 'full', false, array( // phpcs:ignore WordPress.Security.EscapeOutput -- généré et échappé par WordPress
+          'sizes'         => '100vw',
+          'fetchpriority' => 'high',
+          'loading'       => 'eager',
+          'decoding'      => 'async',
+      ) ); ?>
+    </picture>
+    <?php if ( $hero_caption ) : ?>
+      <p class="hero-credit"><span aria-hidden="true">📷</span> <?php echo esc_html( get_the_title( $hero_id ) ); ?></p>
+    <?php endif; ?>
+  <?php else : ?>
   <picture class="hero-bg-layer" id="hero-bg-layer">
     <source type="image/webp" srcset="<?php echo esc_attr( rando_nono_hero_srcset( 'webp' ) ); ?>" sizes="100vw">
     <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/img/responsive/hero-bg-1983.jpg' ); ?>"
@@ -19,10 +38,11 @@ $global_avis  = rando_nono_get_avis_stats_global();
          alt="Sentier de randonnée dans la garrigue de l'Hérault"
          fetchpriority="high" decoding="async">
   </picture>
+  <?php endif; ?>
   <div class="hero-inner">
-    <p class="hero-eyebrow">Hérault · Languedoc · et d'autres</p>
+    <p class="hero-eyebrow"><?php echo esc_html( rando_nono_departements_libelle( $home_stats ) ); ?></p>
     <h1>Les Randos de <span style="color:var(--beige)">Nono</span></h1>
-    <p class="hero-desc">Récits de randonnées, traces GPX à télécharger, météo en temps réel et les détails de chaque sortie.</p>
+    <p class="hero-desc">Mes randonnées racontées, avec la trace GPX, la météo en direct et le contenu de mon sac.</p>
     <?php
     // Le premier écran mobile ne proposait aucune action : image, titre,
     // sous-titre, puis il fallait faire défiler à l'aveugle pour découvrir
@@ -41,20 +61,64 @@ $global_avis  = rando_nono_get_avis_stats_global();
 
 <!-- ════════ PREUVE SOCIALE ════════ -->
 <section class="trust-bar" aria-label="Confiance">
-  <?php if ( $global_avis['total'] > 0 ) : ?>
+  <?php
+  // Une note « 5,0/5 sur 1 avis » rassure moins qu'elle n'interroge : les
+  // étoiles n'apparaissent qu'à partir de 5 avis. En attendant, les chiffres
+  // réels du carnet (randos, kilomètres, départements).
+  $nb_deps = isset( $home_stats['departements'] ) ? count( $home_stats['departements'] ) : 0;
+  ?>
+  <div class="trust-item trust-chiffre"><strong><?php echo esc_html( $randos_count ); ?></strong> <span>randos avec trace GPX</span></div>
+  <?php if ( ! empty( $home_stats['total_km'] ) ) : ?>
+    <div class="trust-item trust-chiffre"><strong><?php echo esc_html( number_format_i18n( round( $home_stats['total_km'] ) ) ); ?> km</strong> <span>parcourus</span></div>
+  <?php endif; ?>
+  <?php if ( $nb_deps > 1 ) : ?>
+    <div class="trust-item trust-chiffre"><strong><?php echo esc_html( $nb_deps ); ?></strong> <span>départements</span></div>
+  <?php endif; ?>
+  <?php if ( $global_avis['total'] >= 5 ) : ?>
     <div class="trust-item">
       <span class="trust-stars" aria-hidden="true"><?php echo str_repeat( '★', (int) round( $global_avis['moyenne'] ) ) . str_repeat( '☆', 5 - (int) round( $global_avis['moyenne'] ) ); ?></span>
       <span><strong><?php echo esc_html( number_format_i18n( $global_avis['moyenne'], 1 ) ); ?>/5</strong> sur <?php echo esc_html( $global_avis['total'] ); ?> avis de randonneurs</span>
     </div>
   <?php endif; ?>
-  <div class="trust-item">
-    <span><strong><?php echo esc_html( $randos_count ); ?></strong> randonnées documentées avec trace GPX</span>
-  </div>
   <a class="trust-item trust-instagram" href="https://www.instagram.com/a._.sng?igsh=MWpyYWVyazh6NWJ6dw==" target="_blank" rel="noopener noreferrer">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.048 1.79.218 2.428.465a4.9 4.9 0 0 1 1.771 1.153 4.9 4.9 0 0 1 1.153 1.771c.247.637.417 1.363.465 2.428.05 1.066.06 1.405.06 4.122s-.01 3.056-.06 4.122c-.048 1.065-.218 1.79-.465 2.428a4.9 4.9 0 0 1-1.153 1.771 4.9 4.9 0 0 1-1.771 1.153c-.637.247-1.363.417-2.428.465-1.066.05-1.405.06-4.122.06s-3.056-.01-4.122-.06c-1.065-.048-1.79-.218-2.428-.465a4.9 4.9 0 0 1-1.771-1.153 4.9 4.9 0 0 1-1.153-1.771c-.247-.637-.417-1.363-.465-2.428C2.01 15.056 2 14.717 2 12s.01-3.056.06-4.122c.048-1.065.218-1.79.465-2.428a4.9 4.9 0 0 1 1.153-1.771A4.9 4.9 0 0 1 5.45 2.525c.637-.247 1.363-.417 2.428-.465C8.944 2.01 9.283 2 12 2zm0 1.802c-2.67 0-2.986.01-4.04.058-.976.045-1.505.207-1.858.344-.467.182-.8.399-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.858-.048 1.054-.058 1.37-.058 4.04s.01 2.986.058 4.04c.045.976.207 1.505.344 1.858.182.467.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.858.344 1.054.048 1.37.058 4.04.058s2.986-.01 4.04-.058c.976-.045 1.505-.207 1.858-.344.467-.182.8-.399 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.858.048-1.054.058-1.37.058-4.04s-.01-2.986-.058-4.04c-.045-.976-.207-1.505-.344-1.858a3.09 3.09 0 0 0-.748-1.15 3.09 3.09 0 0 0-1.15-.748c-.353-.137-.882-.3-1.858-.344-1.054-.048-1.37-.058-4.04-.058zm0 3.063a5.135 5.135 0 1 1 0 10.27 5.135 5.135 0 0 1 0-10.27zm0 1.802a3.333 3.333 0 1 0 0 6.666 3.333 3.333 0 0 0 0-6.666zm5.338-1.802a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/></svg>
     Suis-moi sur Instagram
   </a>
 </section>
+
+<?php
+// ════════ RANDONNER PAR RÉGION ════════
+// Une porte d'entrée par coin, vers la page de synthèse de chaque région :
+// le visiteur choisit d'abord où il va, et ces liens internes aident Google à
+// relier les fiches d'un même secteur.
+$regions_accueil = rando_nono_regions_accueil( $home_stats );
+if ( count( $regions_accueil ) > 1 ) : ?>
+<section id="regions" class="site-section regions-section">
+  <div class="section-eyebrow">Par où commencer</div>
+  <h2 class="section-title">Randonner par région</h2>
+  <div class="divider"></div>
+  <p class="section-sub">Mes sorties regroupées par coin, avec un guide pour chaque région.</p>
+  <div class="regions-grid">
+    <?php foreach ( $regions_accueil as $reg ) : ?>
+      <a class="region-card" href="<?php echo esc_url( $reg['url'] ); ?>">
+        <?php if ( $reg['img'] ) {
+            echo wp_get_attachment_image( $reg['img'], 'rando-card', false, array( // phpcs:ignore WordPress.Security.EscapeOutput -- généré par WordPress
+                'class'   => 'region-card-img',
+                'alt'     => '',
+                'loading' => 'lazy',
+                'sizes'   => '(max-width: 900px) 100vw, 33vw',
+            ) );
+        } ?>
+        <span class="region-card-count"><?php echo esc_html( $reg['n'] . ' ' . $reg['mot'] ); ?></span>
+        <span class="region-card-body">
+          <span class="region-card-title"><?php echo esc_html( $reg['titre'] ); ?></span>
+          <span class="region-card-text"><?php echo esc_html( $reg['texte'] ); ?> <span aria-hidden="true">→</span></span>
+        </span>
+      </a>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
 
 <?php
 // Rando à la une (cochée) sinon la plus récente

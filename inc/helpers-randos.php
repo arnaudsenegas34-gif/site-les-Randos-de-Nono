@@ -53,7 +53,11 @@ function rando_nono_haversine_km( $lat1, $lon1, $lat2, $lon2 ) {
  * @return WP_Post[]
  */
 function rando_nono_get_related_randos( $post_id, $limit = 4 ) {
-    $cache_key = 'rando_nono_related_' . $post_id . '_' . $limit;
+    // La version dans la clé change à chaque publication ou modification d'une
+    // rando : sans elle, une fiche gardait 12 h sa liste calculée avant la
+    // mise en ligne de ses voisines (la Sassière proposait le Gard au lieu de
+    // l'Ouillette et de la passerelle, publiées le même jour).
+    $cache_key = 'rando_nono_related_' . (int) get_option( 'rando_nono_related_v', 1 ) . '_' . $post_id . '_' . $limit;
     $cached_ids = get_transient( $cache_key );
     if ( false !== $cached_ids ) {
         return array_filter( array_map( 'get_post', $cached_ids ) );
@@ -123,10 +127,11 @@ function rando_nono_extract_number( $text ) {
  * cache aveugle.
  */
 function rando_nono_get_homepage_stats() {
-    $cached = get_transient( 'rando_nono_homepage_stats' );
+    $cached = get_transient( 'rando_nono_homepage_stats_v2' );
     if ( false !== $cached ) return $cached;
 
     $regions         = array();
+    $departements    = array();
     $total_km        = 0;
     $total_deniv_pos = 0;
     $total_deniv_neg = 0;
@@ -144,7 +149,14 @@ function rando_nono_get_homepage_stats() {
                 if ( $region ) $regions[ strtolower( $region ) ] = true;
             }
 
-            $total_km        += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_distance', true ) ) );
+            // Département = texte entre parenthèses du lieu court (« Tignes (Savoie) »).
+            $lieu_court = get_post_meta( $sid, 'rando_lieu_court', true );
+            if ( $lieu_court && preg_match( '/\(([^)]+)\)\s*$/u', $lieu_court, $dm ) ) {
+                $dep = trim( $dm[1] );
+                $departements[ $dep ] = isset( $departements[ $dep ] ) ? $departements[ $dep ] + 1 : 1;
+            }
+
+            $total_km       += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_distance', true ) ) );
             $total_deniv_pos += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_denivele', true ) ) );
             $total_deniv_neg += abs( rando_nono_extract_number( get_post_meta( $sid, 'rando_denivele_neg', true ) ) );
         }
@@ -156,9 +168,46 @@ function rando_nono_get_homepage_stats() {
         'deniv_pos'     => $total_deniv_pos,
         'deniv_neg'     => $total_deniv_neg,
         'regions_count' => count( $regions ),
+        'departements'  => $departements,
     );
-    set_transient( 'rando_nono_homepage_stats', $stats, DAY_IN_SECONDS );
+    set_transient( 'rando_nono_homepage_stats_v2', $stats, DAY_IN_SECONDS );
     return $stats;
+}
+
+/**
+ * Bandeau du hero : les départements où il y a des randos, du plus fourni au
+ * moins fourni (3 au plus), au lieu d'un texte figé qui oubliait la Savoie.
+ */
+function rando_nono_departements_libelle( $stats ) {
+    $deps = isset( $stats['departements'] ) ? $stats['departements'] : array();
+    if ( ! $deps ) return 'Hérault · Languedoc · et ailleurs';
+    arsort( $deps );
+    return implode( ' · ', array_slice( array_keys( $deps ), 0, 3 ) );
+}
+
+/**
+ * Cartes « Randonner par région » de l'accueil. Chaque région renvoie vers sa
+ * page de synthèse si elle existe, sinon vers la liste des randonnées. Une
+ * région sans rando publiée n'est pas affichée.
+ */
+function rando_nono_regions_accueil( $stats ) {
+    $deps = isset( $stats['departements'] ) ? $stats['departements'] : array();
+    $defs = array(
+        array( 'titre' => 'Hérault', 'deps' => array( 'Hérault' ), 'texte' => 'Garrigue, cirques et bivouacs', 'page' => 'les-plus-belles-randonnees-de-lherault', 'type' => 'page', 'mot' => 'randos' ),
+        array( 'titre' => 'Val-d’Isère et Tignes', 'deps' => array( 'Savoie' ), 'texte' => 'Lacs d’altitude en famille', 'page' => 'randonnees-faciles-val-d-isere-tignes', 'type' => 'post', 'mot' => 'balades' ),
+        array( 'titre' => 'Gard et Larzac', 'deps' => array( 'Gard', 'Aveyron' ), 'texte' => 'Camargue, Mer des Rochers, Canalettes', 'page' => 'etang-du-scamandrenie', 'type' => 'randonnee', 'mot' => 'randos', 'liste' => true ),
+    );
+    $out = array();
+    foreach ( $defs as $d ) {
+        $n = 0;
+        foreach ( $d['deps'] as $dep ) $n += isset( $deps[ $dep ] ) ? $deps[ $dep ] : 0;
+        if ( ! $n ) continue;
+        $cible = get_page_by_path( $d['page'], OBJECT, $d['type'] );
+        $url   = ( $cible && empty( $d['liste'] ) ) ? get_permalink( $cible ) : get_post_type_archive_link( 'randonnee' );
+        $img   = $cible ? get_post_thumbnail_id( $cible ) : 0;
+        $out[] = array( 'titre' => $d['titre'], 'texte' => $d['texte'], 'url' => $url, 'img' => $img, 'n' => $n, 'mot' => $n > 1 ? $d['mot'] : rtrim( $d['mot'], 's' ) );
+    }
+    return $out;
 }
 
 /**
@@ -195,7 +244,8 @@ function rando_nono_get_archive_filter_bounds() {
 }
 
 function rando_nono_bust_homepage_stats_cache() {
-    delete_transient( 'rando_nono_homepage_stats' );
+    delete_transient( 'rando_nono_homepage_stats' ); delete_transient( 'rando_nono_homepage_stats_v2' );
+    update_option( 'rando_nono_related_v', (int) get_option( 'rando_nono_related_v', 1 ) + 1, false );
     delete_transient( 'rando_nono_archive_filter_bounds' );
 }
 add_action( 'save_post_randonnee', 'rando_nono_bust_homepage_stats_cache' );

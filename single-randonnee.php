@@ -89,8 +89,12 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
     <div class="sr-hero-content">
       <span class="sr-hero-badge sr-<?php echo esc_attr( $diff_class ); ?>"><?php echo esc_html( ucfirst( $difficulte ) ); ?></span>
       <h1 class="sr-hero-title"><?php the_title(); ?></h1>
-      <?php if ( $lieu ) : ?>
-        <div class="sr-hero-lieu"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( $lieu ); ?></div>
+      <?php
+      // Lieu court + date de sortie, au lieu de l'adresse complète sur 3 lignes.
+      $lieu_affiche = rando_nono_lieu_court( $id, 60 );
+      $hero_infos   = array_filter( array( $lieu_affiche ? $lieu_affiche : $lieu, $date_sortie ) );
+      if ( $hero_infos ) : ?>
+        <div class="sr-hero-lieu"><?php echo rando_nono_icon( 'pin' ); ?> <?php echo esc_html( implode( ' · ', $hero_infos ) ); ?></div>
       <?php endif; ?>
     </div>
   </div>
@@ -99,6 +103,24 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
 <!-- META GRID -->
 <section class="sr-section">
   <div class="sr-container">
+    <?php
+    // Jauge de difficulté : le nom maison garde sa personnalité, la jauge
+    // donne l'échelle (« Simpliste ● ○ ○ ○ ○ 1/5 »).
+    if ( $diff_terms && ! is_wp_error( $diff_terms ) ) :
+        $rang  = rando_nono_difficulte_rang_ou_defaut( $diff_terms[0] );
+        $total = 5;
+        if ( $rang ) : ?>
+    <div class="sr-diff-jauge" role="img" aria-label="<?php echo esc_attr( sprintf( 'Difficulté : %s, niveau %d sur %d', $diff_terms[0]->name, $rang, $total ) ); ?>">
+      <div>
+        <div class="sr-diff-label">Difficult&eacute;</div>
+        <a class="sr-diff-nom" href="<?php echo esc_url( get_term_link( $diff_terms[0] ) ); ?>"><?php echo esc_html( $diff_terms[0]->name ); ?></a>
+      </div>
+      <div class="sr-diff-barres" aria-hidden="true">
+        <?php for ( $i = 1; $i <= $total; $i++ ) : ?><span class="<?php echo $i <= $rang ? 'on' : ''; ?>"></span><?php endfor; ?>
+      </div>
+      <span class="sr-diff-n" aria-hidden="true"><?php echo esc_html( $rang . '/' . $total ); ?></span>
+    </div>
+    <?php endif; endif; ?>
     <div class="sr-meta-grid">
       <?php if ( $distance ) : ?>
       <div class="sr-meta-card">
@@ -511,6 +533,20 @@ if ( ! empty( $related_randos ) ) :
     </div>
   </div>
 </section>
+<?php endif; ?>
+
+<?php if ( $gpx_url || $maps_url ) : ?>
+<!-- BARRE D'ACTIONS MOBILE : sur le terrain, la trace et l'itinéraire sont
+     les deux boutons qui comptent ; ils restent à portée de pouce. -->
+<nav class="sr-barre-mobile sr-no-print" aria-label="Actions de la randonnée">
+  <?php if ( $gpx_url ) : ?>
+    <a class="sr-barre-btn sr-barre-gpx" href="<?php echo esc_url( $gpx_url ); ?>" download><?php echo rando_nono_icon( 'download' ); ?> Trace GPX</a>
+  <?php endif; ?>
+  <?php if ( $maps_url ) : ?>
+    <a class="sr-barre-btn sr-barre-go" href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener"><?php echo rando_nono_icon( 'pin' ); ?> Y aller</a>
+  <?php endif; ?>
+  <button type="button" class="sr-barre-fav js-favori-btn" data-id="<?php echo esc_attr( $id ); ?>" aria-pressed="false" aria-label="Ajouter aux favoris"><?php echo rando_nono_icon( 'heart' ); ?></button>
+</nav>
 <?php endif; ?>
 
 <?php endwhile; ?>
