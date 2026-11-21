@@ -161,6 +161,51 @@
         if (heads[i]) td.setAttribute('data-label', heads[i]);
       });
     });
+
+    // Tableau de randos (1re colonne = lien vers la fiche) : sur mobile, une
+    // liste numérotée de cartes cliquables remplace le tableau.
+    var lignes = table.querySelectorAll('tbody tr');
+    var avecLien = Array.prototype.every.call(lignes, function (tr) { return tr.cells[0] && tr.cells[0].querySelector('a'); });
+    if (!lignes.length || !avecLien) return;
+    var liste = document.createElement('ol');
+    liste.className = 'table-liste';
+    Array.prototype.forEach.call(lignes, function (tr, n) {
+      var lien = tr.cells[0].querySelector('a');
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = lien.href;
+      a.className = 'table-liste-carte';
+      var num = document.createElement('span');
+      num.className = 'table-liste-num';
+      num.textContent = String(n + 1);
+      var corps = document.createElement('span');
+      corps.className = 'table-liste-corps';
+      var titre = document.createElement('b');
+      titre.textContent = lien.textContent.trim();
+      var chiffres = document.createElement('span');
+      chiffres.className = 'table-liste-chiffres';
+      Array.prototype.slice.call(tr.cells, 1).forEach(function (td) {
+        var t = td.textContent.trim();
+        if (!t) return;
+        var p = document.createElement('span');
+        p.textContent = t;
+        chiffres.appendChild(p);
+      });
+      corps.appendChild(titre);
+      corps.appendChild(chiffres);
+      var fleche = document.createElement('span');
+      fleche.className = 'table-liste-fleche';
+      fleche.setAttribute('aria-hidden', 'true');
+      fleche.textContent = '›';
+      a.appendChild(num);
+      a.appendChild(corps);
+      a.appendChild(fleche);
+      li.appendChild(a);
+      liste.appendChild(li);
+    });
+    var bloc = table.closest('.wp-block-table') || table;
+    bloc.classList.add('a-liste');
+    bloc.appendChild(liste);
   });
 
   /* ══════════════════════════════════════════════

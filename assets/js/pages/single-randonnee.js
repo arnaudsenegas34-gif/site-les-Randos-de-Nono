@@ -146,6 +146,16 @@
 
     if (points.length < 2) return;
 
+    // Altitude max de la trace, affichée dans les chiffres de la fiche.
+    var altMaxCard = document.getElementById('sr-alt-max');
+    if (altMaxCard) {
+      var altMax = Math.max.apply(null, points.map(function (p) { return p.alt; }));
+      if (isFinite(altMax)) {
+        altMaxCard.querySelector('.sr-meta-value').textContent = Math.round(altMax).toLocaleString('fr-FR') + ' m';
+        altMaxCard.hidden = false;
+      }
+    }
+
     var labels = [], alts = [], chartPoints = [], cumDist = 0;
     for (var i = 0; i < points.length; i++) {
       if (i > 0) {

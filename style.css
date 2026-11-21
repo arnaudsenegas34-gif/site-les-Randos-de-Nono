@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.9
+Version: 6.10
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1585,3 +1585,30 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .error-404-recherche label { display: block; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; }
 .error-404-recherche-ligne { display: flex; gap: 0.5rem; }
 .error-404-recherche input { flex: 1; min-width: 0; padding: 0.7rem 0.9rem; border-radius: var(--r-md); border: 1.5px solid var(--ligne); background: var(--surface-alt); color: var(--text); font: inherit; }
+
+/* ══════════════════════ ÉCARTS AVEC LES MAQUETTES (v6.10) ══════════════════════ */
+/* Guide : liste numérotée de cartes cliquables à la place du tableau, sur mobile */
+.table-liste { display: none; list-style: none; padding: 0; margin: 0; }
+@media (max-width: 600px) {
+  .a-liste table { display: none; }
+  .a-liste .table-liste { display: grid; gap: 0.6rem; }
+  .table-liste-carte {
+    display: flex; align-items: center; gap: 0.8rem; text-decoration: none; color: inherit;
+    background: var(--surface-alt); border-radius: var(--r-md); box-shadow: var(--hairline); padding: 0.75rem 0.9rem;
+  }
+  .table-liste-num { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-size: 1.6rem; color: var(--orange-texte); width: 1.5rem; flex-shrink: 0; }
+  .table-liste-corps { flex: 1; min-width: 0; }
+  .table-liste-corps b { display: block; font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-weight: 400; font-size: 1.05rem; color: var(--accent); }
+  .table-liste-chiffres { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.35rem; }
+  .table-liste-chiffres span { font-size: 0.72rem; font-weight: 700; background: var(--surface); padding: 0.15rem 0.45rem; border-radius: var(--r-sm); }
+  .table-liste-fleche { color: var(--accent); font-size: 1.4rem; }
+}
+/* Cartes compactes : chiffres en pastilles beiges (maquette) */
+@media (max-width: 600px) {
+  .post-type-archive-randonnee .randos-grid .card-meta:nth-of-type(2) .meta-item,
+  .search .randos-grid .card-meta:nth-of-type(2) .meta-item {
+    background: var(--surface); padding: 0.15rem 0.4rem; border-radius: var(--r-sm); font-weight: 700;
+  }
+  .post-type-archive-randonnee .randos-grid .card-meta:nth-of-type(2) .icon-svg,
+  .search .randos-grid .card-meta:nth-of-type(2) .icon-svg { display: none; }
+}

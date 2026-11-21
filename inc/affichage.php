@@ -54,6 +54,11 @@ function rando_nono_breadcrumb() {
     } elseif ( is_singular( 'matos' ) ) {
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<a href="' . esc_url( home_url( '/#matos' ) ) . '">Matos de Nono</a>';
+        $cats = get_the_terms( get_the_ID(), 'categorie_matos' );
+        if ( $cats && ! is_wp_error( $cats ) ) {
+            echo '<span class="breadcrumb-sep">›</span>';
+            echo '<span>' . esc_html( $cats[0]->name ) . '</span>';
+        }
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<span class="breadcrumb-current">' . esc_html( get_the_title() ) . '</span>';
 

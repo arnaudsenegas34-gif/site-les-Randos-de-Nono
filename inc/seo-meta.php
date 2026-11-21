@@ -293,7 +293,7 @@ add_action( 'wp_head', 'rando_nono_seo_meta_tags', 1 );
  */
 function rando_nono_archive_filtree() {
     if ( ! is_post_type_archive( 'randonnee' ) ) return false;
-    foreach ( array( 'recherche', 'difficulte', 'distance_max', 'denivele_max' ) as $param ) {
+    foreach ( array( 'recherche', 'difficulte', 'distance_max', 'denivele_max', 'tri' ) as $param ) {
         if ( isset( $_GET[ $param ] ) && '' !== $_GET[ $param ] ) return true;
     }
     return false;

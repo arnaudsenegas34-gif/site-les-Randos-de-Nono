@@ -150,6 +150,12 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
         <div class="sr-meta-value"><?php echo esc_html( $duree ); ?></div>
       </div>
       <?php endif; ?>
+      <?php // Altitude max : remplie par le script depuis la trace GPX, cachée sans trace. ?>
+      <div class="sr-meta-card" id="sr-alt-max" hidden>
+        <div class="sr-meta-icon"><?php echo rando_nono_icon( 'mountain' ); ?></div>
+        <div class="sr-meta-label">Altitude max</div>
+        <div class="sr-meta-value"></div>
+      </div>
       <?php if ( $date_sortie ) : ?>
       <div class="sr-meta-card">
         <div class="sr-meta-icon"><?php echo rando_nono_icon( 'calendar' ); ?></div>

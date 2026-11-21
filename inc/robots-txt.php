@@ -30,6 +30,8 @@ add_filter( 'robots_txt', function( $output, $public ) {
     $output .= "Disallow: /*&distance_max=\n";
     $output .= "Disallow: /*?denivele_max=\n";
     $output .= "Disallow: /*&denivele_max=\n";
+    $output .= "Disallow: /*?tri=\n";
+    $output .= "Disallow: /*&tri=\n";
     $output .= "Disallow: /*?s=\n";
     $output .= "\n";
     $output .= 'Sitemap: ' . home_url( '/wp-sitemap.xml' ) . "\n";
