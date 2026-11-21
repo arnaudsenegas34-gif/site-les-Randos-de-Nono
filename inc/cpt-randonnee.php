@@ -62,8 +62,8 @@ function rando_nono_difficultes_ordonnees( $hide_empty = true ) {
     $termes = get_terms( array( 'taxonomy' => 'difficulte', 'hide_empty' => $hide_empty ) );
     if ( ! $termes || is_wp_error( $termes ) ) return array();
     usort( $termes, function( $a, $b ) {
-        $ra = rando_nono_difficulte_rang( $a );
-        $rb = rando_nono_difficulte_rang( $b );
+        $ra = rando_nono_difficulte_rang_ou_defaut( $a );
+        $rb = rando_nono_difficulte_rang_ou_defaut( $b );
         // Un terme sans rang passe après ceux qui en ont un.
         if ( 0 === $ra ) $ra = PHP_INT_MAX;
         if ( 0 === $rb ) $rb = PHP_INT_MAX;
