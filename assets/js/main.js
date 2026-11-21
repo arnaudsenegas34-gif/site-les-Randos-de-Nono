@@ -119,6 +119,33 @@
     obs.observe(statsSection);
   }
 
+  /* Filtres des randos : une pastille de difficulté ou un tri change la
+     liste tout de suite, sans passer par « Filtrer ». */
+  var filtres = document.querySelector('.archive-filters');
+  if (filtres) {
+    filtres.addEventListener('change', function (e) {
+      if (e.target.name === 'difficulte' || e.target.name === 'tri') filtres.submit();
+    });
+  }
+
+  /* Page Guides & récits : filtre des récits par département, sans recharger. */
+  var guidesFiltre = document.querySelector('.guides-filtre');
+  if (guidesFiltre) {
+    guidesFiltre.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-dep]');
+      if (!btn) return;
+      var dep = btn.getAttribute('data-dep');
+      guidesFiltre.querySelectorAll('button').forEach(function (b) {
+        var on = b === btn;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('#guides-recits .guide-card').forEach(function (c) {
+        c.hidden = dep !== '' && c.getAttribute('data-dep') !== dep;
+      });
+    });
+  }
+
   /* ══════════════════════════════════════════════
      TABLEAUX EN CARTES SUR MOBILE
      Chaque cellule reçoit le nom de sa colonne (data-label) : sur petit

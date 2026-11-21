@@ -19,6 +19,15 @@ rando_nono_breadcrumb();
       <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="btn btn-outline" style="border-color:var(--accent);color:var(--accent)">Voir les randonnées</a>
     </div>
 
+    <?php // Souvent on arrive ici par un vieux lien : la recherche retrouve la rando. ?>
+    <form class="error-404-recherche" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+      <label for="recherche-404">Tu cherchais une rando en particulier&nbsp;?</label>
+      <div class="error-404-recherche-ligne">
+        <input type="search" id="recherche-404" name="s" placeholder="Un lieu, un lac, un sommet…" value="<?php echo esc_attr( trim( str_replace( array( '-', '/' ), ' ', wp_parse_url( isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '', PHP_URL_PATH ) ) ) ); ?>">
+        <button type="submit" class="btn btn-sm">Chercher</button>
+      </div>
+    </form>
+
     <?php
     // Afficher les 3 dernières randonnées comme suggestions
     $recent = new WP_Query( array(

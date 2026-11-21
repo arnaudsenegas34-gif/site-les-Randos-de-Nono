@@ -17,6 +17,10 @@ $departements  = isset( $archive_stats['departements'] ) ? $archive_stats['depar
 arsort( $departements );
 $selected_dep  = isset( $_GET['departement'] ) ? sanitize_text_field( wp_unslash( $_GET['departement'] ) ) : '';
 if ( $selected_dep && ! isset( $departements[ $selected_dep ] ) ) $selected_dep = '';
+// Tri : récentes (défaut), plus courtes, moins de dénivelé, ou par région.
+$tris = array( 'recent' => 'Les plus récentes', 'courtes' => 'Les plus courtes', 'denivele' => 'Le moins de dénivelé', 'region' => 'Par région' );
+$selected_tri = isset( $_GET['tri'] ) ? sanitize_key( $_GET['tri'] ) : 'recent';
+if ( ! isset( $tris[ $selected_tri ] ) ) $selected_tri = 'recent';
 
 // Bornes réelles (calculées sur les randos publiées) pour les curseurs —
 // le curseur part toujours du maximum tant qu'on n'y a pas touché.
@@ -50,6 +54,16 @@ if ( $selected_diff ) {
 // chaîne (comportement standard MySQL), sans avoir à dupliquer ces champs
 // dans un format numérique séparé.
 $meta_query = array();
+// Distance et dénivelé sont du texte (« 7,0 km », « +240 m ») : le CAST en
+// DECIMAL lit le nombre de tête, suffisant pour trier.
+if ( 'courtes' === $selected_tri || 'denivele' === $selected_tri ) {
+    $meta_query['tri_clause'] = array( 'key' => 'courtes' === $selected_tri ? 'rando_distance' : 'rando_denivele', 'type' => 'DECIMAL(10,1)' );
+    $args['orderby'] = array( 'tri_clause' => 'ASC', 'date' => 'DESC' );
+}
+// Par région : toutes les randos sur une page, regroupées sous un intertitre.
+if ( 'region' === $selected_tri ) {
+    $args['posts_per_page'] = -1;
+}
 if ( $selected_dep ) {
     $meta_query[] = array( 'key' => 'rando_lieu_court', 'value' => '(' . $selected_dep . ')', 'compare' => 'LIKE' );
 }
@@ -119,7 +133,7 @@ if ( $map_query->have_posts() ) {
   <nav class="archive-regions" aria-label="Filtrer par département">
     <a class="archive-region<?php echo $selected_dep ? '' : ' is-active'; ?>" href="<?php echo esc_url( $base_url . '#resultats' ); ?>"<?php echo $selected_dep ? '' : ' aria-current="true"'; ?>>Toutes · <?php echo esc_html( array_sum( $departements ) ); ?></a>
     <?php foreach ( $departements as $dep => $nb ) : ?>
-      <a class="archive-region<?php echo $selected_dep === $dep ? ' is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( 'departement', rawurlencode( $dep ), $base_url ) . '#resultats' ); ?>"<?php echo $selected_dep === $dep ? ' aria-current="true"' : ''; ?>><?php echo esc_html( $dep . ' · ' . $nb ); ?></a>
+      <a class="archive-region<?php echo $selected_dep === $dep ? ' is-active' : ''; ?>" href="<?php echo esc_url( add_query_arg( array( 'departement' => rawurlencode( $dep ), 'tri' => 'recent' !== $selected_tri ? $selected_tri : false ), $base_url ) . '#resultats' ); ?>"<?php echo $selected_dep === $dep ? ' aria-current="true"' : ''; ?>><?php echo esc_html( $dep . ' · ' . $nb ); ?></a>
     <?php endforeach; ?>
   </nav>
   <?php endif; ?>
@@ -137,20 +151,18 @@ if ( $map_query->have_posts() ) {
       <input type="text" id="recherche" name="recherche" placeholder="Nom, lieu..." value="<?php echo esc_attr( $search_term ); ?>">
     </div>
 
-    <div class="filter-group">
-      <label for="difficulte">Difficulté</label>
-      <select id="difficulte" name="difficulte">
-        <option value="">Toutes</option>
+    <fieldset class="filter-group filter-diff">
+      <legend>Difficulté</legend>
+      <div class="filter-pills">
+        <label class="filter-pill"><input type="radio" name="difficulte" value="" <?php checked( $selected_diff, '' ); ?>><span>Toutes</span></label>
         <?php if ( $all_difficultes && ! is_wp_error( $all_difficultes ) ) : ?>
           <?php foreach ( $all_difficultes as $term ) : ?>
             <?php $rn_repere = rando_nono_difficulte_repere( $term ); ?>
-            <option value="<?php echo esc_attr( $term->slug ); ?>" <?php selected( $selected_diff, $term->slug ); ?>>
-              <?php echo esc_html( $term->name . ( $rn_repere ? ' · ' . $rn_repere : '' ) ); ?>
-            </option>
+            <label class="filter-pill"<?php echo $rn_repere ? ' title="' . esc_attr( $rn_repere ) . '"' : ''; ?>><input type="radio" name="difficulte" value="<?php echo esc_attr( $term->slug ); ?>" <?php checked( $selected_diff, $term->slug ); ?>><span><?php echo esc_html( $term->name ); ?></span></label>
           <?php endforeach; ?>
         <?php endif; ?>
-      </select>
-    </div>
+      </div>
+    </fieldset>
 
     <div class="filter-group">
       <label for="distance_max">Distance max&nbsp;: <output id="distance_max_out" for="distance_max"><?php echo esc_html( $selected_distance_max ); ?></output>&nbsp;km</label>
@@ -162,9 +174,18 @@ if ( $map_query->have_posts() ) {
       <input type="range" id="denivele_max" name="denivele_max" min="0" max="<?php echo esc_attr( $denivele_max_cap ); ?>" step="10" value="<?php echo esc_attr( $selected_denivele_max ); ?>">
     </div>
 
+    <div class="filter-group">
+      <label for="tri">Trier</label>
+      <select id="tri" name="tri">
+        <?php foreach ( $tris as $cle => $libelle ) : ?>
+          <option value="<?php echo esc_attr( $cle ); ?>" <?php selected( $selected_tri, $cle ); ?>><?php echo esc_html( $libelle ); ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+
     <?php if ( $selected_dep ) : ?><input type="hidden" name="departement" value="<?php echo esc_attr( $selected_dep ); ?>"><?php endif; ?>
     <button type="submit" class="btn btn-sm">Filtrer</button>
-    <?php if ( $selected_diff || $search_term || $distance_filter_active || $denivele_filter_active || $selected_dep ) : ?>
+    <?php if ( $selected_diff || $search_term || $distance_filter_active || $denivele_filter_active || $selected_dep || 'recent' !== $selected_tri ) : ?>
       <a href="<?php echo esc_url( get_post_type_archive_link( 'randonnee' ) ); ?>" class="filter-reset">Réinitialiser</a>
     <?php endif; ?>
   </form>
@@ -188,6 +209,27 @@ if ( $map_query->have_posts() ) {
   <?php if ( $archive_query->have_posts() ) : ?>
     <p id="resultats" class="archive-count"><?php echo esc_html( $archive_query->found_posts ); ?> randonnée<?php echo $archive_query->found_posts > 1 ? 's' : ''; ?> trouvée<?php echo $archive_query->found_posts > 1 ? 's' : ''; ?></p>
 
+    <?php if ( 'region' === $selected_tri ) :
+        // Regroupement par département (texte entre parenthèses du lieu court),
+        // les départements les plus fournis d'abord.
+        $groupes = array();
+        while ( $archive_query->have_posts() ) {
+            $archive_query->the_post();
+            $lc  = (string) get_post_meta( get_the_ID(), 'rando_lieu_court', true );
+            $dep = preg_match( '/\(([^)]+)\)\s*$/u', $lc, $dm ) ? trim( $dm[1] ) : 'Ailleurs';
+            $groupes[ $dep ][] = get_the_ID();
+        }
+        uasort( $groupes, function ( $a, $b ) { return count( $b ) - count( $a ); } );
+        global $post;
+        foreach ( $groupes as $dep => $ids ) : ?>
+      <h2 class="archive-groupe"><?php echo esc_html( $dep ); ?> <small><?php echo esc_html( count( $ids ) . ' rando' . ( count( $ids ) > 1 ? 's' : '' ) ); ?></small></h2>
+      <div class="randos-grid">
+        <?php foreach ( $ids as $gid ) : $post = get_post( $gid ); setup_postdata( $post ); ?>
+          <div><?php get_template_part( 'template-parts/card', 'rando', array( 'niveau' => 'h3' ) ); ?></div>
+        <?php endforeach; ?>
+      </div>
+    <?php endforeach; wp_reset_postdata();
+    else : ?>
     <div class="randos-grid">
       <?php while ( $archive_query->have_posts() ) : $archive_query->the_post(); ?>
         <div>
@@ -195,6 +237,7 @@ if ( $map_query->have_posts() ) {
         </div>
       <?php endwhile; ?>
     </div>
+    <?php endif; ?>
 
     <!-- ════════ PAGINATION ════════ -->
     <div class="archive-pagination">

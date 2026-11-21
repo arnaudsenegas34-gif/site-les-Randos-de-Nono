@@ -3,7 +3,7 @@ Theme Name: Les Randos de Nono
 Author: Arnaud Senegas
 Author URI: https://les-randos-de-nono.infinityfreeapp.com/
 Description: Carnet de randonnée — épuré, blanc, accents orange, traces GPX, météo en temps réel.
-Version: 6.8
+Version: 6.9
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rando-nono
@@ -1563,3 +1563,25 @@ a.badge-diff:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .favoris-sugg-coeur .icon-svg { width: 20px; height: 20px; }
 .favoris-sugg-coeur.is-favori { background: var(--orange); color: #fff; border-color: transparent; }
 .favoris-sugg-coeur.is-favori .icon-svg { fill: currentColor; }
+
+/* ══════════════════════ TRI, DIFFICULTÉ, RÉGIONS, GUIDES, 404 (v6.9) ══════════════════════ */
+.filter-diff { border: 0; padding: 0; margin: 0; min-width: 0; }
+.filter-diff legend { font-size: 0.65rem; color: var(--gris); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; padding: 0; margin-bottom: 0.35rem; }
+.filter-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.filter-pill { position: relative; cursor: pointer; }
+.filter-pill input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.filter-pill span {
+  display: inline-block; font-size: 0.78rem; font-weight: 700; padding: 0.4rem 0.75rem; border-radius: var(--r-pill);
+  border: 1.5px solid var(--ligne); color: var(--accent); background: var(--surface-alt);
+}
+.filter-pill input:checked + span { background: var(--vert); border-color: var(--vert); color: #fff; }
+.filter-pill input:focus-visible + span { outline: 2px solid var(--orange); outline-offset: 2px; }
+.archive-groupe { font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-weight: 400; color: var(--accent); font-size: 1.5rem; margin: 2rem 0 1rem; }
+.archive-groupe small { font-family: inherit; font-size: 0.85rem; color: var(--gris); font-weight: 400; margin-left: 0.4rem; }
+.guides-filtre { margin-bottom: 1.4rem; }
+.guides-filtre button { cursor: pointer; font-family: inherit; }
+.guide-card[hidden] { display: none; }
+.error-404-recherche { margin: 1.8rem auto 0; max-width: 460px; text-align: left; }
+.error-404-recherche label { display: block; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; }
+.error-404-recherche-ligne { display: flex; gap: 0.5rem; }
+.error-404-recherche input { flex: 1; min-width: 0; padding: 0.7rem 0.9rem; border-radius: var(--r-md); border: 1.5px solid var(--ligne); background: var(--surface-alt); color: var(--text); font: inherit; }
