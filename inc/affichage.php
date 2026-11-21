@@ -41,6 +41,16 @@ function rando_nono_breadcrumb() {
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<span class="breadcrumb-current">' . esc_html( get_the_title() ) . '</span>';
 
+    } elseif ( is_singular( 'post' ) ) {
+        // Articles (récits) : Accueil › Guides & récits › titre.
+        $guides = get_page_by_path( 'guides' );
+        if ( $guides ) {
+            echo '<span class="breadcrumb-sep">›</span>';
+            echo '<a href="' . esc_url( get_permalink( $guides ) ) . '">Guides &amp; récits</a>';
+        }
+        echo '<span class="breadcrumb-sep">›</span>';
+        echo '<span class="breadcrumb-current">' . esc_html( get_the_title() ) . '</span>';
+
     } elseif ( is_singular( 'matos' ) ) {
         echo '<span class="breadcrumb-sep">›</span>';
         echo '<a href="' . esc_url( home_url( '/#matos' ) ) . '">Matos de Nono</a>';
