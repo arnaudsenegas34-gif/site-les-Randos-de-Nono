@@ -77,10 +77,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   padding: 0.3rem 0.75rem 0.3rem 0.6rem;
   border-radius: var(--r-pill);
   background: rgba(250,248,243,0.92);
@@ -161,10 +161,10 @@
 .sr-meta-label {
   /* 0.6rem valait 9,6 px : lisible de près, pas en marchant. 0.7rem (11,2 px)
      reste discret sans demander d'effort. */
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--gris);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   font-weight: 700;
   overflow-wrap: break-word;
 }
@@ -519,8 +519,8 @@
   font-size: 0.75rem;
   color: var(--accent);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  text-transform: none;
+  letter-spacing: 0.01em;
 }
 .sr-nav-title {
   font-size: 0.95rem;
@@ -705,7 +705,7 @@
   background: var(--surface-alt); border-radius: var(--r-md);
   padding: 0.85rem 1.1rem; margin-bottom: 1.2rem; box-shadow: var(--hairline);
 }
-.sr-diff-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gris); }
+.sr-diff-label { font-size: 0.75rem; letter-spacing: 0.01em; text-transform: none; color: var(--gris); }
 .sr-diff-nom { font-weight: 700; color: var(--accent); text-decoration: none; font-size: 1.02rem; }
 .sr-diff-nom:hover { text-decoration: underline; }
 .sr-diff-barres { display: flex; gap: 5px; margin-left: auto; }
@@ -769,7 +769,7 @@
   background: var(--sombre); color: #fff; border-radius: var(--r-md);
   padding: 1.1rem 1.25rem; margin: 0 0 1.4rem;
 }
-.art-bref-titre { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange-clair); }
+.art-bref-titre { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.01em; text-transform: none; color: var(--orange-clair); }
 .art-bref-chiffres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin: 0.8rem 0 1rem; }
 .art-bref-chiffres b { display: block; font-family: 'Abril Fatface', 'Abril Fatface Repli', serif; font-weight: 400; font-size: 1.5rem; color: var(--orange-clair); line-height: 1.1; }
 .art-bref-chiffres small { font-size: 0.72rem; opacity: 0.85; }

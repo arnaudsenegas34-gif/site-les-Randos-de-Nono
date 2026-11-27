@@ -290,10 +290,10 @@
 }
 
 .matos-panel-cat {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: var(--orange);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   font-weight: 700;
   margin-bottom: 0.4rem;
 }
