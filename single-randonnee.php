@@ -20,7 +20,12 @@ $sac_raw      = get_post_meta( $id, 'rando_sac', true );
 $conseils_raw = get_post_meta( $id, 'rando_conseils', true );
 
 $diff_terms = get_the_terms( $id, 'difficulte' );
-$difficulte = $diff_terms && ! is_wp_error( $diff_terms ) ? strtolower( $diff_terms[0]->name ) : 'moyen';
+// Les noms de difficulté sont libres (« Ça se corse »…) : on affiche le nom
+// brut, jamais passé à strtolower()/ucfirst() qui cassent le « Ç » (octet par
+// octet). La majuscule vient du CSS (text-transform). Voir CLAUDE.md.
+$diff_terme      = ( $diff_terms && ! is_wp_error( $diff_terms ) ) ? $diff_terms[0] : null;
+$difficulte_nom  = $diff_terme ? $diff_terme->name : 'Moyen';
+$difficulte_slug = sanitize_title( $difficulte_nom );
 
 $photos_urls = array();
 if ( $photos_raw ) {
@@ -70,8 +75,17 @@ $thumb_large_tag = has_post_thumbnail( $id ) ? get_the_post_thumbnail( $id, 'ran
     'fetchpriority' => 'high',
 ) ) : '';
 
-$diff_classes = array( 'facile' => 'diff-facile', 'moyen' => 'diff-moyen', 'difficile' => 'diff-difficile' );
-$diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficulte ] : 'diff-moyen';
+// Couleur du badge du héros : dérivée du rang (champ « Niveau », ou rang par
+// défaut d'après le slug), pas du nom. L'ancienne table indexée sur
+// facile/moyen/difficile ne correspondait jamais aux noms maison et tout
+// retombait sur « moyen ». Les anciens noms restent reconnus par leur slug.
+$diff_rang = $diff_terme ? rando_nono_difficulte_rang_ou_defaut( $diff_terme ) : 0;
+if ( $diff_rang ) {
+    $diff_class = $diff_rang <= 1 ? 'diff-facile' : ( $diff_rang <= 3 ? 'diff-moyen' : 'diff-difficile' );
+} else {
+    $diff_classes = array( 'facile' => 'diff-facile', 'moyen' => 'diff-moyen', 'difficile' => 'diff-difficile' );
+    $diff_class   = isset( $diff_classes[ $difficulte_slug ] ) ? $diff_classes[ $difficulte_slug ] : 'diff-moyen';
+}
 ?>
 
 <main id="main-content">
@@ -104,7 +118,7 @@ $diff_class   = isset( $diff_classes[ $difficulte ] ) ? $diff_classes[ $difficul
   </button>
   <div class="sr-hero-overlay">
     <div class="sr-hero-content">
-      <span class="sr-hero-badge sr-<?php echo esc_attr( $diff_class ); ?>"><?php echo esc_html( ucfirst( $difficulte ) ); ?></span>
+      <span class="sr-hero-badge sr-<?php echo esc_attr( $diff_class ); ?> sr-diff-nom-<?php echo esc_attr( $difficulte_slug ); ?>"><?php echo esc_html( $difficulte_nom ); ?></span>
       <h1 class="sr-hero-title"><?php the_title(); ?></h1>
       <?php
       // Lieu court + date de sortie, au lieu de l'adresse complète sur 3 lignes.

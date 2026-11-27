@@ -143,7 +143,7 @@ fi
 # bonne version est bien en ligne.
 titre "9. Version du thème"
 version=$(grep -m1 '^Version:' style.css | sed 's/^Version:[[:space:]]*//')
-if printf '%s' "$version" | grep -qE '^[0-9]+\.[0-9]+$'; then
+if printf '%s' "$version" | grep -qE '^[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
   ok "style.css déclare la version $version"
 else
   echec "version absente ou mal formée dans l'en-tête de style.css : « $version »"
